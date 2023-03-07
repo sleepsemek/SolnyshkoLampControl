@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_marginVertical="5dp"
+    android:layout_marginHorizontal="15dp"
+    android:background="@drawable/background_elements">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:paddingHorizontal="15dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center|start"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/BTdeviceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextView"
+                android:textSize="16dp"
+                android:textColor="@color/dark_blue" />
+
+            <TextView
+                android:id="@+id/BTdeviceAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextView"
+                android:textColor="@color/main_blue"/>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/addDevice"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_weight="0"
+            android:background="@drawable/btn_background_grey"
+            android:foregroundGravity="center"
+            android:backgroundTint="@color/light_grey"
+            android:foreground="@drawable/ic_baseline_add_24"
+            android:foregroundTint="@color/main_red"
+            app:cornerRadius="20dp" />
+
+    </LinearLayout>
+</LinearLayout>
