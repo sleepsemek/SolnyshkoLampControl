@@ -126,7 +126,7 @@ public class detailedLampActivity extends AppCompatActivity {
             if (connectedThread.getConnectionState().equals("CONNECTED")) {
                 runOnUiThread(this::showInterface);
             } else {
-                hideInterface();
+                runOnUiThread(this::hideInterface);
                 onResume();
             }
         }).start();
