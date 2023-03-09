@@ -150,11 +150,16 @@ public class detailedLampActivity extends AppCompatActivity {
                     byte[] readBuf = (byte[]) msg.obj;
                     String incoming = new String(readBuf, 0, msg.arg1);
                     stringBuilder.append(incoming);
-                    int endOfLineIndex = stringBuilder.indexOf("#");
-                    System.out.println(stringBuilder);
-                    if (endOfLineIndex > 0) {
-                        String print = stringBuilder.substring(0, endOfLineIndex);
-                        mainButton.setState(Integer.parseInt(print));
+                    int startOfLineIndex = stringBuilder.indexOf("\n");
+                    int endOfLineIndex = stringBuilder.lastIndexOf("#");
+                    if (startOfLineIndex > 0) {
+                        String print = stringBuilder.substring(startOfLineIndex + 1, endOfLineIndex);
+                        System.out.println(print);
+                        try {
+                            mainButton.setState(Integer.parseInt(print));
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                         stringBuilder.delete(0, stringBuilder.length());
                     }
                 }
@@ -181,7 +186,7 @@ public class detailedLampActivity extends AppCompatActivity {
         }
 
         private void startTimer(int time) {
-            connectedThread.sendData("!settimer:" + time * 60 + "#");
+            connectedThread.sendData("timer:settimer:" + time * 60 + "#");
         }
 
     }
@@ -219,7 +224,7 @@ public class detailedLampActivity extends AppCompatActivity {
                 connectionState = "DISCONNECTED";
                 return;
             }
-            byte[] buffer = new byte[256];
+            byte[] buffer = new byte[64];
             int bytes;
 
             while (true) {
@@ -295,13 +300,14 @@ public class detailedLampActivity extends AppCompatActivity {
 
         private void hide() {
             btn.setText("");
+            btn.setClickable(false);
             btn.animate().rotationBy(36000).setDuration(50000).setInterpolator(new LinearInterpolator()).start();
         }
 
         private void show() {
             btn.clearAnimation();
-            btn.setVisibility(View.VISIBLE);
             btn.setText("Включить");
+            btn.setClickable(true);
             btn.animate().cancel();
             btn.animate().rotation(0).setDuration(0).setInterpolator(new DecelerateInterpolator());
         }
