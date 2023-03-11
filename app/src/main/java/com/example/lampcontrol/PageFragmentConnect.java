@@ -86,7 +86,7 @@ public class PageFragmentConnect extends Fragment {
                     list.add(createList);
                 }
             } else {
-                makeToast("Пожалуйста выдайте разрешение для корректной работы Bluetooth");
+                makeToast("Пожалуйста, выдайте\n необходимые разрешения для\n корректной работы Bluetooth");
             }
             recyclerView.setAdapter(bondedDevicesAdapter);
         } else {

@@ -44,11 +44,9 @@ public class ConnectedThread extends Thread {
 
     public void run() {
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+
         try {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_ADVERTISE}, 101);
-                }
                 return;
             }
             this.bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
