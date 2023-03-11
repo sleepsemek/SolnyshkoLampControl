@@ -57,26 +57,6 @@ public class detailedLampActivity extends AppCompatActivity {
         timerMenu = new TimerMenu(R.id.sideMenu, R.id.openArrow);
         timer = new SecTimer(R.id.timePicker, R.id.startTimer);
         lampName = findViewById(R.id.lampName);
-
-        connectedThread = new ConnectedThread(this, address);
-        connectedThread.start();
-        connectedThread.setOnConnectionStateChangeListener(new ConnectedThread.onConnectionStateChangeListener() {
-            @Override
-            public void onStateChange(boolean state) {
-                if (state) {
-                    runOnUiThread(() -> showInterface());
-                } else {
-                    runOnUiThread(() -> hideInterface());
-                }
-            }
-        });
-
-        connectedThread.setOnCommandReceivedListener(new ConnectedThread.onCommandReceivedListener() {
-            @Override
-            public void onCommandReceived(int command) {
-                mainButton.setState(command);
-            }
-        });
     }
 
     @Override
@@ -97,6 +77,17 @@ public class detailedLampActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         hideInterface();
+        connectedThread = new ConnectedThread(this, address);
+        connectedThread.start();
+        connectedThread.setOnConnectionStateChangeListener(state -> {
+            if (state) {
+                runOnUiThread(this::showInterface);
+            } else {
+                runOnUiThread(this::hideInterface);
+            }
+        });
+
+        connectedThread.setOnCommandReceivedListener(command -> mainButton.setState(command));
     }
 
     private void hideInterface() {
