@@ -64,6 +64,10 @@ public class ConnectedThread extends Thread {
             }
         }
 
+        if (stateListener != null) {
+            stateListener.onStateChange(bluetoothSocket.isConnected());
+        }
+
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
         try {
@@ -86,9 +90,6 @@ public class ConnectedThread extends Thread {
         int bytes;
 
         while (true) {
-            if (stateListener != null) {
-                stateListener.onStateChange(bluetoothSocket.isConnected());
-            }
             try {
                 bytes = mmInStream.read(buffer);
                 handler.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();
@@ -97,7 +98,6 @@ public class ConnectedThread extends Thread {
                 break;
             }
         }
-
     }
 
     public void sendData(String message) {

@@ -74,7 +74,7 @@ public class detailedLampActivity extends AppCompatActivity {
         connectedThread.setOnCommandReceivedListener(new ConnectedThread.onCommandReceivedListener() {
             @Override
             public void onCommandReceived(int command) {
-                runOnUiThread(() -> mainButton.setState(command));
+                mainButton.setState(command);
             }
         });
     }
@@ -166,8 +166,8 @@ public class detailedLampActivity extends AppCompatActivity {
                 case 1:
                 case 3:
                     this.state = 1;
-                    btn.setText("Выключить");
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
+                    btn.setText("Выключить");
                     break;
             }
         }
@@ -175,7 +175,7 @@ public class detailedLampActivity extends AppCompatActivity {
         private void hide() {
             btn.setText("");
             btn.setClickable(false);
-            btn.animate().rotationBy(36000).setDuration(50000).setInterpolator(new LinearInterpolator()).start();
+            btn.animate().rotationBy(360000).setDuration(500000).setInterpolator(new LinearInterpolator()).start();
         }
 
         private void show() {
