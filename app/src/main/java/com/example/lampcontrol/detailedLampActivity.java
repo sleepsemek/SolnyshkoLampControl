@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -26,16 +27,12 @@ import androidx.core.content.ContextCompat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class detailedLampActivity extends AppCompatActivity {
 
-    private BluetoothAdapter bluetoothAdapter;
-    private BluetoothSocket bluetoothSocket;
     private ConnectedThread connectedThread;
-
-    private static final int RECEIVE_MESSAGE = 1;
-    private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private String address;
     private String name;
@@ -43,8 +40,6 @@ public class detailedLampActivity extends AppCompatActivity {
     private TextView lampName;
 
     private SecTimer timer;
-
-    private Handler handler;
 
     private MainButton mainButton;
     private TimerMenu timerMenu;
@@ -58,14 +53,49 @@ public class detailedLampActivity extends AppCompatActivity {
         address = intent.getStringExtra("address");
         name = intent.getStringExtra("name");
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         mainButton = new MainButton(R.id.onOffBtn);
         timerMenu = new TimerMenu(R.id.sideMenu, R.id.openArrow);
         timer = new SecTimer(R.id.timePicker, R.id.startTimer);
-
         lampName = findViewById(R.id.lampName);
 
+        connectedThread = new ConnectedThread(this, address);
+        connectedThread.start();
+        connectedThread.setOnConnectionStateChangeListener(new ConnectedThread.onConnectionStateChangeListener() {
+            @Override
+            public void onStateChange(boolean state) {
+                if (state) {
+                    runOnUiThread(() -> showInterface());
+                } else {
+                    runOnUiThread(() -> hideInterface());
+                }
+            }
+        });
+
+        connectedThread.setOnCommandReceivedListener(new ConnectedThread.onCommandReceivedListener() {
+            @Override
+            public void onCommandReceived(int command) {
+                runOnUiThread(() -> mainButton.setState(command));
+            }
+        });
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (address != null) {
+            connectedThread.cancel();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        connectedThread.cancel();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         hideInterface();
     }
 
@@ -79,92 +109,6 @@ public class detailedLampActivity extends AppCompatActivity {
         lampName.setText(name);
         timerMenu.show();
         mainButton.show();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (address != null) {
-            try {
-                bluetoothSocket.close();
-            } catch (IOException e2) {
-                e2.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        connectedThread.cancel();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        new Thread(() -> {
-            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-            try {
-                checkPermission(101);
-                bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                bluetoothSocket.connect();
-            } catch (IOException e) {
-                try {
-                    bluetoothSocket.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            connectedThread = new ConnectedThread(bluetoothSocket);
-            connectedThread.start();
-
-            if (connectedThread.getConnectionState().equals("CONNECTED")) {
-                runOnUiThread(this::showInterface);
-            } else {
-                runOnUiThread(this::hideInterface);
-                onResume();
-            }
-        }).start();
-        receiveState();
-    }
-
-    public void checkPermission(int requestCode) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_DENIED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_ADVERTISE}, requestCode);
-            }
-        }
-    }
-
-    @SuppressLint("HandlerLeak")
-    private void receiveState() {
-        StringBuilder stringBuilder = new StringBuilder();
-        handler = new Handler() {
-            public void handleMessage(android.os.Message msg) {
-                if (msg.what == 1) {
-                    byte[] readBuf = (byte[]) msg.obj;
-                    String incoming = new String(readBuf, 0, msg.arg1);
-                    stringBuilder.append(incoming);
-                    int startOfLineIndex = stringBuilder.indexOf("\n");
-                    int endOfLineIndex = stringBuilder.lastIndexOf("#");
-                    if (startOfLineIndex > 0) {
-                        String print = stringBuilder.substring(startOfLineIndex + 1, endOfLineIndex);
-                        System.out.println(print);
-                        try {
-                            mainButton.setState(Integer.parseInt(print));
-                        } catch (NumberFormatException e) {
-                            e.printStackTrace();
-                        }
-                        stringBuilder.delete(0, stringBuilder.length());
-                    }
-                }
-            }
-        };
     }
 
     private class SecTimer {
@@ -191,78 +135,6 @@ public class detailedLampActivity extends AppCompatActivity {
 
     }
 
-    private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-        private String connectionState;
-
-        public ConnectedThread(BluetoothSocket socket) {
-            connectionState = "DISCONNECTED";
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-                connectionState = "CONNECTED";
-            } catch (IOException e) {
-                connectedThread.cancel();
-                connectionState = "DISCONNECTED";
-            }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
-                bluetoothAdapter.cancelDiscovery();
-            } else {
-                connectedThread.cancel();
-                connectionState = "DISCONNECTED";
-                return;
-            }
-            byte[] buffer = new byte[64];
-            int bytes;
-
-            while (true) {
-                try {
-                    bytes = mmInStream.read(buffer);
-                    handler.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();
-                } catch (IOException e) {
-                    connectedThread.cancel();
-                    connectionState = "DISCONNECTED";
-                    break;
-                }
-            }
-        }
-
-        public void sendData(String message) {
-            byte[] msgBuffer = message.getBytes();
-            try {
-                mmOutStream.write(msgBuffer);
-            } catch (IOException e) {
-                e.printStackTrace();
-                connectedThread.cancel();
-                connectionState = "DISCONNECTED";
-            }
-        }
-
-        public void cancel() {
-            try {
-                mmSocket.close();
-                connectionState = "DISCONNECTED";
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public String getConnectionState() {
-            return connectionState;
-        }
-    }
 
     private class MainButton {
         private final Button btn;
@@ -286,11 +158,13 @@ public class detailedLampActivity extends AppCompatActivity {
         public void setState(int state) {
             switch (state) {
                 case 2:
+                case 4:
                     this.state = 0;
                     btn.setText("Включить");
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
                 case 1:
+                case 3:
                     this.state = 1;
                     btn.setText("Выключить");
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
