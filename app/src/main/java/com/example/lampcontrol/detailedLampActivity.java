@@ -57,14 +57,17 @@ public class detailedLampActivity extends AppCompatActivity {
         timerMenu = new TimerMenu(R.id.sideMenu, R.id.openArrow);
         timer = new SecTimer(R.id.timePicker, R.id.startTimer);
         lampName = findViewById(R.id.lampName);
+
+        hideInterface();
+
+        connectedThread = new ConnectedThread(this, address);
+        connectedThread.start();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (address != null) {
-            connectedThread.cancel();
-        }
+        connectedThread.onPause();
     }
 
     @Override
@@ -76,9 +79,11 @@ public class detailedLampActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        hideInterface();
-        connectedThread = new ConnectedThread(this, address);
-        connectedThread.start();
+
+        if (connectedThread.isInterrupted()) {
+            connectedThread.onResume();
+        }
+
         connectedThread.setOnConnectionStateChangeListener(state -> {
             if (state) {
                 runOnUiThread(this::showInterface);
