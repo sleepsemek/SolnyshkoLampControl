@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class ConnectedThread extends Thread {
     private onCommandReceivedListener commandListener;
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
+    private final BluetoothDevice device;
 
     public ConnectedThread(Context context, String address) {
         this.stateListener = null;
@@ -39,44 +41,12 @@ public class ConnectedThread extends Thread {
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.handler = new Handler();
         this.address = address;
+        this.device = bluetoothAdapter.getRemoteDevice(address);
         receiveState();
     }
 
     public void run() {
-        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-
-        try {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            this.bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        while (!bluetoothSocket.isConnected()) {
-            try {
-                bluetoothSocket.connect();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (stateListener != null) {
-            stateListener.onStateChange(bluetoothSocket.isConnected());
-        }
-
-        InputStream tmpIn = null;
-        OutputStream tmpOut = null;
-        try {
-            tmpIn = bluetoothSocket.getInputStream();
-            tmpOut = bluetoothSocket.getOutputStream();
-        } catch (IOException e) {
-            this.cancel();
-        }
-
-        mmInStream = tmpIn;
-        mmOutStream = tmpOut;
+        loopConnect(device);
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
             bluetoothAdapter.cancelDiscovery();
@@ -87,24 +57,56 @@ public class ConnectedThread extends Thread {
         byte[] buffer = new byte[64];
         int bytes;
 
-        while (true) {
+        while (bluetoothSocket.isConnected()) {
             try {
                 bytes = mmInStream.read(buffer);
                 handler.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();
             } catch (IOException e) {
                 this.cancel();
-                break;
+                loopConnect(device);
             }
         }
     }
 
-    public void sendData(String message) {
+    private void loopConnect(BluetoothDevice device) {
+        try {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            this.bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        while (!bluetoothSocket.isConnected()) {
+            try {
+                bluetoothSocket.connect();
+                if (stateListener != null) {
+                    stateListener.onStateChange(bluetoothSocket.isConnected());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("not available");
+            }
+        }
+        InputStream tmpIn = null;
+        OutputStream tmpOut = null;
+        try {
+            tmpIn = bluetoothSocket.getInputStream();
+            tmpOut = bluetoothSocket.getOutputStream();
+        } catch (IOException e) {
+            this.cancel();
+        }
+
+        this.mmInStream = tmpIn;
+        this.mmOutStream = tmpOut;
+    }
+
+    public void sendData(@NonNull String message) {
         byte[] msgBuffer = message.getBytes();
         try {
             mmOutStream.write(msgBuffer);
         } catch (IOException e) {
             e.printStackTrace();
-            this.cancel();
         }
     }
 
