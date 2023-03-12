@@ -47,13 +47,55 @@ public class ConnectedThread extends Thread {
 
     public void run() {
         loopConnect(device);
+        readSignal();
+    }
 
+    private void loopConnect(BluetoothDevice device) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
             bluetoothAdapter.cancelDiscovery();
         } else {
             this.cancel();
             return;
         }
+
+        try {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            this.bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        while (!bluetoothSocket.isConnected()) {
+            try {
+                bluetoothSocket.connect();
+                if (stateListener != null) {
+                    stateListener.onStateChange(bluetoothSocket.isConnected());
+                }
+            } catch (IOException ignored) {
+            }
+        }
+
+        InputStream tmpIn = null;
+        OutputStream tmpOut = null;
+
+        try {
+            tmpIn = bluetoothSocket.getInputStream();
+            tmpOut = bluetoothSocket.getOutputStream();
+        } catch (IOException e) {
+            this.cancel();
+        }
+
+        this.mmInStream = tmpIn;
+        this.mmOutStream = tmpOut;
+
+        if (bluetoothSocket.isConnected()) {
+            readSignal();
+        }
+    }
+
+    private void readSignal() {
         byte[] buffer = new byte[64];
         int bytes;
 
@@ -64,41 +106,9 @@ public class ConnectedThread extends Thread {
             } catch (IOException e) {
                 this.cancel();
                 loopConnect(device);
+                break;
             }
         }
-    }
-
-    private void loopConnect(BluetoothDevice device) {
-        try {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            this.bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        while (!bluetoothSocket.isConnected()) {
-            try {
-                bluetoothSocket.connect();
-                if (stateListener != null) {
-                    stateListener.onStateChange(bluetoothSocket.isConnected());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("not available");
-            }
-        }
-        InputStream tmpIn = null;
-        OutputStream tmpOut = null;
-        try {
-            tmpIn = bluetoothSocket.getInputStream();
-            tmpOut = bluetoothSocket.getOutputStream();
-        } catch (IOException e) {
-            this.cancel();
-        }
-
-        this.mmInStream = tmpIn;
-        this.mmOutStream = tmpOut;
     }
 
     public void sendData(@NonNull String message) {
