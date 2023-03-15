@@ -57,25 +57,26 @@ public class detailedLampActivity extends AppCompatActivity {
         timerMenu = new TimerMenu(R.id.sideMenu, R.id.openArrow);
         timer = new SecTimer(R.id.timePicker, R.id.startTimer);
         lampName = findViewById(R.id.lampName);
-
-        hideInterface();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        connectedThread.onPause();
+        if (address != null) {
+            connectedThread.cancelRunning();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        connectedThread.cancel();
+        connectedThread.cancelRunning();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        hideInterface();
 
         connectedThread = new ConnectedThread(this, address);
         connectedThread.start();
