@@ -21,7 +21,6 @@ public class ConnectedThread extends Thread {
     private static final int RECEIVE_MESSAGE = 1;
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    private final Object pauseState;
     private boolean paused;
 
     private BluetoothSocket bluetoothSocket;
@@ -42,26 +41,16 @@ public class ConnectedThread extends Thread {
         this.commandListener = null;
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.handler = new Handler();
         this.device = bluetoothAdapter.getRemoteDevice(address);
 
-        pauseState = new Object();
+        this.handler = receiveState();
+
         paused = false;
 
-        receiveState();
     }
 
     public void run() {
         loopConnect();
-        synchronized (pauseState) {
-            while (paused) {
-                try {
-                    pauseState.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     public void loopConnect() {
@@ -79,7 +68,7 @@ public class ConnectedThread extends Thread {
             this.cancel();
         }
 
-        while (!bluetoothSocket.isConnected()) {
+        while (!bluetoothSocket.isConnected() && !paused) {
             try {
                 bluetoothSocket.connect();
                 if (bluetoothSocket.isConnected()) {
@@ -111,23 +100,22 @@ public class ConnectedThread extends Thread {
             tmpOut = bluetoothSocket.getOutputStream();
         } catch (IOException e) {
             this.cancel();
+            loopConnect();
         }
 
         this.mmInStream = tmpIn;
         this.mmOutStream = tmpOut;
 
-        if (bluetoothSocket.isConnected()) {
-            loopRead();
-        } else {
-            loopConnect();
-        }
+        sendData("relay:status#");
+
+        loopRead();
     }
 
     private void loopRead() {
         byte[] buffer = new byte[64];
         int bytes;
 
-        while (bluetoothSocket.isConnected()) {
+        while (bluetoothSocket.isConnected() && !paused) {
             try {
                 bytes = mmInStream.read(buffer);
                 handler.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();
@@ -149,10 +137,10 @@ public class ConnectedThread extends Thread {
     }
 
     @SuppressLint("HandlerLeak")
-    private void receiveState() {
-        handler = new Handler() {
+    private Handler receiveState() {
+        return handler = new Handler() {
             public void handleMessage(android.os.Message msg) {
-                if (msg.what == 1) {
+                if (msg.what == RECEIVE_MESSAGE) {
                     byte[] readBuf = (byte[]) msg.obj;
                     String incoming = new String(readBuf, 0, msg.arg1);
                     char[] commandArray = incoming.replaceAll("[^\\d+$]", "").toCharArray();
@@ -193,17 +181,9 @@ public class ConnectedThread extends Thread {
     }
 
     public void onPause() {
-        synchronized (pauseState) {
-            paused = true;
-        }
-    }
-
-    public void onResume() {
-        synchronized (pauseState) {
-            paused = false;
-            pauseState.notifyAll();
-            this.loopConnect();
-        }
+        System.out.println("paused");
+        this.cancel();
+        paused = true;
     }
 
     public interface onConnectionStateChangeListener {

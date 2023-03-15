@@ -59,9 +59,6 @@ public class detailedLampActivity extends AppCompatActivity {
         lampName = findViewById(R.id.lampName);
 
         hideInterface();
-
-        connectedThread = new ConnectedThread(this, address);
-        connectedThread.start();
     }
 
     @Override
@@ -80,9 +77,8 @@ public class detailedLampActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        if (connectedThread.isInterrupted()) {
-            connectedThread.onResume();
-        }
+        connectedThread = new ConnectedThread(this, address);
+        connectedThread.start();
 
         connectedThread.setOnConnectionStateChangeListener(state -> {
             if (state) {
