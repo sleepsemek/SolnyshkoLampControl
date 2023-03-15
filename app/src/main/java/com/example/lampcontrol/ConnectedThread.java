@@ -106,7 +106,7 @@ public class ConnectedThread extends Thread {
         this.mmInStream = tmpIn;
         this.mmOutStream = tmpOut;
 
-        sendData("relay:status#");
+        this.sendData("relay:status#");
 
         loopRead();
     }
