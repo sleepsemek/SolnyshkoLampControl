@@ -211,6 +211,9 @@ public class detailedLampActivity extends AppCompatActivity {
         }
 
         private void hide() {
+            sideMenu.animate().translationX(0).setDuration(300).setInterpolator(new DecelerateInterpolator());
+            openArrow.animate().rotation(0).setDuration(300).setInterpolator(new DecelerateInterpolator());
+            state = 0;
             openArrow.setVisibility(View.INVISIBLE);
         }
 
