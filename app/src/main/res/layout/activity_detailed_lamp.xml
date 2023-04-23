@@ -16,11 +16,12 @@
         app:srcCompat="@drawable/stripes" />
 
     <ImageView
+        android:id="@+id/imageView2"
         android:layout_width="200dp"
         android:layout_height="200dp"
+        android:translationZ="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:translationZ="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/button" />
@@ -39,71 +40,33 @@
 
     <TextView
         android:id="@+id/lampName"
-        android:background="@drawable/background_blue"
         android:layout_width="wrap_content"
         android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/background_blue"
         android:gravity="center"
-        android:text="Подключение"
         android:padding="15dp"
+        android:text="Подключение"
         android:textColor="@color/white"
         android:textSize="20dp"
         android:textStyle="bold"
-        android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <RelativeLayout
-        android:id="@+id/sideMenu"
-        android:layout_width="400dp"
-        android:layout_height="500dp"
-        android:background="@drawable/button"
-        android:backgroundTint="@color/dark_blue"
-        android:layout_marginStart="-360dp"
-        android:layout_marginBottom="-100dp"
-        android:gravity="center|end"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="20dp"
-            android:layout_toStartOf="@+id/openArrow"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <NumberPicker
-                android:id="@+id/timePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="150dp" />
-
-            <Button
-                android:id="@+id/startTimer"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_gravity="end"
-                android:layout_margin="10dp"
-                android:background="?android:attr/selectableItemBackground"
-                android:foreground="@drawable/ic_baseline_access_time_filled_24"
-                android:foregroundTint="@color/main_blue"/>
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/openArrow"
-            android:layout_width="52dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:background="#00000000"
-            app:icon="@drawable/ic_baseline_arrow_forward_ios_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </RelativeLayout>
+    <TextView
+        android:id="@+id/timerTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="15dp"
+        android:text="00:00"
+        android:textColor="@color/main_blue"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/imageView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lampName" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

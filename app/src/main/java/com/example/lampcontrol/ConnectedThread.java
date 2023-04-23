@@ -21,7 +21,6 @@ public class ConnectedThread extends Thread {
     private static final int RECEIVE_MESSAGE = 1;
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-
     private BluetoothSocket bluetoothSocket;
     private InputStream mmInStream;
     private OutputStream mmOutStream;
@@ -41,7 +40,7 @@ public class ConnectedThread extends Thread {
         this.handler = new Handler();
         this.bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
         this.running = true;
-        receiveState();
+        receiveCommand();
     }
 
     public void run() {
@@ -98,7 +97,6 @@ public class ConnectedThread extends Thread {
 
         if (bluetoothSocket.isConnected()) {
             readData();
-            sendData("relay:status#");
         } else {
             loopConnect();
         }
@@ -113,6 +111,10 @@ public class ConnectedThread extends Thread {
         }
     }
 
+    public void getStatus() {
+        sendData("relay:status#");
+    }
+
     private void readData() {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
             bluetoothAdapter.cancelDiscovery();
@@ -120,7 +122,7 @@ public class ConnectedThread extends Thread {
             this.cancel();
             return;
         }
-        byte[] buffer = new byte[64];
+        byte[] buffer = new byte[128];
         int bytes;
 
         while (bluetoothSocket.isConnected() && running) {
@@ -137,7 +139,7 @@ public class ConnectedThread extends Thread {
     }
 
     @SuppressLint("HandlerLeak")
-    private void receiveState() {
+    private void receiveCommand() {
         handler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 if (msg.what == RECEIVE_MESSAGE) {
@@ -146,11 +148,11 @@ public class ConnectedThread extends Thread {
                     char[] commandArray = incoming.replaceAll("[^\\d+$]", "").toCharArray();
                     for (char command:
                             commandArray) {
+                        System.out.println(command);
                         try {
                             if (commandListener != null) {
                                 commandListener.onCommandReceived(Character.getNumericValue(command));
                             }
-                            System.out.println(command);
                         } catch (NumberFormatException e) {
                             e.printStackTrace();
                         }
