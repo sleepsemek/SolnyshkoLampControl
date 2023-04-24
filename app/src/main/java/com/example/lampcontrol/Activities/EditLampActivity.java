@@ -7,7 +7,6 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.lampcontrol.Activities.MainActivity;
 import com.example.lampcontrol.DeviceDataBase;
 import com.example.lampcontrol.R;
 
