@@ -15,10 +15,9 @@ import androidx.core.app.ActivityCompat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Scanner;
 import java.util.UUID;
 
-public class ConnectedThread extends Thread {
+public class BluetoothConnectionThread extends Thread {
     private static final int RECEIVE_MESSAGE = 1;
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -33,7 +32,7 @@ public class ConnectedThread extends Thread {
     private final BluetoothDevice bluetoothDevice;
     private boolean running;
 
-    public ConnectedThread(Context context, String address) {
+    public BluetoothConnectionThread(Context context, String address) {
         this.stateListener = null;
         this.commandListener = null;
         this.context = context;

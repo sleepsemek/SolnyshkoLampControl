@@ -9,13 +9,13 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 
-public class DeviceDataBase {
+public class LampsDataBase {
 
     private final SQLiteDatabase lampsDataBase;
     private final ArrayList<Lamp> devicesAddedList = new ArrayList<>();
     private DataBaseListener listener;
 
-    public DeviceDataBase(Context context) {
+    public LampsDataBase(Context context) {
         this.listener = null;
         lampsDataBase = context.openOrCreateDatabase("lamps.db", MODE_PRIVATE, null);
         lampsDataBase.execSQL("CREATE TABLE IF NOT EXISTS lamps (" +

@@ -12,13 +12,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lampcontrol.Adapters.AddedDevicesAdapter;
-import com.example.lampcontrol.DeviceDataBase;
+import com.example.lampcontrol.LampsDataBase;
 import com.example.lampcontrol.R;
 
 public class PageFragmentControl extends Fragment {
 
     private Hint hintText;
-    private DeviceDataBase dataBase;
+    private LampsDataBase dataBase;
 
     public PageFragmentControl() {}
 
@@ -36,7 +36,7 @@ public class PageFragmentControl extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         hintText = new Hint(R.id.textHint);
-        dataBase = new DeviceDataBase(requireActivity().getApplicationContext());
+        dataBase = new LampsDataBase(requireActivity().getApplicationContext());
         dataBase.setDataBaseListener(list -> hintText.setHintText(list.isEmpty()));
 
         RecyclerView devicesList = requireView().findViewById(R.id.devicesList);

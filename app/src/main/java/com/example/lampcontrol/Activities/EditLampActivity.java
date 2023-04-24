@@ -7,7 +7,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.lampcontrol.DeviceDataBase;
+import com.example.lampcontrol.LampsDataBase;
 import com.example.lampcontrol.R;
 
 public class EditLampActivity extends AppCompatActivity {
@@ -19,12 +19,12 @@ public class EditLampActivity extends AppCompatActivity {
     private EditText deviceName;
     private Button button;
 
-    private DeviceDataBase dataBase;
+    private LampsDataBase dataBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detailed_add_lamp);
+        setContentView(R.layout.activity_rename_lamp);
 
         Intent intent = getIntent();
         address = intent.getStringExtra("address");
@@ -34,7 +34,7 @@ public class EditLampActivity extends AppCompatActivity {
         deviceName = findViewById(R.id.NewName);
         deviceName.setText(name);
 
-        dataBase = new DeviceDataBase(getApplicationContext());
+        dataBase = new LampsDataBase(getApplicationContext());
 
         button.setOnClickListener(view -> {
             addedName = String.valueOf(deviceName.getText());

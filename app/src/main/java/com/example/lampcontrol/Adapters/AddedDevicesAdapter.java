@@ -16,11 +16,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.Activities.LampControlActivity;
-import com.example.lampcontrol.Lamp;
-import com.example.lampcontrol.DeviceDataBase;
-import com.example.lampcontrol.R;
+import com.example.lampcontrol.Activities.ControlLampActivity;
 import com.example.lampcontrol.Activities.EditLampActivity;
+import com.example.lampcontrol.Lamp;
+import com.example.lampcontrol.LampsDataBase;
+import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
 
@@ -28,12 +28,12 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
 
     private final Context context;
     private final ArrayList<Lamp> addedList;
-    private final DeviceDataBase dataBase;
+    private final LampsDataBase dataBase;
 
     private final int MENU_RENAME = R.id.rename;
     private final int MENU_DELETE = R.id.delete;
 
-    public AddedDevicesAdapter(Context applicationContext, DeviceDataBase dataBase) {
+    public AddedDevicesAdapter(Context applicationContext, LampsDataBase dataBase) {
         this.context = applicationContext;
         this.addedList = dataBase.getList();
         this.dataBase = dataBase;
@@ -50,7 +50,7 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     public void onBindViewHolder(@NonNull AddedDevicesAdapter.ViewHolder holder, int position) {
         holder.title.setText(addedList.get(position).getName());
         holder.itemView.setOnClickListener(view -> {
-            Intent intent = new Intent(context, LampControlActivity.class);
+            Intent intent = new Intent(context, ControlLampActivity.class);
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("address", addedList.get(holder.getAdapterPosition()).getAddress() + "");
             intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");

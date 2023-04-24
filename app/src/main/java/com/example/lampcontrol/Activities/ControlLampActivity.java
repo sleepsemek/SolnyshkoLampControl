@@ -18,13 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
-import com.example.lampcontrol.ConnectedThread;
+import com.example.lampcontrol.BluetoothConnectionThread;
 import com.example.lampcontrol.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-public class LampControlActivity extends AppCompatActivity {
+public class ControlLampActivity extends AppCompatActivity {
 
-    private ConnectedThread connectedThread;
+    private BluetoothConnectionThread connectedThread;
 
     private String address;
     private String name;
@@ -39,7 +39,7 @@ public class LampControlActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detailed_lamp);
+        setContentView(R.layout.activity_control_lamp);
 
         Intent intent = getIntent();
         address = intent.getStringExtra("address");
@@ -71,7 +71,7 @@ public class LampControlActivity extends AppCompatActivity {
         super.onResume();
         hideInterface();
 
-        connectedThread = new ConnectedThread(this, address);
+        connectedThread = new BluetoothConnectionThread(this, address);
         connectedThread.start();
 
         connectedThread.setOnConnectionStateChangeListener(state -> {
@@ -82,7 +82,7 @@ public class LampControlActivity extends AppCompatActivity {
             }
         });
 
-        connectedThread.setOnCommandReceivedListener(new ConnectedThread.onCommandReceivedListener() {
+        connectedThread.setOnCommandReceivedListener(new BluetoothConnectionThread.onCommandReceivedListener() {
             @Override
             public void onCommandReceived(int command) {
                 mainButton.setState(command);
