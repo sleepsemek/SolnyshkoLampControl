@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +7,11 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class detailedAddLamp extends AppCompatActivity {
+import com.example.lampcontrol.Activities.MainActivity;
+import com.example.lampcontrol.DeviceDataBase;
+import com.example.lampcontrol.R;
+
+public class EditLampActivity extends AppCompatActivity {
 
     private String address;
     private String name;

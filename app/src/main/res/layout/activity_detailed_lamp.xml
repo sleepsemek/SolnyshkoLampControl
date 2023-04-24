@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".detailedLampActivity">
+    tools:context=".Activities.LampControlActivity">
 
 
     <ImageView
@@ -13,7 +13,9 @@
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
-        app:srcCompat="@drawable/stripes" />
+        app:srcCompat="@drawable/stripes"
+        tools:layout_editor_absoluteX="-54dp"
+        tools:layout_editor_absoluteY="0dp" />
 
     <ImageView
         android:id="@+id/imageView2"
@@ -68,5 +70,36 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lampName" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="vertical"
+        android:padding="25dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/off_button"
+            android:layout_width="52dp"
+            android:layout_height="60dp"
+            android:visibility="gone"
+            android:background="@drawable/button"
+            android:backgroundTint="@color/main_red"
+            android:foreground="@drawable/ic_baseline_power_settings_new_24"
+            android:foregroundGravity="center"
+            android:layout_margin="5dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/timer_button"
+            android:layout_width="52dp"
+            android:layout_height="60dp"
+            android:background="@drawable/button"
+            android:backgroundTint="@color/dark_blue"
+            android:foreground="@drawable/ic_baseline_access_time_filled_24"
+            android:foregroundGravity="center"
+            android:layout_margin="5dp"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.lampcontrol.Adapters.AddedDevicesAdapter;
+import com.example.lampcontrol.DeviceDataBase;
+import com.example.lampcontrol.R;
 
 public class PageFragmentControl extends Fragment {
 

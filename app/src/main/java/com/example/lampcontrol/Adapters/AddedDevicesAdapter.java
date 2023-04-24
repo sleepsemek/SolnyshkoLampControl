@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Adapters;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -16,12 +16,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lampcontrol.Activities.LampControlActivity;
+import com.example.lampcontrol.Lamp;
+import com.example.lampcontrol.DeviceDataBase;
+import com.example.lampcontrol.R;
+import com.example.lampcontrol.Activities.EditLampActivity;
+
 import java.util.ArrayList;
 
 public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapter.ViewHolder> {
 
     private final Context context;
-    private final ArrayList<CreateList> addedList;
+    private final ArrayList<Lamp> addedList;
     private final DeviceDataBase dataBase;
 
     private final int MENU_RENAME = R.id.rename;
@@ -44,7 +50,7 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     public void onBindViewHolder(@NonNull AddedDevicesAdapter.ViewHolder holder, int position) {
         holder.title.setText(addedList.get(position).getName());
         holder.itemView.setOnClickListener(view -> {
-            Intent intent = new Intent(context, detailedLampActivity.class);
+            Intent intent = new Intent(context, LampControlActivity.class);
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("address", addedList.get(holder.getAdapterPosition()).getAddress() + "");
             intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");
@@ -92,7 +98,7 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     }
 
     private void renameActivity(ViewHolder holder) {
-        Intent intent = new Intent(context, detailedAddLamp.class);
+        Intent intent = new Intent(context, EditLampActivity.class);
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("address", addedList.get(holder.getAdapterPosition()).getAddress() + "");
         intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");

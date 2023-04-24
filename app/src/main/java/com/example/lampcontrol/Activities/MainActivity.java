@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -7,11 +7,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.example.lampcontrol.Fragments.PageFragmentConnect;
+import com.example.lampcontrol.Fragments.PageFragmentControl;
+import com.example.lampcontrol.R;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.Objects;

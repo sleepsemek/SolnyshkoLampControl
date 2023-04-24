@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Scanner;
 import java.util.UUID;
 
 public class ConnectedThread extends Thread {
@@ -123,12 +124,19 @@ public class ConnectedThread extends Thread {
             return;
         }
         byte[] buffer = new byte[128];
-        int bytes;
+        int bytes = 0;
 
         while (bluetoothSocket.isConnected() && running) {
             try {
-                bytes = mmInStream.read(buffer);
-                handler.obtainMessage(RECEIVE_MESSAGE, bytes, -1, buffer).sendToTarget();
+                buffer[bytes] = (byte) mmInStream.read();
+                String readMessage;
+                if (buffer[bytes] == '#'){
+                    readMessage = new String(buffer,0,bytes);
+                    handler.obtainMessage(RECEIVE_MESSAGE, readMessage).sendToTarget();
+                    bytes = 0;
+                } else {
+                    bytes++;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 this.cancel();
@@ -143,20 +151,18 @@ public class ConnectedThread extends Thread {
         handler = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 if (msg.what == RECEIVE_MESSAGE) {
-                    byte[] readBuf = (byte[]) msg.obj;
-                    String incoming = new String(readBuf, 0, msg.arg1);
-                    char[] commandArray = incoming.replaceAll("[^\\d+$]", "").toCharArray();
-                    for (char command:
-                            commandArray) {
-                        System.out.println(command);
-                        try {
-                            if (commandListener != null) {
-                                commandListener.onCommandReceived(Character.getNumericValue(command));
-                            }
-                        } catch (NumberFormatException e) {
-                            e.printStackTrace();
+                    String incoming = (String) msg.obj;
+                    System.out.println(incoming);
+                    if (incoming.length() == 1) {
+                        if (commandListener != null) {
+                            commandListener.onCommandReceived(Integer.parseInt(incoming));
+                        }
+                    } else {
+                        if (commandListener != null) {
+                            commandListener.onTimeReceived(Long.parseLong(incoming));
                         }
                     }
+
                 }
             }
         };
@@ -191,6 +197,7 @@ public class ConnectedThread extends Thread {
 
     public interface onCommandReceivedListener {
         void onCommandReceived(int command);
+        void onTimeReceived(long millis);
     }
 
 

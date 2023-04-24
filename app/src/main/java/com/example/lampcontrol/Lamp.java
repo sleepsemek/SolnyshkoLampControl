@@ -1,6 +1,6 @@
 package com.example.lampcontrol;
 
-public class CreateList {
+public class Lamp {
     private String name;
     private String address;
 

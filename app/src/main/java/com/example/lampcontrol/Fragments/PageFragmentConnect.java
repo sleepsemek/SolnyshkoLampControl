@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Fragments;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -23,8 +23,11 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.lampcontrol.Adapters.BondedDevicesAdapter;
+import com.example.lampcontrol.Lamp;
+import com.example.lampcontrol.R;
+
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Set;
 
 public class PageFragmentConnect extends Fragment {
@@ -37,7 +40,7 @@ public class PageFragmentConnect extends Fragment {
     private static final int REQUEST_ENABLE_BT = 0;
     private static final int REQUEST_DISCOVER_BT = 1;
 
-    private final ArrayList<CreateList> list = new ArrayList<>();
+    private final ArrayList<Lamp> list = new ArrayList<>();
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -80,7 +83,7 @@ public class PageFragmentConnect extends Fragment {
             if (ActivityCompat.checkSelfPermission(requireActivity().getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_DENIED) {
                 Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
                 for (BluetoothDevice device : devices) {
-                    CreateList createList = new CreateList();
+                    Lamp createList = new Lamp();
                     createList.setName(device.getName());
                     createList.setAddress(device.getAddress());
                     list.add(createList);

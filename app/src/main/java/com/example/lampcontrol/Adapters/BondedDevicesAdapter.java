@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Adapters;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -13,14 +13,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lampcontrol.Lamp;
+import com.example.lampcontrol.R;
+import com.example.lampcontrol.Activities.EditLampActivity;
+
 import java.util.ArrayList;
 
 public class BondedDevicesAdapter extends RecyclerView.Adapter<BondedDevicesAdapter.ViewHolder> {
 
     private final Context context;
-    private final ArrayList<CreateList> devices;
+    private final ArrayList<Lamp> devices;
 
-    public BondedDevicesAdapter(Context applicationContext, ArrayList<CreateList> devices) {
+    public BondedDevicesAdapter(Context applicationContext, ArrayList<Lamp> devices) {
         this.context = applicationContext;
         this.devices = devices;
     }
@@ -37,7 +41,7 @@ public class BondedDevicesAdapter extends RecyclerView.Adapter<BondedDevicesAdap
         holder.title.setText(devices.get(position).getName());
         holder.address.setText(devices.get(position).getAddress());
         holder.addDevice.setOnClickListener(view -> {
-            Intent intent = new Intent(context, detailedAddLamp.class);
+            Intent intent = new Intent(context, EditLampActivity.class);
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("address", devices.get(holder.getAdapterPosition()).getAddress() + "");
             intent.putExtra("name", devices.get(holder.getAdapterPosition()).getName() + "");

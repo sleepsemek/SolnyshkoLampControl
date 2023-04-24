@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class DeviceDataBase {
 
     private final SQLiteDatabase lampsDataBase;
-    private final ArrayList<CreateList> devicesAddedList = new ArrayList<>();
+    private final ArrayList<Lamp> devicesAddedList = new ArrayList<>();
     private DataBaseListener listener;
 
     public DeviceDataBase(Context context) {
@@ -33,11 +33,11 @@ public class DeviceDataBase {
         updateList();
     }
 
-    private ArrayList<CreateList> updateList() {
+    private ArrayList<Lamp> updateList() {
         devicesAddedList.clear();
         Cursor cursor = lampsDataBase.rawQuery("SELECT * FROM lamps;", null);
         while (cursor.moveToNext()) {
-            CreateList createList = new CreateList();
+            Lamp createList = new Lamp();
             String name = cursor.getString(1);
             String address = cursor.getString(2);
             createList.setName(name);
@@ -56,7 +56,7 @@ public class DeviceDataBase {
         updateList();
     }
 
-    public ArrayList<CreateList> getList() {
+    public ArrayList<Lamp> getList() {
         return updateList();
     }
 
@@ -65,7 +65,7 @@ public class DeviceDataBase {
     }
 
     public interface DataBaseListener {
-        void onSetChange(ArrayList<CreateList> list);
+        void onSetChange(ArrayList<Lamp> list);
     }
 
 }
