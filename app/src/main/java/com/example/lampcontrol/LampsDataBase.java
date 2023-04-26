@@ -52,7 +52,7 @@ public class LampsDataBase {
     }
 
     public void removeLamp(String address) {
-        lampsDataBase.delete("lamps", "address" + "='" + address + "'", null);
+        lampsDataBase.delete("lamps", "address='" + address + "'", null);
         updateList();
     }
 

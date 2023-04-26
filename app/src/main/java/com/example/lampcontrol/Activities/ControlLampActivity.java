@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.text.Html;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -381,12 +382,12 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setTitle("Предупреждение");
             builder.setMessage(R.string.off_warning);
 
-            builder.setPositiveButton("Отключить в любом случае", (dialog, which) -> {
+            builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
                 connectedThread.sendData("relay:off#");
                 bottomSheetTimer.millisTimer.stopPreheat();
             });
 
-            builder.setNegativeButton("Отменить", (dialog, which) -> {});
+            builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();

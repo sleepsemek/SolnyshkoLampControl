@@ -3,19 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center_horizontal"
     tools:context=".Fragments.PageFragmentConnect"
     android:background="@color/light_grey">
 
-    <Button
-        android:id="@+id/Connected"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_margin="10dp"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@null"
         android:foreground="@drawable/ic_baseline_refresh_24"
+        android:foregroundGravity="center"
+        app:rippleColor="@android:color/transparent"
         android:foregroundTint="@color/main_blue"/>
 
     <androidx.recyclerview.widget.RecyclerView

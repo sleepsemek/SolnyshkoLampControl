@@ -5,6 +5,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,7 +92,7 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
             notifyDataSetChanged();
         });
 
-        builder.setNegativeButton("Отменить", (dialog, which) -> {});
+        builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
