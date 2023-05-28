@@ -175,7 +175,7 @@ public class ControlLampActivity extends AppCompatActivity {
         private void stopPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.cancel();
-                connectedThread.sendData("relay:off#");
+//                connectedThread.sendData("relay:off#");
             }
         }
 
