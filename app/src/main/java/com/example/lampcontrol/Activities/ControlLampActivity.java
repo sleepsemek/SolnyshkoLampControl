@@ -126,8 +126,8 @@ public class ControlLampActivity extends AppCompatActivity {
 
         private void start(long preheatTime, long timerTime) {
             this.time = timerTime * 1000 * 60;
-            //startPreheat(preheatTime * 1000);
-            //connectedThread.sendData("relay:on#");
+            startPreheat(preheatTime * 1000);
+            connectedThread.sendData("relay:on#");
             connectedThread.sendData("timer:settimer:" + time / 1000 + "#");
         }
 
@@ -410,26 +410,6 @@ public class ControlLampActivity extends AppCompatActivity {
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
-        }
-
-    }
-
-    private class StateBuilder {
-
-        private boolean relayIsActive = false;
-        private boolean timerIsActive = false;
-        private boolean timerIsPaused = false;
-
-        public void setRelayIsActive(boolean relayIsActive) {
-            this.relayIsActive = relayIsActive;
-        }
-
-        public void setTimerIsActive(boolean timerIsActive) {
-            this.timerIsActive = timerIsActive;
-        }
-
-        public void setTimerIsPaused(boolean timerIsPaused) {
-            this.timerIsPaused = timerIsPaused;
         }
 
     }
