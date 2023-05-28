@@ -107,6 +107,7 @@ public class ControlLampActivity extends AppCompatActivity {
         lampName.setText("Установка соединения");
         mainButton.hide();
         bottomSheetTimer.hideTimer();
+        mainButton.offBtn.setVisibility(View.GONE);
     }
 
     private void showInterface() {
@@ -128,7 +129,6 @@ public class ControlLampActivity extends AppCompatActivity {
             this.time = timerTime * 1000 * 60;
             startPreheat(preheatTime * 1000);
             connectedThread.sendData("relay:on#");
-            connectedThread.sendData("timer:settimer:" + time / 1000 + "#");
         }
 
         private void startPreheat(long preheatMillis) {
@@ -310,7 +310,6 @@ public class ControlLampActivity extends AppCompatActivity {
 
             offBtn.setOnClickListener(view12 -> {
                 connectedThread.sendData("relay:off#");
-                bottomSheetTimer.millisTimer.stopTimer();
             });
 
             btn.setOnClickListener(view1 -> {
