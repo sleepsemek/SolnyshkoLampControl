@@ -113,6 +113,8 @@ public class BluetoothConnectionThread extends Thread {
 
     public void getStatus() {
         sendData("relay:status#");
+        sendData("timer:status#");
+
     }
 
     private void readData() {

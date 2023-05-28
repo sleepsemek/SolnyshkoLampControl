@@ -51,6 +51,8 @@ public class ControlLampActivity extends AppCompatActivity {
 
         lampName = findViewById(R.id.lampName);
         timerTextView = findViewById(R.id.timerTextView);
+
+        timerTextView.setVisibility(View.GONE);
     }
 
     @Override
@@ -59,6 +61,8 @@ public class ControlLampActivity extends AppCompatActivity {
         if (address != null) {
             connectedThread.cancelRunning();
         }
+        bottomSheetTimer.millisTimer.stopPreheat();
+        timerTextView.setVisibility(View.GONE);
     }
 
     @Override
@@ -94,7 +98,9 @@ public class ControlLampActivity extends AppCompatActivity {
                 bottomSheetTimer.millisTimer.startTimer(millis);
                 bottomSheetTimer.millisTimer.mainTimer.start();
             }
+
         });
+
     }
 
     private void hideInterface() {
@@ -120,8 +126,9 @@ public class ControlLampActivity extends AppCompatActivity {
 
         private void start(long preheatTime, long timerTime) {
             this.time = timerTime * 1000 * 60;
-            startPreheat(preheatTime * 1000);
-            connectedThread.sendData("relay:on#");
+            //startPreheat(preheatTime * 1000);
+            //connectedThread.sendData("relay:on#");
+            connectedThread.sendData("timer:settimer:" + time / 1000 + "#");
         }
 
         private void startPreheat(long preheatMillis) {
@@ -145,15 +152,30 @@ public class ControlLampActivity extends AppCompatActivity {
         private void displayPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.start();
+                timerTextView.setVisibility(View.VISIBLE);
             } else {
-                stopPreheat();
-                connectedThread.sendData("relay:off#");
+                this.stopPreheat();
             }
+        }
+
+        private void showTimer() {
+            int sec = (int) (time / 1000);
+            int min = sec / 60;
+            sec = sec % 60;
+            timerTextView.setVisibility(View.VISIBLE);
+            timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
+
+        }
+
+        private void hideTimer() {
+            timerTextView.setVisibility(View.GONE);
+            timerTextView.setText("00:00");
         }
 
         private void stopPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.cancel();
+                connectedThread.sendData("relay:off#");
             }
         }
 
@@ -175,6 +197,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 }
             };
+            showTimer();
         }
 
         public void stopTimer() {
@@ -185,21 +208,14 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         public void pauseTimer() {
-            mainTimer.cancel();
+            if (mainTimer != null) {
+                mainTimer.cancel();
+            }
         }
 
         public void resumeTimer() {
-            stopTimer();
+            this.stopTimer();
             connectedThread.sendData("timer:gettime#");
-        }
-
-        private void setTime(long time) {
-            this.time = time;
-        }
-
-
-        private boolean isPlaying() {
-            return isPlaying;
         }
 
     }
@@ -320,6 +336,7 @@ public class ControlLampActivity extends AppCompatActivity {
                 case 2: //turned off
                     this.state = 0;
                     timerTextView.setText("00:00");
+                    timerTextView.setVisibility(View.GONE);
                     btn.setText("Включить");
                     offBtn.setVisibility(View.GONE);
                     bottomSheetTimer.enableButton();
@@ -337,14 +354,15 @@ public class ControlLampActivity extends AppCompatActivity {
                 case 3: //timer started
                     bottomSheetTimer.millisTimer.resumeTimer();
                     this.state = 3;
+                    bottomSheetTimer.millisTimer.showTimer();
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
                     btn.setText("Пауза");
                     offBtn.setVisibility(View.VISIBLE);
                     bottomSheetTimer.disableButton();
                     break;
-                case 4: //timer finished
+                case 4: //timer is not active
                     bottomSheetTimer.millisTimer.stopTimer();
-                    timerTextView.setText("00:00");
+                    bottomSheetTimer.millisTimer.hideTimer();
                     this.state = 0;
                     btn.setText("Включить");
                     offBtn.setVisibility(View.GONE);
@@ -354,8 +372,9 @@ public class ControlLampActivity extends AppCompatActivity {
                 case 5: //timer paused
                     this.state = 4;
                     bottomSheetTimer.millisTimer.pauseTimer();
-                    btn.setText("Возобновить");
+                    btn.setText("Пуск");
                     offBtn.setVisibility(View.VISIBLE);
+                    bottomSheetTimer.millisTimer.showTimer();
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     bottomSheetTimer.disableButton();
                     break;
@@ -383,14 +402,34 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                connectedThread.sendData("relay:off#");
                 bottomSheetTimer.millisTimer.stopPreheat();
+                connectedThread.sendData("relay:off#");
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
 
             AlertDialog alertDialog = builder.create();
             alertDialog.show();
+        }
+
+    }
+
+    private class StateBuilder {
+
+        private boolean relayIsActive = false;
+        private boolean timerIsActive = false;
+        private boolean timerIsPaused = false;
+
+        public void setRelayIsActive(boolean relayIsActive) {
+            this.relayIsActive = relayIsActive;
+        }
+
+        public void setTimerIsActive(boolean timerIsActive) {
+            this.timerIsActive = timerIsActive;
+        }
+
+        public void setTimerIsPaused(boolean timerIsPaused) {
+            this.timerIsPaused = timerIsPaused;
         }
 
     }
