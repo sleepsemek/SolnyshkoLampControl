@@ -124,6 +124,7 @@ public class ControlLampActivity extends AppCompatActivity {
         private CountDownTimer preheatTimer;
 
         private boolean isPlaying = false;
+        private boolean isPreheating = false;
 
         private void start(long preheatTime, long timerTime) {
             this.time = timerTime * 1000 * 60;
@@ -132,6 +133,8 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void startPreheat(long preheatMillis) {
+            isPreheating = true;
+            bottomSheetTimer.disableButton();
             preheatTimer = new CountDownTimer(preheatMillis, 1000) {
                 @Override
                 public void onTick(long l) {
@@ -144,6 +147,7 @@ public class ControlLampActivity extends AppCompatActivity {
                 @Override
                 public void onFinish() {
                     connectedThread.sendData("timer:settimer:" + time / 1000 + "#");
+                    isPreheating = false;
                 }
             };
             displayPreheat();
@@ -175,6 +179,7 @@ public class ControlLampActivity extends AppCompatActivity {
         private void stopPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.cancel();
+                bottomSheetTimer.enableButton();
 //                connectedThread.sendData("relay:off#");
             }
         }
@@ -347,7 +352,9 @@ public class ControlLampActivity extends AppCompatActivity {
                         btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
                         btn.setText("Выключить");
                         offBtn.setVisibility(View.GONE);
-                        bottomSheetTimer.enableButton();
+                        if (!bottomSheetTimer.millisTimer.isPreheating) {
+                            bottomSheetTimer.enableButton();
+                        }
                     }
                     break;
                 case 3: //timer started
