@@ -107,6 +107,12 @@ public class ControlLampActivity extends AppCompatActivity {
         lampName.setText("Установка соединения");
         mainButton.hide();
         bottomSheetTimer.hideTimer();
+        if (bottomSheetTimer.millisTimer.isPreheating) {
+            bottomSheetTimer.millisTimer.stopPreheat();
+        } else if (bottomSheetTimer.millisTimer.isPlaying) {
+            bottomSheetTimer.millisTimer.stopTimer();
+        }
+        bottomSheetTimer.millisTimer.hideTimer();
         mainButton.offBtn.setVisibility(View.GONE);
     }
 
