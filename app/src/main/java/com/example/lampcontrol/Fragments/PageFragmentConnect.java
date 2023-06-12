@@ -34,6 +34,7 @@ public class PageFragmentConnect extends Fragment {
     private RecyclerView recyclerView;
 
     private AppCompatButton refreshButton;
+    private AppCompatButton addButton;
 
     private final ArrayList<Lamp> list = new ArrayList<>();
 
@@ -68,6 +69,10 @@ public class PageFragmentConnect extends Fragment {
         refreshButton.setOnClickListener(view1 -> {
             displayConnected();
             refreshButton.animate().rotationBy(720).setDuration(500).setInterpolator(new DecelerateInterpolator());
+        });
+        addButton = requireView().findViewById(R.id.add);
+        addButton.setOnClickListener(view1 -> {
+            openBluetoothDevicesSettings();
         });
     }
 

@@ -9,17 +9,35 @@
     tools:context=".Fragments.PageFragmentConnect"
     android:background="@color/light_grey">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/refresh"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_margin="10dp"
-        android:background="@null"
-        android:foreground="@drawable/ic_baseline_refresh_24"
-        android:foregroundGravity="center"
-        app:rippleColor="@android:color/transparent"
-        android:foregroundTint="@color/main_blue"/>
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/add"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_background_grey"
+            android:foreground="@drawable/ic_baseline_add_48"
+            android:foregroundGravity="center"
+            app:rippleColor="@android:color/transparent"
+            android:foregroundTint="@color/main_red"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/refresh"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/btn_background_grey"
+            android:foreground="@drawable/ic_baseline_refresh_24"
+            android:foregroundGravity="center"
+            app:rippleColor="@android:color/transparent"
+            android:foregroundTint="@color/main_blue"/>
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

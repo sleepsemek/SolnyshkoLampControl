@@ -64,9 +64,6 @@ public class BluetoothConnectionThread extends Thread {
         while (!bluetoothSocket.isConnected() && running) {
             try {
                 bluetoothSocket.connect();
-                if (stateListener != null) {
-                    stateListener.onStateChange(bluetoothSocket.isConnected());
-                }
                 if (bluetoothSocket.isConnected()) {
                     Thread.sleep(500);
                     createStream();
@@ -122,12 +119,21 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     private void readData() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
-            bluetoothAdapter.cancelDiscovery();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
+                bluetoothAdapter.cancelDiscovery();
+            } else {
+                this.cancel();
+                return;
+            }
         } else {
-            this.cancel();
-            return;
+            bluetoothAdapter.cancelDiscovery();
         }
+
+        if (stateListener != null) {
+            stateListener.onStateChange(bluetoothSocket.isConnected());
+        }
+
         byte[] buffer = new byte[128];
         int bytes = 0;
 
