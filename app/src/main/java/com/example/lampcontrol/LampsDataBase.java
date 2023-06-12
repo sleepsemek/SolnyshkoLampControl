@@ -7,6 +7,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.lampcontrol.POJO.Lamp;
+
 import java.util.ArrayList;
 
 public class LampsDataBase {

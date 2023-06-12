@@ -13,9 +13,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.Lamp;
-import com.example.lampcontrol.R;
 import com.example.lampcontrol.Activities.EditLampActivity;
+import com.example.lampcontrol.POJO.Lamp;
+import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
 

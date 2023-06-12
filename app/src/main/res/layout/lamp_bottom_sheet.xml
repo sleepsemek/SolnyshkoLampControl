@@ -32,14 +32,27 @@
                 android:textAlignment="center"
                 android:textColor="@color/main_red"
                 android:textSize="15dp"
-                android:text="Время преднагрева:"/>
+                android:text="Таймер:"/>
 
-            <NumberPicker
-                android:id="@+id/preheat_picker"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="130dp"
-                android:background="@drawable/btn_background_grey"
-                android:layout_margin="10dp"/>
+                android:layout_height="wrap_content">
+
+                <NumberPicker
+                    android:id="@+id/minutes_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="130dp"
+                    android:background="@drawable/btn_background_grey"
+                    android:layout_margin="10dp"/>
+
+                <NumberPicker
+                    android:id="@+id/seconds_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="130dp"
+                    android:background="@drawable/btn_background_grey"
+                    android:layout_margin="10dp"/>
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
@@ -47,7 +60,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/main_red"
                 android:textSize="15dp"
-                android:text="секунд"/>
+                android:text="минут"/>
 
         </LinearLayout>
 
@@ -64,10 +77,10 @@
                 android:textAlignment="center"
                 android:textColor="@color/main_red"
                 android:textSize="15dp"
-                android:text="Таймер:"/>
+                android:text="Время преднагрева:"/>
 
             <NumberPicker
-                android:id="@+id/timer_picker"
+                android:id="@+id/preheat_picker"
                 android:layout_width="wrap_content"
                 android:layout_height="130dp"
                 android:background="@drawable/btn_background_grey"
@@ -79,7 +92,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/main_red"
                 android:textSize="15dp"
-                android:text="минут"/>
+                android:text="секунд"/>
 
         </LinearLayout>
 

@@ -20,6 +20,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.BluetoothConnectionThread;
+import com.example.lampcontrol.POJO.TimerTime;
 import com.example.lampcontrol.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -132,16 +133,16 @@ public class ControlLampActivity extends AppCompatActivity {
         private boolean isPlaying = false;
         private boolean isPreheating = false;
 
-        private void start(long preheatTime, long timerTime) {
+        private void start(long timerTime) {
             this.time = timerTime * 1000 * 60;
-            startPreheat(preheatTime * 1000);
+            startPreheat();
             connectedThread.sendData("relay:on#");
         }
 
-        private void startPreheat(long preheatMillis) {
+        private void startPreheat() {
             isPreheating = true;
             bottomSheetTimer.disableButton();
-            preheatTimer = new CountDownTimer(preheatMillis, 1000) {
+            preheatTimer = new CountDownTimer(60000, 1000) {
                 @Override
                 public void onTick(long l) {
                     int sec = (int) (l / 1000);
@@ -237,8 +238,10 @@ public class ControlLampActivity extends AppCompatActivity {
         private final BottomSheetDialog bottomSheetDialog;
         private final AppCompatButton showBottomSheetButton;
 
-        private final NumberPicker preheatTimePicker;
-        private final NumberPicker mainTimePicker;
+        private final NumberPicker iterationPicker;
+        private final NumberPicker minutesPicker;
+        private final NumberPicker secondsPicker;
+
         private final AppCompatButton startTimerButton;
 
         private final SecTimer millisTimer;
@@ -249,17 +252,24 @@ public class ControlLampActivity extends AppCompatActivity {
 
             showBottomSheetButton = findViewById(R.id.timer_button);
 
-            preheatTimePicker = bottomSheetDialog.findViewById(R.id.preheat_picker);
-            assert preheatTimePicker != null;
-            preheatTimePicker.setMinValue(30);
-            preheatTimePicker.setMaxValue(120);
+            iterationPicker = bottomSheetDialog.findViewById(R.id.preheat_picker);
+            assert iterationPicker != null;
+            iterationPicker.setMinValue(1);
+            iterationPicker.setMaxValue(10);
 
-            mainTimePicker = bottomSheetDialog.findViewById(R.id.timer_picker);
-            assert mainTimePicker != null;
-            mainTimePicker.setMinValue(1);
-            mainTimePicker.setMaxValue(30);
+            minutesPicker = bottomSheetDialog.findViewById(R.id.minutes_picker);
+            secondsPicker = bottomSheetDialog.findViewById(R.id.seconds_picker);
 
-            mainTimePicker.setValue(getLastTime());
+            assert minutesPicker != null;
+            minutesPicker.setMinValue(0);
+            minutesPicker.setMaxValue(30);
+
+            assert secondsPicker != null;
+            secondsPicker.setMinValue(0);
+            secondsPicker.setMaxValue(59);
+
+            minutesPicker.setValue((int) getLastTime().getMinutes());
+            secondsPicker.setValue((int) getLastTime().getSeconds());
 
             startTimerButton = bottomSheetDialog.findViewById(R.id.start_timer);
 
@@ -269,23 +279,24 @@ public class ControlLampActivity extends AppCompatActivity {
 
             assert startTimerButton != null;
             startTimerButton.setOnClickListener(view -> {
-                millisTimer.start(preheatTimePicker.getValue(), mainTimePicker.getValue());
-                setLastTime(mainTimePicker.getValue());
+                millisTimer.start(convertMinutesAndSecondsToMillis(minutesPicker.getValue(), secondsPicker.getValue()));
+                setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
                 bottomSheetDialog.cancel();
             });
 
         }
 
-        private void setLastTime(int time) {
+        private void setLastTime(long minutes, long seconds) {
             sharedPreferences = getSharedPreferences("timer", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt(address, time);
+            editor.putLong(address + "minutes", minutes);
+            editor.putLong(address + "seconds", seconds);
             editor.apply();
         }
 
-        private int getLastTime() {
+        private TimerTime getLastTime() {
             sharedPreferences = getSharedPreferences("timer", MODE_PRIVATE);
-            return sharedPreferences.getInt(address, 0);
+            return new TimerTime(sharedPreferences.getLong(address + "minutes", 1), sharedPreferences.getLong(address + "seconds", 0));
         }
 
         private void hideTimer() {
@@ -304,6 +315,10 @@ public class ControlLampActivity extends AppCompatActivity {
         private void disableButton() {
             startTimerButton.setEnabled(false);
             startTimerButton.setBackgroundResource(R.drawable.btn_background_grey);
+        }
+
+        private long convertMinutesAndSecondsToMillis(long minutes, long seconds) {
+            return (minutes * 60000) + (seconds * 1000);
         }
 
     }

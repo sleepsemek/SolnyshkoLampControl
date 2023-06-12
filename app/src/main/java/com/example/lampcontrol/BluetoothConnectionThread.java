@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
@@ -51,7 +52,7 @@ public class BluetoothConnectionThread extends Thread {
 
     private void loopConnect() {
         try {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
 
@@ -67,6 +68,7 @@ public class BluetoothConnectionThread extends Thread {
                     stateListener.onStateChange(bluetoothSocket.isConnected());
                 }
                 if (bluetoothSocket.isConnected()) {
+                    Thread.sleep(500);
                     createStream();
                     break;
                 }
@@ -77,6 +79,8 @@ public class BluetoothConnectionThread extends Thread {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -118,7 +122,7 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     private void readData() {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_DENIED) {
             bluetoothAdapter.cancelDiscovery();
         } else {
             this.cancel();
