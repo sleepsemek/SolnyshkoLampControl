@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -20,7 +21,7 @@ import java.util.UUID;
 
 public class BluetoothConnectionThread extends Thread {
     private static final int RECEIVE_MESSAGE = 1;
-    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private final UUID uuid;
 
     private BluetoothSocket bluetoothSocket;
     private InputStream mmInStream;
@@ -31,14 +32,18 @@ public class BluetoothConnectionThread extends Thread {
     private final Context context;
     private final BluetoothAdapter bluetoothAdapter;
     private final BluetoothDevice bluetoothDevice;
+
     private boolean running;
 
     public BluetoothConnectionThread(Context context, String address) {
         this.stateListener = null;
         this.commandListener = null;
         this.context = context;
-        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        uuid = UUID.fromString(Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+
         this.handler = new Handler();
+        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.bluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
         this.running = true;
         receiveCommand();
