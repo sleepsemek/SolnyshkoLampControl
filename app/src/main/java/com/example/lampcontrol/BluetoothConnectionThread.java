@@ -40,7 +40,7 @@ public class BluetoothConnectionThread extends Thread {
         this.commandListener = null;
         this.context = context;
 
-        uuid = UUID.fromString(Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+        uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
         this.handler = new Handler();
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -70,19 +70,16 @@ public class BluetoothConnectionThread extends Thread {
             try {
                 bluetoothSocket.connect();
                 if (bluetoothSocket.isConnected()) {
-                    Thread.sleep(500);
                     createStream();
                     break;
                 }
             } catch (IOException e) {
-                System.out.println("not available");
+                System.out.println(e.getMessage());
                 try {
-                    Thread.sleep(1500);
+                    Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }
