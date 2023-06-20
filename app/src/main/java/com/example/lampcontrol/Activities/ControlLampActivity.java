@@ -200,31 +200,22 @@ public class ControlLampActivity extends AppCompatActivity {
             float remainderSec = (millis % (float) iterationTimeMillis) / 1000;
             long remainedTime = (long) (Math.ceil(remainderSec) * 1000L);
 
-            System.out.println(remainderSec);
             stopTimer();
 
-            int sec = (int) (remainedTime / 1000);
-            int min = sec / 60;
-            sec = sec % 60;
-            timerTextView.setText("Осталось процедур: " + (remainedIterations + 1) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+            System.out.println(remainderSec);
+            setTimerTextViewTime(remainedTime, remainedIterations + 1);
 
             mainTimer = new CountDownTimer(remainedTime, 1000) {
                 @Override
                 public void onTick(long l) {
-                    int sec = (int) (l / 1000);
-                    int min = sec / 60;
-                    sec = sec % 60;
-                    timerTextView.setText("Осталось процедур: " + (remainedIterations + 1) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+                    setTimerTextViewTime(l, remainedIterations + 1);
                 }
 
                 @Override
                 public void onFinish() {
                     if (remainedIterations != iterations) {
                         connectedThread.sendData("timer:pause#");
-                        int sec = (int) (iterationTimeMillis / 1000);
-                        int min = sec / 60;
-                        sec = sec % 60;
-                        timerTextView.setText("Осталось процедур: " + (remainedIterations) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+                        setTimerTextViewTime(iterationTimeMillis, remainedIterations);
                     }
 
                 }
@@ -459,6 +450,13 @@ public class ControlLampActivity extends AppCompatActivity {
 
     private long convertMinutesAndSecondsToMillis(long minutes, long seconds) {
         return (minutes * 60000) + (seconds * 1000);
+    }
+
+    private void setTimerTextViewTime(long millis, int iterations) {
+        int sec = (int) (millis / 1000);
+        int min = sec / 60;
+        sec = sec % 60;
+        timerTextView.setText("Осталось процедур: " + (iterations) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
     }
 
 }
