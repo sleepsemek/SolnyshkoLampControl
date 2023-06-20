@@ -3,7 +3,6 @@ package com.example.lampcontrol.Activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -20,8 +19,8 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.BluetoothConnectionThread;
-import com.example.lampcontrol.POJO.TimerTime;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.ValuesSavingManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class ControlLampActivity extends AppCompatActivity {
@@ -37,6 +36,7 @@ public class ControlLampActivity extends AppCompatActivity {
     private MainButton mainButton;
 
     private BottomSheetTimer bottomSheetTimer;
+    private ValuesSavingManager valuesSavingManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +47,8 @@ public class ControlLampActivity extends AppCompatActivity {
         address = intent.getStringExtra("address");
         name = intent.getStringExtra("name");
 
+        valuesSavingManager = new ValuesSavingManager(this, address);
+
         bottomSheetTimer = new BottomSheetTimer(this);
         mainButton = new MainButton(R.id.onOffBtn, this);
 
@@ -54,6 +56,7 @@ public class ControlLampActivity extends AppCompatActivity {
         timerTextView = findViewById(R.id.timerTextView);
 
         timerTextView.setVisibility(View.GONE);
+
     }
 
     @Override
@@ -62,7 +65,8 @@ public class ControlLampActivity extends AppCompatActivity {
         if (address != null) {
             connectedThread.cancelRunning();
         }
-        bottomSheetTimer.millisTimer.stopPreheat();
+        bottomSheetTimer.secTimer.stopPreheat();
+        bottomSheetTimer.secTimer.stopTimer();
         timerTextView.setVisibility(View.GONE);
     }
 
@@ -96,8 +100,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
             @Override
             public void onTimeReceived(long millis) {
-                bottomSheetTimer.millisTimer.startTimer(millis);
-                bottomSheetTimer.millisTimer.mainTimer.start();
+                bottomSheetTimer.secTimer.setTimerTime(millis);
             }
 
         });
@@ -108,12 +111,12 @@ public class ControlLampActivity extends AppCompatActivity {
         lampName.setText("Установка соединения");
         mainButton.hide();
         bottomSheetTimer.hideTimer();
-        if (bottomSheetTimer.millisTimer.isPreheating) {
-            bottomSheetTimer.millisTimer.stopPreheat();
-        } else if (bottomSheetTimer.millisTimer.isPlaying) {
-            bottomSheetTimer.millisTimer.stopTimer();
+        if (bottomSheetTimer.secTimer.isPreheating) {
+            bottomSheetTimer.secTimer.stopPreheat();
+        } else if (bottomSheetTimer.secTimer.isPlaying) {
+            bottomSheetTimer.secTimer.stopTimer();
         }
-        bottomSheetTimer.millisTimer.hideTimer();
+        bottomSheetTimer.secTimer.hideTimer();
         mainButton.offBtn.setVisibility(View.GONE);
     }
 
@@ -125,24 +128,33 @@ public class ControlLampActivity extends AppCompatActivity {
     }
 
     private class SecTimer {
-        private long time = 1;
 
-        private CountDownTimer mainTimer;
         private CountDownTimer preheatTimer;
+        private CountDownTimer mainTimer;
 
-        private boolean isPlaying = false;
         private boolean isPreheating = false;
+        private boolean isPlaying = false;
 
-        private void start(long timerTime) {
-            this.time = timerTime * 1000 * 60;
+        private int iterations;
+        private long iterationTimeMillis;
+
+        public SecTimer() {
+            iterations = valuesSavingManager.getIterations();
+            iterationTimeMillis = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
+        }
+
+        private void start() {
+            iterations = valuesSavingManager.getIterations();
+            iterationTimeMillis = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
+
             startPreheat();
-            connectedThread.sendData("relay:on#");
         }
 
         private void startPreheat() {
+            connectedThread.sendData("relay:on#");
             isPreheating = true;
             bottomSheetTimer.disableButton();
-            preheatTimer = new CountDownTimer(60000, 1000) {
+            preheatTimer = new CountDownTimer(6000, 1000) {
                 @Override
                 public void onTick(long l) {
                     int sec = (int) (l / 1000);
@@ -153,63 +165,77 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    connectedThread.sendData("timer:settimer:" + time / 1000 + "#");
+                    beginDeviceTimer();
                     isPreheating = false;
                 }
             };
-            displayPreheat();
+
+            runPreheat();
         }
 
-        private void displayPreheat() {
+        private void runPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.start();
-                timerTextView.setVisibility(View.VISIBLE);
+                showTimer();
             } else {
                 this.stopPreheat();
             }
         }
 
-        private void showTimer() {
-            int sec = (int) (time / 1000);
-            int min = sec / 60;
-            sec = sec % 60;
-            timerTextView.setVisibility(View.VISIBLE);
-            timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
-
-        }
-
-        private void hideTimer() {
-            timerTextView.setVisibility(View.GONE);
-            timerTextView.setText("00:00");
-        }
-
         private void stopPreheat() {
+            isPreheating = false;
             if (preheatTimer != null) {
                 preheatTimer.cancel();
                 bottomSheetTimer.enableButton();
-//                connectedThread.sendData("relay:off#");
             }
         }
 
-        private void startTimer(long millis) {
-            time = millis;
-            isPlaying = true;
-            mainTimer = new CountDownTimer(time, 1000) {
+        private void beginDeviceTimer() {
+            connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
+        }
+
+        private void setTimerTime(long millis) {
+            millis -= 1;
+            int remainedIterations = (int) Math.floor(millis / (float) iterationTimeMillis);
+            float remainderSec = (millis % (float) iterationTimeMillis) / 1000;
+            long remainedTime = (long) (Math.ceil(remainderSec) * 1000L);
+
+            System.out.println(remainderSec);
+            stopTimer();
+
+            int sec = (int) (remainedTime / 1000);
+            int min = sec / 60;
+            sec = sec % 60;
+            timerTextView.setText("Осталось процедур: " + (remainedIterations + 1) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+
+            mainTimer = new CountDownTimer(remainedTime, 1000) {
                 @Override
                 public void onTick(long l) {
-                    time = l;
                     int sec = (int) (l / 1000);
                     int min = sec / 60;
                     sec = sec % 60;
-                    timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
+                    timerTextView.setText("Осталось процедур: " + (remainedIterations + 1) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
                 }
 
                 @Override
                 public void onFinish() {
+                    if (remainedIterations != iterations) {
+                        connectedThread.sendData("timer:pause#");
+                        int sec = (int) (iterationTimeMillis / 1000);
+                        int min = sec / 60;
+                        sec = sec % 60;
+                        timerTextView.setText("Осталось процедур: " + (remainedIterations) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+                    }
 
                 }
             };
-            showTimer();
+        }
+
+        private void startTimer() {
+            if (mainTimer != null) {
+                mainTimer.start();
+                isPlaying = true;
+            }
         }
 
         public void stopTimer() {
@@ -223,18 +249,21 @@ public class ControlLampActivity extends AppCompatActivity {
             if (mainTimer != null) {
                 mainTimer.cancel();
             }
+            isPlaying = true;
         }
 
-        public void resumeTimer() {
-            this.stopTimer();
-            connectedThread.sendData("timer:gettime#");
+        private void showTimer() {
+            timerTextView.setVisibility(View.VISIBLE);
+
         }
 
+        private void hideTimer() {
+            timerTextView.setVisibility(View.GONE);
+        }
     }
 
     private class BottomSheetTimer {
 
-        private SharedPreferences sharedPreferences;
         private final BottomSheetDialog bottomSheetDialog;
         private final AppCompatButton showBottomSheetButton;
 
@@ -244,7 +273,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
         private final AppCompatButton startTimerButton;
 
-        private final SecTimer millisTimer;
+        private final SecTimer secTimer;
 
         public BottomSheetTimer(Context context) {
             bottomSheetDialog = new BottomSheetDialog(context);
@@ -268,35 +297,24 @@ public class ControlLampActivity extends AppCompatActivity {
             secondsPicker.setMinValue(0);
             secondsPicker.setMaxValue(59);
 
-            minutesPicker.setValue((int) getLastTime().getMinutes());
-            secondsPicker.setValue((int) getLastTime().getSeconds());
+            minutesPicker.setValue((int) valuesSavingManager.getLastTime().getMinutes());
+            secondsPicker.setValue((int) valuesSavingManager.getLastTime().getSeconds());
+            iterationPicker.setValue(valuesSavingManager.getIterations());
 
             startTimerButton = bottomSheetDialog.findViewById(R.id.start_timer);
 
-            millisTimer = new SecTimer();
+            secTimer = new SecTimer();
 
             showBottomSheetButton.setOnClickListener(view -> bottomSheetTimer.bottomSheetDialog.show());
 
             assert startTimerButton != null;
             startTimerButton.setOnClickListener(view -> {
-                millisTimer.start(convertMinutesAndSecondsToMillis(minutesPicker.getValue(), secondsPicker.getValue()));
-                setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
+                valuesSavingManager.setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
+                valuesSavingManager.setIterations(iterationPicker.getValue());
+                secTimer.start();
                 bottomSheetDialog.cancel();
             });
 
-        }
-
-        private void setLastTime(long minutes, long seconds) {
-            sharedPreferences = getSharedPreferences("timer", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putLong(address + "minutes", minutes);
-            editor.putLong(address + "seconds", seconds);
-            editor.apply();
-        }
-
-        private TimerTime getLastTime() {
-            sharedPreferences = getSharedPreferences("timer", MODE_PRIVATE);
-            return new TimerTime(sharedPreferences.getLong(address + "minutes", 1), sharedPreferences.getLong(address + "seconds", 0));
         }
 
         private void hideTimer() {
@@ -317,10 +335,6 @@ public class ControlLampActivity extends AppCompatActivity {
             startTimerButton.setBackgroundResource(R.drawable.btn_background_grey);
         }
 
-        private long convertMinutesAndSecondsToMillis(long minutes, long seconds) {
-            return (minutes * 60000) + (seconds * 1000);
-        }
-
     }
 
     private class MainButton {
@@ -335,7 +349,7 @@ public class ControlLampActivity extends AppCompatActivity {
             this.context = context;
 
             offBtn.setOnClickListener(view12 -> {
-                connectedThread.sendData("relay:off#");
+                connectedThread.sendData("timer:stop#");
             });
 
             btn.setOnClickListener(view1 -> {
@@ -368,28 +382,29 @@ public class ControlLampActivity extends AppCompatActivity {
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
                 case 1: //turned on
-                    if (!bottomSheetTimer.millisTimer.isPlaying) {
+                    if (!bottomSheetTimer.secTimer.isPlaying) {
                         this.state = 1;
                         btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
                         btn.setText("Выключить");
                         offBtn.setVisibility(View.GONE);
-                        if (!bottomSheetTimer.millisTimer.isPreheating) {
+                        if (!bottomSheetTimer.secTimer.isPreheating) {
                             bottomSheetTimer.enableButton();
                         }
                     }
                     break;
                 case 3: //timer started
-                    bottomSheetTimer.millisTimer.resumeTimer();
+                    bottomSheetTimer.secTimer.stopPreheat();
+                    bottomSheetTimer.secTimer.startTimer();
+                    bottomSheetTimer.secTimer.showTimer();
                     this.state = 3;
-                    bottomSheetTimer.millisTimer.showTimer();
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
                     btn.setText("Пауза");
                     offBtn.setVisibility(View.VISIBLE);
                     bottomSheetTimer.disableButton();
                     break;
                 case 4: //timer is not active
-                    bottomSheetTimer.millisTimer.stopTimer();
-                    bottomSheetTimer.millisTimer.hideTimer();
+                    bottomSheetTimer.secTimer.stopTimer();
+                    bottomSheetTimer.secTimer.hideTimer();
                     this.state = 0;
                     btn.setText("Включить");
                     offBtn.setVisibility(View.GONE);
@@ -398,10 +413,11 @@ public class ControlLampActivity extends AppCompatActivity {
                     break;
                 case 5: //timer paused
                     this.state = 4;
-                    bottomSheetTimer.millisTimer.pauseTimer();
+                    bottomSheetTimer.secTimer.startTimer();
+                    bottomSheetTimer.secTimer.showTimer();
+                    bottomSheetTimer.secTimer.pauseTimer();
                     btn.setText("Пуск");
                     offBtn.setVisibility(View.VISIBLE);
-                    bottomSheetTimer.millisTimer.showTimer();
                     btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     bottomSheetTimer.disableButton();
                     break;
@@ -429,7 +445,7 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                bottomSheetTimer.millisTimer.stopPreheat();
+                bottomSheetTimer.secTimer.stopPreheat();
                 connectedThread.sendData("relay:off#");
             });
 
@@ -439,6 +455,10 @@ public class ControlLampActivity extends AppCompatActivity {
             alertDialog.show();
         }
 
+    }
+
+    private long convertMinutesAndSecondsToMillis(long minutes, long seconds) {
+        return (minutes * 60000) + (seconds * 1000);
     }
 
 }

@@ -1,6 +1,8 @@
 package com.example.lampcontrol.Fragments;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -68,7 +70,14 @@ public class PageFragmentConnect extends Fragment {
         refreshButton = requireView().findViewById(R.id.refresh);
         refreshButton.setOnClickListener(view1 -> {
             displayConnected();
-            refreshButton.animate().rotationBy(720).setDuration(500).setInterpolator(new DecelerateInterpolator());
+            refreshButton.animate().rotation(720).setDuration(500).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    refreshButton.setRotation(0);
+                }
+            });
+
         });
         addButton = requireView().findViewById(R.id.add);
         addButton.setOnClickListener(view1 -> {

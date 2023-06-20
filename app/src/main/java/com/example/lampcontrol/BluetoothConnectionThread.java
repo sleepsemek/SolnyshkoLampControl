@@ -109,6 +109,7 @@ public class BluetoothConnectionThread extends Thread {
         byte[] msgBuffer = message.getBytes();
         try {
             mmOutStream.write(msgBuffer);
+            System.out.println("Out: " + message);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -116,6 +117,7 @@ public class BluetoothConnectionThread extends Thread {
 
     public void getStatus() {
         sendData("relay:status#");
+        sendData("timer:gettime#");
         sendData("timer:status#");
 
     }
@@ -166,14 +168,10 @@ public class BluetoothConnectionThread extends Thread {
                 if (msg.what == RECEIVE_MESSAGE) {
                     String incoming = (String) msg.obj;
                     System.out.println(incoming);
-                    if (incoming.length() == 1) {
-                        if (commandListener != null) {
-                            commandListener.onCommandReceived(Integer.parseInt(incoming));
-                        }
-                    } else {
-                        if (commandListener != null) {
-                            commandListener.onTimeReceived(Long.parseLong(incoming));
-                        }
+                    if (incoming.contains("time:") && commandListener != null) {
+                        commandListener.onTimeReceived(Long.parseLong(incoming.replace("time:", "")));
+                    } else if (incoming.length() == 1 && commandListener != null){
+                        commandListener.onCommandReceived(Integer.parseInt(incoming));
                     }
 
                 }

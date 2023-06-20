@@ -12,30 +12,29 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingHorizontal="5dp"
         android:orientation="horizontal"
         android:gravity="end">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/add"
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/btn_background_grey"
+            android:layout_height="55dp"
+            android:background="@drawable/button"
+            android:backgroundTint="@color/main_red"
             android:foreground="@drawable/ic_baseline_add_48"
             android:foregroundGravity="center"
-            app:rippleColor="@android:color/transparent"
-            android:foregroundTint="@color/main_red"/>
+            android:layout_margin="10dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/refresh"
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"
-            android:background="@drawable/btn_background_grey"
+            android:layout_height="55dp"
+            android:background="@drawable/button"
+            android:backgroundTint="@color/dark_blue"
             android:foreground="@drawable/ic_baseline_refresh_24"
             android:foregroundGravity="center"
-            app:rippleColor="@android:color/transparent"
-            android:foregroundTint="@color/main_blue"/>
+            android:layout_margin="10dp"/>
 
     </LinearLayout>
 

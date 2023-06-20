@@ -36,7 +36,8 @@
         </activity>
         <activity
             android:name=".Activities.ControlLampActivity"
-            android:exported="false">
+            android:exported="false"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
