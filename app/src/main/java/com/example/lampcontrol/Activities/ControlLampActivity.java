@@ -154,7 +154,7 @@ public class ControlLampActivity extends AppCompatActivity {
             connectedThread.sendData("relay:on#");
             isPreheating = true;
             bottomSheetTimer.disableButton();
-            preheatTimer = new CountDownTimer(6000, 1000) {
+            preheatTimer = new CountDownTimer(60000, 1000) {
                 @Override
                 public void onTick(long l) {
                     int sec = (int) (l / 1000);
@@ -346,7 +346,11 @@ public class ControlLampActivity extends AppCompatActivity {
             btn.setOnClickListener(view1 -> {
                 switch (state) {
                     case 1: //on
-                        displayAlert();
+                        if (bottomSheetTimer.secTimer.isPreheating) {
+                            displayAlert();
+                        } else {
+                            connectedThread.sendData("relay:off#");
+                        }
                         break;
                     case 0: //idle
                         connectedThread.sendData("relay:on#");
