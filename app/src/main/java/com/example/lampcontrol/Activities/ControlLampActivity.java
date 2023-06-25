@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Html;
+import android.text.InputFilter;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -20,6 +22,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.BluetoothConnectionThread;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.TimerView;
 import com.example.lampcontrol.ValuesSavingManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -32,6 +35,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
     private TextView lampName;
     private TextView timerTextView;
+    private TimerView timerDialView;
 
     private MainButton mainButton;
 
@@ -54,6 +58,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
         lampName = findViewById(R.id.lampName);
         timerTextView = findViewById(R.id.timerTextView);
+        timerDialView = findViewById(R.id.timerDialView);
 
         timerTextView.setVisibility(View.GONE);
 
@@ -202,20 +207,24 @@ public class ControlLampActivity extends AppCompatActivity {
 
             stopTimer();
 
-            System.out.println(remainderSec);
-            setTimerTextViewTime(remainedTime, remainedIterations + 1);
+            timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
+            setTimerViewTime(iterationTimeMillis, remainedTime, remainedIterations + 1);
 
             mainTimer = new CountDownTimer(remainedTime, 1000) {
                 @Override
                 public void onTick(long l) {
-                    setTimerTextViewTime(l, remainedIterations + 1);
+                    setTimerViewTime(iterationTimeMillis, l, remainedIterations + 1);
+                    if (l < 600) {
+                        this.onFinish();
+                    }
+
                 }
 
                 @Override
                 public void onFinish() {
                     if (remainedIterations != iterations) {
                         connectedThread.sendData("timer:pause#");
-                        setTimerTextViewTime(iterationTimeMillis, remainedIterations);
+                        setTimerViewTime(iterationTimeMillis, iterationTimeMillis, remainedIterations);
                     }
 
                 }
@@ -244,11 +253,17 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void showTimer() {
+            if (isPreheating) {
+                timerDialView.setVisibility(View.GONE);
+            } else {
+                timerDialView.setVisibility(View.VISIBLE);
+            }
             timerTextView.setVisibility(View.VISIBLE);
 
         }
 
         private void hideTimer() {
+            timerDialView.setVisibility(View.GONE);
             timerTextView.setVisibility(View.GONE);
         }
     }
@@ -452,15 +467,12 @@ public class ControlLampActivity extends AppCompatActivity {
 
     }
 
-    private long convertMinutesAndSecondsToMillis(long minutes, long seconds) {
-        return (minutes * 60000) + (seconds * 1000);
-    }
-
-    private void setTimerTextViewTime(long millis, int iterations) {
+    private void setTimerViewTime(long iterationTimeMillis, long millis, int iterations) {
         int sec = (int) (millis / 1000);
         int min = sec / 60;
         sec = sec % 60;
-        timerTextView.setText("Осталось процедур: " + (iterations) + "\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+        timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
+        timerDialView.setCurrentTime(iterationTimeMillis * (iterations - 1) + millis);
     }
 
 }
