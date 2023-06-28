@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
-import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -117,6 +116,7 @@ public class BluetoothConnectionThread extends Thread {
 
     public void getStatus() {
         sendData("relay:status#");
+        sendData("timer:getpreheattime#");
         sendData("timer:gettime#");
         sendData("timer:status#");
 
@@ -168,9 +168,16 @@ public class BluetoothConnectionThread extends Thread {
                 if (msg.what == RECEIVE_MESSAGE) {
                     String incoming = (String) msg.obj;
                     System.out.println(incoming);
-                    if (incoming.contains("time:") && commandListener != null) {
-                        commandListener.onTimeReceived(Long.parseLong(incoming.replace("time:", "")));
-                    } else if (incoming.length() == 1 && commandListener != null){
+
+                    if (commandListener == null) {
+                        return;
+                    }
+
+                    if (incoming.contains("time:")) {
+                        commandListener.onTimerTimeReceived(Long.parseLong(incoming.replace("time:", "")));
+                    } else if (incoming.contains("preheat:")) {
+                        commandListener.onPreheatTimeReceived(Long.parseLong(incoming.replace("preheat:", "")));
+                    } else if (incoming.length() == 1){
                         commandListener.onCommandReceived(Integer.parseInt(incoming));
                     }
 
@@ -208,7 +215,8 @@ public class BluetoothConnectionThread extends Thread {
 
     public interface onCommandReceivedListener {
         void onCommandReceived(int command);
-        void onTimeReceived(long millis);
+        void onTimerTimeReceived(long millis);
+        void onPreheatTimeReceived(long millis);
     }
 
 
