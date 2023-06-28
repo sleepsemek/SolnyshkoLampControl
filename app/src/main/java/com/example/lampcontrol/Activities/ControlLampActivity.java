@@ -231,7 +231,7 @@ public class ControlLampActivity extends AppCompatActivity {
                 @Override
                 public void onTick(long l) {
                     setTimerViewTime(iterationTimeMillis, l, remainedIterations + 1);
-                    
+
                 }
 
                 @Override
@@ -396,6 +396,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
         public void setState(int state) {
             switch (state) {
+                case 7: //preheat finished or not active
                 case 2: //turned off
                     this.state = 0;
                     timerTextView.setText("00:00");
@@ -456,8 +457,6 @@ public class ControlLampActivity extends AppCompatActivity {
                 case 6: //preheat started
                     bottomSheetTimer.secTimer.runPreheat();
                     break;
-                case 7: //preheat is not active
-                    break;
             }
         }
 
@@ -483,7 +482,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
                 bottomSheetTimer.secTimer.stopPreheat();
-                connectedThread.sendData("relay:off#");
+                connectedThread.sendData("timer:preheatstop#");
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
