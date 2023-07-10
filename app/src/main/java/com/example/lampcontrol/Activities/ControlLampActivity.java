@@ -4,11 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Path;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Html;
-import android.text.InputFilter;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -236,7 +234,8 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    if (remainedIterations != iterations) {
+                    if (remainedIterations != iterations && remainedIterations != 0) {
+                        connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
                         connectedThread.sendData("timer:pause#");
                     }
 
