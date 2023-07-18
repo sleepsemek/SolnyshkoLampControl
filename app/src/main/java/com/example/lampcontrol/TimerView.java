@@ -11,9 +11,10 @@ import androidx.core.content.ContextCompat;
 
 public class TimerView extends View {
 
-    private Paint backgroundPaint;
+    private Paint outlinePaint;
     private Paint stripesPaint;
     private Paint currentPaint;
+    private Paint backgroundPaint;
 
     private float maxTime = 0;
     private float sweepAngle = 0;
@@ -28,21 +29,25 @@ public class TimerView extends View {
     public TimerView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
 
-        this.backgroundPaint = new Paint();
+        this.outlinePaint = new Paint();
 
         stripesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         stripesPaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
         stripesPaint.setStyle(Paint.Style.STROKE);
-        stripesPaint.setStrokeWidth(6);
+        stripesPaint.setStrokeWidth(12);
 
         currentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         currentPaint.setColor(ContextCompat.getColor(context, R.color.main_blue));
         currentPaint.setStyle(Paint.Style.FILL);
 
+        outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        outlinePaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
+        outlinePaint.setStyle(Paint.Style.STROKE);
+        outlinePaint.setStrokeWidth(12);
+
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
-        backgroundPaint.setStyle(Paint.Style.STROKE);
-        backgroundPaint.setStrokeWidth(10);
+        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.light_grey));
+        backgroundPaint.setStyle(Paint.Style.FILL);
 
     }
 
@@ -51,6 +56,8 @@ public class TimerView extends View {
         super.onDraw(canvas);
         canvas.translate(centerX, centerY);
         canvas.rotate(-90);
+
+        canvas.drawCircle(0, 0, radius - 6, backgroundPaint);
 
         Path path = new Path();
         path.moveTo(0, 0);
@@ -67,7 +74,7 @@ public class TimerView extends View {
             canvas.drawLine(0, 0, startX, startY, stripesPaint);
         }
 
-        canvas.drawCircle(0, 0, radius - 3, backgroundPaint);
+        canvas.drawCircle(0, 0, radius - 6, outlinePaint);
 
     }
 
@@ -94,6 +101,5 @@ public class TimerView extends View {
         invalidate();
 
     }
-
 
 }

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
@@ -35,7 +36,7 @@ public class ControlLampActivity extends AppCompatActivity {
     private TextView timerTextView;
     private TimerView timerDialView;
 
-    private MainButton mainButton;
+    private Buttons buttons;
 
     private BottomSheetTimer bottomSheetTimer;
     private ValuesSavingManager valuesSavingManager;
@@ -52,13 +53,11 @@ public class ControlLampActivity extends AppCompatActivity {
         valuesSavingManager = new ValuesSavingManager(this, address);
 
         bottomSheetTimer = new BottomSheetTimer(this);
-        mainButton = new MainButton(R.id.onOffBtn, this);
+        buttons = new Buttons(this);
 
         lampName = findViewById(R.id.lampName);
         timerTextView = findViewById(R.id.timerTextView);
         timerDialView = findViewById(R.id.timerDialView);
-
-        timerTextView.setVisibility(View.GONE);
 
     }
 
@@ -70,7 +69,6 @@ public class ControlLampActivity extends AppCompatActivity {
         }
         bottomSheetTimer.secTimer.stopPreheat();
         bottomSheetTimer.secTimer.stopTimer();
-        timerTextView.setVisibility(View.GONE);
     }
 
     @Override
@@ -98,7 +96,7 @@ public class ControlLampActivity extends AppCompatActivity {
         connectedThread.setOnCommandReceivedListener(new BluetoothConnectionThread.onCommandReceivedListener() {
             @Override
             public void onCommandReceived(int command) {
-                mainButton.setState(command);
+                buttons.setState(command);
             }
 
             @Override
@@ -117,21 +115,19 @@ public class ControlLampActivity extends AppCompatActivity {
 
     private void hideInterface() {
         lampName.setText("Установка соединения");
-        mainButton.hide();
-        bottomSheetTimer.hideTimer();
+        buttons.hide();
+
         if (bottomSheetTimer.secTimer.isPreheating) {
             bottomSheetTimer.secTimer.stopPreheat();
         } else if (bottomSheetTimer.secTimer.isPlaying) {
             bottomSheetTimer.secTimer.stopTimer();
         }
-        bottomSheetTimer.secTimer.hideTimer();
-        mainButton.offBtn.setVisibility(View.GONE);
+
     }
 
     private void showInterface() {
         lampName.setText(name);
-        mainButton.show();
-        bottomSheetTimer.showTimer();
+        buttons.show();
         connectedThread.getStatus();
     }
 
@@ -162,24 +158,27 @@ public class ControlLampActivity extends AppCompatActivity {
             connectedThread.sendData("timer:preheat#");
         }
 
+        private void beginDeviceTimer() {
+            connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
+        }
+
         private void setPreheatTimerTime(long millis) {
             if (millis == 0) {
                 return;
             }
 
+            timerDialView.setBounds(60000, 1);
+
             preheatTimer = new CountDownTimer(millis, 1000) {
                 @Override
                 public void onTick(long l) {
-                    int sec = (int) (l / 1000);
-                    int min = sec / 60;
-                    sec = sec % 60;
-                    timerTextView.setText("Прогрев:\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+                    setTimerViewTime(60000, l, 1);
                 }
 
                 @Override
                 public void onFinish() {
-                    isPreheating = false;
                     connectedThread.sendData("timer:preheatstop#");
+                    stopPreheat();
                     bottomSheetTimer.secTimer.beginDeviceTimer();
                 }
             };
@@ -190,22 +189,19 @@ public class ControlLampActivity extends AppCompatActivity {
             if (preheatTimer != null) {
                 isPreheating = true;
                 preheatTimer.start();
-                showTimer();
             } else {
                 this.stopPreheat();
             }
         }
 
         private void stopPreheat() {
-            isPreheating = false;
             if (preheatTimer != null) {
                 preheatTimer.cancel();
-                bottomSheetTimer.enableButton();
             }
-        }
 
-        private void beginDeviceTimer() {
-            connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
+            timerDialView.setBounds(0, 1);
+            setTimerViewTime(0, 0, 0);
+            isPreheating = false;
         }
 
         private void setTimerTime(long millis) {
@@ -216,18 +212,18 @@ public class ControlLampActivity extends AppCompatActivity {
             millis -= 1;
             int remainedIterations = (int) Math.floor(millis / (float) iterationTimeMillis);
             float remainderSec = (millis % (float) iterationTimeMillis) / 1000;
-            long remainedTime = (long) (Math.ceil(remainderSec) * 1000L);
-
-            stopTimer();
+            long remainedTime = (long) (remainderSec * 1000);
 
             timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
             setTimerViewTime(iterationTimeMillis, remainedTime, remainedIterations + 1);
 
+            if (mainTimer != null) {
+                mainTimer.cancel();
+            }
             mainTimer = new CountDownTimer(remainedTime, 1000) {
                 @Override
                 public void onTick(long l) {
                     setTimerViewTime(iterationTimeMillis, l, remainedIterations + 1);
-
                 }
 
                 @Override
@@ -242,8 +238,13 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void startTimer() {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+            }
+
             if (mainTimer != null) {
                 mainTimer.start();
+                timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
                 isPlaying = true;
             }
         }
@@ -252,6 +253,8 @@ public class ControlLampActivity extends AppCompatActivity {
             if (mainTimer != null) {
                 mainTimer.cancel();
             }
+            timerDialView.setBounds(0, 1);
+            setTimerViewTime(0, 0, 0);
             isPlaying = false;
         }
 
@@ -262,26 +265,11 @@ public class ControlLampActivity extends AppCompatActivity {
             isPlaying = true;
         }
 
-        private void showTimer() {
-            if (isPreheating) {
-                timerDialView.setVisibility(View.GONE);
-            } else {
-                timerDialView.setVisibility(View.VISIBLE);
-            }
-            timerTextView.setVisibility(View.VISIBLE);
-
-        }
-
-        private void hideTimer() {
-            timerDialView.setVisibility(View.GONE);
-            timerTextView.setVisibility(View.GONE);
-        }
     }
 
     private class BottomSheetTimer {
 
         private final BottomSheetDialog bottomSheetDialog;
-        private final AppCompatButton showBottomSheetButton;
 
         private final NumberPicker iterationPicker;
         private final NumberPicker minutesPicker;
@@ -294,8 +282,6 @@ public class ControlLampActivity extends AppCompatActivity {
         public BottomSheetTimer(Context context) {
             bottomSheetDialog = new BottomSheetDialog(context);
             bottomSheetDialog.setContentView(R.layout.lamp_bottom_sheet);
-
-            showBottomSheetButton = findViewById(R.id.timer_button);
 
             iterationPicker = bottomSheetDialog.findViewById(R.id.preheat_picker);
             assert iterationPicker != null;
@@ -321,8 +307,6 @@ public class ControlLampActivity extends AppCompatActivity {
 
             secTimer = new SecTimer();
 
-            showBottomSheetButton.setOnClickListener(view -> bottomSheetTimer.bottomSheetDialog.show());
-
             assert startTimerButton != null;
             startTimerButton.setOnClickListener(view -> {
                 valuesSavingManager.setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
@@ -333,60 +317,83 @@ public class ControlLampActivity extends AppCompatActivity {
 
         }
 
-        private void hideTimer() {
-            showBottomSheetButton.setEnabled(false);
-        }
-
-        private void showTimer() {
-            showBottomSheetButton.setEnabled(true);
-        }
-
         private void enableButton() {
             startTimerButton.setEnabled(true);
             startTimerButton.setBackgroundResource(R.drawable.background_blue);
-            showBottomSheetButton.setVisibility(View.VISIBLE);
         }
 
         private void disableButton() {
             startTimerButton.setEnabled(false);
             startTimerButton.setBackgroundResource(R.drawable.btn_background_grey);
-            showBottomSheetButton.setVisibility(View.GONE);
         }
 
     }
 
-    private class MainButton {
-        private final Button btn;
-        private final AppCompatButton offBtn;
+    private class Buttons {
+        private final AppCompatButton mainButton;
+
+        private final Button onOffButton;
+        private final LinearLayout onOffButtonHolder;
+        private final TextView onOffButtonText;
+
         private int state = 0;
         private final Context context;
 
-        public MainButton(int view, Context context) {
-            btn = findViewById(view);
-            offBtn = findViewById(R.id.off_button);
+        public Buttons(Context context) {
+            mainButton = findViewById(R.id.main_button);
+
+            onOffButton = findViewById(R.id.onOffBtn);
+            onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
+            onOffButtonText = findViewById(R.id.onOffBtnText);
+
             this.context = context;
 
-            offBtn.setOnClickListener(view12 -> {
-                connectedThread.sendData("timer:stop#");
-            });
-
-            btn.setOnClickListener(view1 -> {
+            mainButton.setOnClickListener(view -> {
                 switch (state) {
-                    case 1: //on
-                        if (bottomSheetTimer.secTimer.isPreheating) {
-                            displayAlert();
-                        } else {
-                            connectedThread.sendData("relay:off#");
+                    case 0:
+                    case 1:
+                        if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
+                            return;
                         }
+                        bottomSheetTimer.bottomSheetDialog.show();
                         break;
-                    case 0: //idle
-                        connectedThread.sendData("relay:on#");
-                        break;
+
                     case 3: //timer playing
                         connectedThread.sendData("timer:pause#");
                         break;
                     case 4: //timer paused
                         connectedThread.sendData("timer:resume#");
+                        break;
+                    case 5: //preheating
+                        break;
+
+                }
+            });
+
+            onOffButton.setOnClickListener(view1 -> {
+                switch (state) {
+                    case 1: //on
+                        if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
+                            return;
+                        }
+                        connectedThread.sendData("relay:off#");
+                        break;
+
+                    case 0: //idle
+                        connectedThread.sendData("relay:on#");
+                        break;
+
+                    case 3: //timer playing
+                    case 4: //timer paused
+                        if (bottomSheetTimer.secTimer.isPreheating) {
+                            displayAlert();
+                        } else if (bottomSheetTimer.secTimer.isPlaying){
+                            connectedThread.sendData("timer:stop#");
+                        }
+                        break;
+
+                    case 5: //preheating
+                        displayAlert();
                         break;
                 }
             });
@@ -397,81 +404,110 @@ public class ControlLampActivity extends AppCompatActivity {
                 case 7: //preheat finished or not active
                 case 2: //turned off
                     this.state = 0;
-                    timerTextView.setText("00:00");
-                    timerTextView.setVisibility(View.GONE);
-                    btn.setText("Включить");
-                    offBtn.setVisibility(View.GONE);
+
+                    bottomSheetTimer.secTimer.stopPreheat();
+
+                    mainButton.setText("Таймер");
+                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
+
+                    onOffButtonText.setText("Вкл");
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
                     bottomSheetTimer.enableButton();
-                    btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
+
                 case 1: //turned on
                     if (bottomSheetTimer.secTimer.isPlaying) {
                         return;
                     }
                     this.state = 1;
-                    btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-                    btn.setText("Выключить");
-                    offBtn.setVisibility(View.GONE);
+
+                    onOffButtonText.setText("Выкл");
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
+
                     if (!bottomSheetTimer.secTimer.isPreheating) {
                         bottomSheetTimer.enableButton();
                     }
-
                     break;
+
                 case 3: //timer started
                     if (bottomSheetTimer.secTimer.isPreheating) {
                         return;
                     }
-                    bottomSheetTimer.secTimer.stopPreheat();
-                    bottomSheetTimer.secTimer.startTimer();
-                    bottomSheetTimer.secTimer.showTimer();
                     this.state = 3;
-                    btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-                    btn.setText("Пауза");
-                    offBtn.setVisibility(View.VISIBLE);
+
+                    bottomSheetTimer.secTimer.startTimer();
+
+                    mainButton.setText("Пауза");
+                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
+
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+                    onOffButtonText.setText("Отмена");
+
                     bottomSheetTimer.disableButton();
                     break;
+
                 case 4: //timer is not active
                     if (bottomSheetTimer.secTimer.isPreheating) {
                         return;
                     }
-                    bottomSheetTimer.secTimer.stopTimer();
-                    bottomSheetTimer.secTimer.hideTimer();
                     this.state = 0;
-                    btn.setText("Включить");
-                    offBtn.setVisibility(View.GONE);
-                    btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
+                    bottomSheetTimer.secTimer.stopTimer();
+
+                    mainButton.setText("Таймер");
+                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
+
+                    onOffButtonText.setText("Вкл");
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
                     bottomSheetTimer.enableButton();
                     break;
+
                 case 5: //timer paused
                     this.state = 4;
-                    bottomSheetTimer.secTimer.startTimer();
-                    bottomSheetTimer.secTimer.showTimer();
+
                     bottomSheetTimer.secTimer.pauseTimer();
-                    btn.setText("Пуск");
-                    offBtn.setVisibility(View.VISIBLE);
-                    btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
+                    onOffButtonText.setText("Отмена");
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
+                    mainButton.setText("Пуск");
+                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
                     bottomSheetTimer.disableButton();
                     break;
+
                 case 6: //preheat started
+                    this.state = 5;
+
+                    mainButton.setText("Прогрев");
+                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.dark_blue)));
+
+                    onOffButtonText.setText("Отмена");
+                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+
                     bottomSheetTimer.secTimer.runPreheat();
                     bottomSheetTimer.disableButton();
                     break;
             }
+
         }
 
         private void hide() {
-            btn.setText("");
-            btn.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-            btn.setClickable(false);
-            btn.animate().rotationBy(360000).setDuration(500000).setInterpolator(new LinearInterpolator()).start();
+            mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
+            mainButton.setClickable(false);
+            mainButton.setText("");
+            onOffButtonHolder.setVisibility(View.INVISIBLE);
+            mainButton.animate().rotationBy(360000).setDuration(500000).setInterpolator(new LinearInterpolator()).start();
         }
 
         private void show() {
-            btn.clearAnimation();
-            btn.setText("Включить");
-            btn.setClickable(true);
-            btn.animate().cancel();
-            btn.animate().rotation(0).setDuration(0).setInterpolator(new DecelerateInterpolator());
+            mainButton.clearAnimation();
+            mainButton.setClickable(true);
+            onOffButtonHolder.setVisibility(View.VISIBLE);
+            mainButton.animate().cancel();
+            mainButton.animate().rotation(0).setDuration(0).setInterpolator(new DecelerateInterpolator());
         }
 
         private void displayAlert() {
@@ -480,8 +516,8 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                bottomSheetTimer.secTimer.stopPreheat();
                 connectedThread.sendData("timer:preheatstop#");
+                connectedThread.sendData("relay:off#");
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
