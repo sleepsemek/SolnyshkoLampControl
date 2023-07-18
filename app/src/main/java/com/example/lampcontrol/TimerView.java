@@ -2,7 +2,6 @@ package com.example.lampcontrol;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
@@ -43,7 +42,7 @@ public class TimerView extends View {
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
         backgroundPaint.setStyle(Paint.Style.STROKE);
-        backgroundPaint.setStrokeWidth(6);
+        backgroundPaint.setStrokeWidth(10);
 
     }
 

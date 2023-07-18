@@ -167,15 +167,13 @@ public class ControlLampActivity extends AppCompatActivity {
                 return;
             }
 
-            bottomSheetTimer.disableButton();
-
             preheatTimer = new CountDownTimer(millis, 1000) {
                 @Override
                 public void onTick(long l) {
                     int sec = (int) (l / 1000);
                     int min = sec / 60;
                     sec = sec % 60;
-                    timerTextView.setText("Преднагрев:\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
+                    timerTextView.setText("Прогрев:\n" + String.format("%02d", min) + ":" + String.format("%02d", sec));
                 }
 
                 @Override
@@ -245,7 +243,6 @@ public class ControlLampActivity extends AppCompatActivity {
 
         private void startTimer() {
             if (mainTimer != null) {
-                bottomSheetTimer.disableButton();
                 mainTimer.start();
                 isPlaying = true;
             }
@@ -347,11 +344,13 @@ public class ControlLampActivity extends AppCompatActivity {
         private void enableButton() {
             startTimerButton.setEnabled(true);
             startTimerButton.setBackgroundResource(R.drawable.background_blue);
+            showBottomSheetButton.setVisibility(View.VISIBLE);
         }
 
         private void disableButton() {
             startTimerButton.setEnabled(false);
             startTimerButton.setBackgroundResource(R.drawable.btn_background_grey);
+            showBottomSheetButton.setVisibility(View.GONE);
         }
 
     }
@@ -455,6 +454,7 @@ public class ControlLampActivity extends AppCompatActivity {
                     break;
                 case 6: //preheat started
                     bottomSheetTimer.secTimer.runPreheat();
+                    bottomSheetTimer.disableButton();
                     break;
             }
         }
