@@ -20,8 +20,6 @@ public class TimerView extends View {
     private float sweepAngle = 0;
     private int stripes = 1;
 
-    private int width;
-    private int height;
     private int centerX;
     private int centerY;
     private int radius;
@@ -80,26 +78,23 @@ public class TimerView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        height = getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-        width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        centerX = width / 2;
-        centerY = height / 2;
-        radius = Math.min(width, height) / 2;
+        int dimen = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        centerX = dimen / 2;
+        centerY = dimen / 2;
+        radius = dimen / 2;
 
-        setMeasuredDimension(width, height);
+        setMeasuredDimension(dimen, dimen);
     }
 
     public void setBounds(float time, int amount) {
         this.maxTime = time;
         this.stripes = amount;
         invalidate();
-
     }
 
     public void setCurrentTime(float currentTime) {
         this.sweepAngle = (currentTime / maxTime) * 360;
         invalidate();
-
     }
 
 }

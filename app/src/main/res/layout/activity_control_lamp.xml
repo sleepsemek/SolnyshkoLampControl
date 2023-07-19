@@ -28,8 +28,8 @@
 
         <com.example.lampcontrol.TimerView
             android:id="@+id/timerDialView"
-            android:layout_width="300dp"
-            android:layout_height="300dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true" />
 
