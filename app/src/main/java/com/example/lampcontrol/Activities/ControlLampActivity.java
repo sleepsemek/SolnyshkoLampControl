@@ -544,7 +544,7 @@ public class ControlLampActivity extends AppCompatActivity {
     }
 
     private void setTimerViewTime(long iterationTimeMillis, long millis, int iterations) {
-        int sec = (int) (millis / 1000);
+        int sec = (int) ((millis + 50) / 1000);
         int min = sec / 60;
         sec = sec % 60;
         timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
