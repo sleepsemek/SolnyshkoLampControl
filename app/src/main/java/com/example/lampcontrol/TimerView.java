@@ -84,7 +84,17 @@ public class TimerView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int dimen = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        int width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        int height = getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        System.out.println(width + "  " + height);
+
+        int dimen = 0;
+
+        if ((height - width) < 650) {
+            dimen = height - 650;
+        } else {
+            dimen = width;
+        }
 
         centerX = dimen / 2;
         centerY = dimen / 2;
