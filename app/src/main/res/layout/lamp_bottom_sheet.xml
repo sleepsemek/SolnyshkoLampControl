@@ -5,12 +5,12 @@
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
     android:paddingVertical="35dp"
-    android:background="@color/white">
+    android:background="?attr/colorContainer">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/dark_blue"
+        android:textColor="?attr/colorSecondary"
         android:textSize="25dp"
         android:textStyle="bold"
         android:text="Параметры процедур" />
@@ -47,9 +47,10 @@
                     <NumberPicker
                         android:id="@+id/minutes_picker"
                         android:layout_width="wrap_content"
-                        android:layout_height="130dp"
+                        android:layout_height="150dp"
+                        android:layout_margin="10dp"
                         android:background="@drawable/btn_background_grey"
-                        android:layout_margin="10dp"/>
+                        android:backgroundTint="?attr/colorOnPrimary" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -69,9 +70,10 @@
                     <NumberPicker
                         android:id="@+id/seconds_picker"
                         android:layout_width="wrap_content"
-                        android:layout_height="130dp"
+                        android:layout_height="150dp"
                         android:background="@drawable/btn_background_grey"
-                        android:layout_margin="10dp"/>
+                        android:backgroundTint="?attr/colorOnPrimary"
+                        android:layout_margin="10dp" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -105,8 +107,9 @@
             <NumberPicker
                 android:id="@+id/preheat_picker"
                 android:layout_width="wrap_content"
-                android:layout_height="130dp"
+                android:layout_height="150dp"
                 android:background="@drawable/btn_background_grey"
+                android:backgroundTint="?attr/colorOnPrimary"
                 android:layout_margin="10dp"/>
 
             <TextView
@@ -129,7 +132,7 @@
         android:text="Запустить"
         android:textAppearance="@null"
         android:textSize="25dp"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorContainer"
         android:padding="14dp"
         android:textStyle="bold">
 

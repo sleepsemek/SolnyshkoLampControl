@@ -20,6 +20,7 @@
         <!-- Customize your theme here. -->
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
 
     </style>
 

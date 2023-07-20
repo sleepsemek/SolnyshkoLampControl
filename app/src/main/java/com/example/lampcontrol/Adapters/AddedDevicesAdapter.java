@@ -84,15 +84,15 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
 
     private void deleteDialogShow(ViewHolder holder) {
         AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext());
-        builder.setTitle("Подтвердить действие");
+        builder.setTitle(Html.fromHtml("<font color='#e31e24'>Подтвердить действие</font>"));
         builder.setMessage("Вы уверены, что хотите удалить устройство?");
 
-        builder.setPositiveButton("Удалить", (dialog, which) -> {
+        builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Удалить</font>"), (dialog, which) -> {
             remove(addedList.get(holder.getAdapterPosition()).getAddress());
             notifyDataSetChanged();
         });
 
-        builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
+        builder.setNegativeButton("Отменить", (dialog, which) -> {});
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();

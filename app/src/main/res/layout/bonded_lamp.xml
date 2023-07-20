@@ -25,7 +25,7 @@
                 android:text="TextView"
                 android:textSize="18dp"
                 android:layout_marginVertical="3dp"
-                android:textColor="@color/dark_blue" />
+                android:textColor="?attr/colorSecondary" />
 
             <TextView
                 android:id="@+id/BTdeviceAddress"
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:text="TextView"
                 android:layout_marginVertical="3dp"
-                android:textColor="@color/main_blue"/>
+                android:textColor="?attr/colorPrimaryVariant"/>
 
         </LinearLayout>
 
@@ -45,7 +45,7 @@
             android:layout_weight="0"
             android:background="@drawable/btn_background_grey"
             android:foregroundGravity="center"
-            android:backgroundTint="@color/light_grey"
+            android:backgroundTint="?attr/colorOnPrimary"
             android:foreground="@drawable/ic_baseline_add_24"
             android:foregroundTint="@color/main_red"
             app:cornerRadius="20dp" />

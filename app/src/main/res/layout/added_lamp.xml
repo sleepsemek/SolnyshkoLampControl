@@ -18,7 +18,7 @@
             android:id="@+id/addedName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/dark_blue"
+            android:textColor="?attr/colorSecondary"
             android:textSize="20dp"
             android:layout_weight="1" />
 
@@ -30,7 +30,7 @@
             android:layout_weight="0"
             android:background="@drawable/btn_background_grey"
             android:foregroundGravity="center"
-            android:backgroundTint="@color/light_grey"
+            android:backgroundTint="?attr/colorOnPrimary"
             android:foreground="@drawable/ic_baseline_edit_24"
             android:foregroundTint="@color/main_red"
             app:cornerRadius="20dp" />

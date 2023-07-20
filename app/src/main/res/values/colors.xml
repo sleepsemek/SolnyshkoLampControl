@@ -6,4 +6,7 @@
     <color name="dark_blue">#315398</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="night_grey">#252525</color>
+    <color name="night_white">#434343</color>
 </resources>

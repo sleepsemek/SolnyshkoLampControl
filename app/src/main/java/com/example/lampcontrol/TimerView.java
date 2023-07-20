@@ -1,13 +1,19 @@
 package com.example.lampcontrol;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
+import androidx.annotation.ColorInt;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.color.MaterialColors;
 
 public class TimerView extends View {
 
@@ -30,21 +36,21 @@ public class TimerView extends View {
         this.outlinePaint = new Paint();
 
         stripesPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        stripesPaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
+        stripesPaint.setColor(context.obtainStyledAttributes(R.style.Theme_LampControl, new int[]{R.attr.colorSecondary}).getColor(0, 0));
         stripesPaint.setStyle(Paint.Style.STROKE);
         stripesPaint.setStrokeWidth(12);
 
         currentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        currentPaint.setColor(ContextCompat.getColor(context, R.color.main_blue));
+        currentPaint.setColor(context.obtainStyledAttributes(R.style.Theme_LampControl, new int[]{R.attr.colorOnSecondary}).getColor(0, 0));
         currentPaint.setStyle(Paint.Style.FILL);
 
         outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        outlinePaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
+        outlinePaint.setColor(context.obtainStyledAttributes(R.style.Theme_LampControl, new int[]{R.attr.colorSecondary}).getColor(0, 0));
         outlinePaint.setStyle(Paint.Style.STROKE);
         outlinePaint.setStrokeWidth(12);
 
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        backgroundPaint.setColor(ContextCompat.getColor(context, R.color.light_grey));
+        backgroundPaint.setColor(context.obtainStyledAttributes(R.style.Theme_LampControl, new int[]{R.attr.colorOnPrimary}).getColor(0, 0));
         backgroundPaint.setStyle(Paint.Style.FILL);
 
     }
@@ -79,9 +85,7 @@ public class TimerView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int dimen = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
-        if (dimen > 600) {
-            dimen = 600;
-        }
+
         centerX = dimen / 2;
         centerY = dimen / 2;
         radius = dimen / 2;

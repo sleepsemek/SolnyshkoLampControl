@@ -42,7 +42,7 @@
             android:gravity="center"
             android:padding="15dp"
             android:text="00:00"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="25dp"
             android:textStyle="bold"
             android:translationZ="2dp" />
@@ -82,7 +82,7 @@
             android:background="@drawable/button"
             android:backgroundTint="@color/main_blue"
             android:text="Таймер"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="16dp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -101,7 +101,7 @@
         android:gravity="center"
         android:padding="15dp"
         android:text="Подключение"
-        android:textColor="@color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="20dp"
         android:textStyle="bold"
         android:textAlignment="center"
@@ -129,6 +129,7 @@
             android:background="@drawable/button"
             android:backgroundTint="@color/main_red"
             android:foreground="@drawable/ic_baseline_power_settings_new_24"
+            android:foregroundTint="?attr/colorOnPrimary"
             android:foregroundGravity="center" />
 
         <TextView
@@ -140,7 +141,7 @@
             android:layout_toEndOf="@+id/timerDialView"
             android:gravity="center"
             android:text="Вкл"
-            android:textColor="@color/dark_blue"
+            android:textColor="?attr/colorSecondary"
             android:textSize="18dp"
             android:textStyle="bold" />
 
