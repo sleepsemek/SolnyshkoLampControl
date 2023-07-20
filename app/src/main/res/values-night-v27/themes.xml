@@ -1,0 +1,31 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.LampControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorOnSecondary">@color/dark_blue</item>
+        <item name="colorPrimaryVariant">@color/main_red</item>
+        <item name="colorOnPrimary">@color/night_grey</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/main_blue</item>
+        <item name="colorSecondaryVariant">@color/night_grey</item>
+        <item name="colorPrimary">@color/main_blue</item>
+
+        <item name="colorContainer">@color/night_white</item>
+        <item name="colorAccent">@color/dark_blue</item>
+
+        <item name="android:textColorPrimary">@color/main_blue</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/night_grey</item>
+        <!-- Customize your theme here. -->
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:actionMenuTextColor">@color/main_blue</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+
+    </style>
+
+    <style name="PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@color/main_blue</item>
+        <item name="android:itemBackground">@color/night_grey</item>
+    </style>
+
+</resources>
