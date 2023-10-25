@@ -2,6 +2,7 @@ package com.example.lampcontrol.Adapters;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -14,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lampcontrol.Activities.EditLampActivity;
-import com.example.lampcontrol.POJO.Lamp;
 import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import java.util.ArrayList;
 public class BondedDevicesAdapter extends RecyclerView.Adapter<BondedDevicesAdapter.ViewHolder> {
 
     private final Context context;
-    private final ArrayList<Lamp> devices;
+    private final ArrayList<BluetoothDevice> devices;
 
-    public BondedDevicesAdapter(Context applicationContext, ArrayList<Lamp> devices) {
+    public BondedDevicesAdapter(Context applicationContext, ArrayList<BluetoothDevice> devices) {
         this.context = applicationContext;
         this.devices = devices;
     }
@@ -47,6 +47,13 @@ public class BondedDevicesAdapter extends RecyclerView.Adapter<BondedDevicesAdap
             intent.putExtra("name", devices.get(holder.getAdapterPosition()).getName() + "");
             context.startActivity(intent);
         });
+    }
+
+    public void addDevice(BluetoothDevice device) {
+        if (!devices.contains(device)) {
+            devices.add(device);
+            notifyItemInserted(devices.size() - 1);
+        }
     }
 
     @Override
