@@ -20,13 +20,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
-import com.example.lampcontrol.BluetoothConnectionThread;
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.TimerView;
-import com.example.lampcontrol.ValuesSavingManager;
+import com.example.lampcontrol.Utils.BluetoothConnectionThread;
+import com.example.lampcontrol.Utils.ValuesSavingManager;
+import com.example.lampcontrol.Views.TimerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-
-import java.nio.file.FileSystemLoopException;
 
 public class ControlLampActivity extends AppCompatActivity {
 

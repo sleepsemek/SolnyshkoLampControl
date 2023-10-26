@@ -25,7 +25,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lampName">
 
-        <com.example.lampcontrol.TimerView
+        <com.example.lampcontrol.Views.TimerView
             android:id="@+id/timerDialView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

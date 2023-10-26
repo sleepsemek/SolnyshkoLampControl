@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Utils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

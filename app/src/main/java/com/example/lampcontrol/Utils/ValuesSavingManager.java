@@ -1,11 +1,11 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Utils;
 
 import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.lampcontrol.POJO.TimerTime;
+import com.example.lampcontrol.Models.TimerTime;
 
 public class ValuesSavingManager {
 

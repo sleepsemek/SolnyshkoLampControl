@@ -1,19 +1,13 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Views;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.View;
 
-import androidx.annotation.ColorInt;
-import androidx.core.content.ContextCompat;
-
-import com.google.android.material.color.MaterialColors;
+import com.example.lampcontrol.R;
 
 public class TimerView extends View {
 

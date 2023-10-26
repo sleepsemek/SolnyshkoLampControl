@@ -19,9 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lampcontrol.Activities.ControlLampActivity;
 import com.example.lampcontrol.Activities.EditLampActivity;
-import com.example.lampcontrol.LampsDataBase;
-import com.example.lampcontrol.POJO.Lamp;
+import com.example.lampcontrol.Models.Lamp;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.Utils.LampsDataBase;
 
 import java.util.ArrayList;
 

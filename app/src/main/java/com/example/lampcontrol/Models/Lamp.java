@@ -1,4 +1,4 @@
-package com.example.lampcontrol.POJO;
+package com.example.lampcontrol.Models;
 
 public class Lamp {
     private String name;

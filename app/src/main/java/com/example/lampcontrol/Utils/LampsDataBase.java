@@ -1,4 +1,4 @@
-package com.example.lampcontrol;
+package com.example.lampcontrol.Utils;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -7,7 +7,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.example.lampcontrol.POJO.Lamp;
+import com.example.lampcontrol.Models.Lamp;
 
 import java.util.ArrayList;
 

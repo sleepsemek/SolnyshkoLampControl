@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lampcontrol.Activities.MainActivity;
 import com.example.lampcontrol.Adapters.BondedDevicesAdapter;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.Utils.PermissionManager;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,8 @@ public class PageFragmentConnect extends Fragment {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothScanner;
+
+    private PermissionManager permissionManager;
 
     private boolean scanning = false;
     private Handler handler = new Handler();
@@ -61,6 +64,9 @@ public class PageFragmentConnect extends Fragment {
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireActivity().getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
+
+        MainActivity mAct = (MainActivity) requireActivity();
+        permissionManager = mAct.getPermissionManager();
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -105,8 +111,8 @@ public class PageFragmentConnect extends Fragment {
     }
 
     private void scanForDevices() {
-        MainActivity mAct = (MainActivity) requireActivity();
-        if (!mAct.checkForPermissions()) {
+
+        if (!permissionManager.checkForPermissions()) {
             makeToast("Пожалуйста, выдайте необходимые для работы разрешения");
             return;
         }

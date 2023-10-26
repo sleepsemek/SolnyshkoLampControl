@@ -7,8 +7,8 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.lampcontrol.LampsDataBase;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.Utils.LampsDataBase;
 
 public class EditLampActivity extends AppCompatActivity {
 
