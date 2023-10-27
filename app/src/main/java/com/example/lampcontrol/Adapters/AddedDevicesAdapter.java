@@ -2,9 +2,12 @@ package com.example.lampcontrol.Adapters;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -31,6 +34,8 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     private final ArrayList<Lamp> addedList;
     private final LampsDataBase dataBase;
 
+    private Handler handler;
+
     private final int MENU_RENAME = R.id.rename;
     private final int MENU_DELETE = R.id.delete;
 
@@ -38,6 +43,8 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
         this.context = applicationContext;
         this.addedList = dataBase.getList();
         this.dataBase = dataBase;
+
+        handler = new Handler();
     }
 
     @NonNull
@@ -88,8 +95,14 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
         builder.setMessage("Вы уверены, что хотите удалить устройство?");
 
         builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Удалить</font>"), (dialog, which) -> {
-            remove(addedList.get(holder.getAdapterPosition()).getAddress());
-            notifyDataSetChanged();
+            holder.itemView.animate().scaleX(0).scaleY(0).setDuration(300).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    remove(addedList.get(holder.getAdapterPosition()).getAddress());
+                    notifyItemRemoved(holder.getAdapterPosition());
+                }
+            }).start();
         });
 
         builder.setNegativeButton("Отменить", (dialog, which) -> {});

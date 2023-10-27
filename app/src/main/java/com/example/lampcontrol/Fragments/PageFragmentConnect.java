@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -22,7 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lampcontrol.Activities.MainActivity;
-import com.example.lampcontrol.Adapters.BondedDevicesAdapter;
+import com.example.lampcontrol.Adapters.DiscoveredDevicesAdapter;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.PermissionManager;
 
@@ -30,11 +29,10 @@ import java.util.ArrayList;
 
 public class PageFragmentConnect extends Fragment {
 
-    private BondedDevicesAdapter bondedDevicesAdapter;
+    private DiscoveredDevicesAdapter discoveredDevicesAdapter;
     private RecyclerView recyclerView;
 
     private AppCompatButton refreshButton;
-    private AppCompatButton addButton;
     private ValueAnimator animator;
 
     private final ArrayList<BluetoothDevice> devicesList = new ArrayList<>();
@@ -62,8 +60,9 @@ public class PageFragmentConnect extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         recyclerView = requireView().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireActivity().getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity().getApplicationContext()));
+        discoveredDevicesAdapter = new DiscoveredDevicesAdapter(requireActivity().getApplicationContext(), devicesList);
+        recyclerView.setAdapter(discoveredDevicesAdapter);
 
         MainActivity mAct = (MainActivity) requireActivity();
         permissionManager = mAct.getPermissionManager();
@@ -71,17 +70,9 @@ public class PageFragmentConnect extends Fragment {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
 
-        bondedDevicesAdapter = new BondedDevicesAdapter(requireActivity().getApplicationContext(), devicesList);
-        recyclerView.setAdapter(bondedDevicesAdapter);
-
         refreshButton = requireView().findViewById(R.id.refresh);
         refreshButton.setOnClickListener(view1 -> {
             scanForDevices();
-        });
-
-        addButton = requireView().findViewById(R.id.add);
-        addButton.setOnClickListener(view1 -> {
-            openBluetoothDevicesSettings();
         });
 
         scanForDevices();
@@ -140,7 +131,7 @@ public class PageFragmentConnect extends Fragment {
             super.onScanResult(callbackType, result);
 
             BluetoothDevice device = result.getDevice();
-            bondedDevicesAdapter.addDevice(device);
+            discoveredDevicesAdapter.addDevice(device);
         }
 
         @Override
@@ -152,12 +143,6 @@ public class PageFragmentConnect extends Fragment {
 
     private void makeToast(String msg) {
         Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
-    }
-
-    private void openBluetoothDevicesSettings() {
-        Intent intentOpenBluetoothSettings = new Intent();
-        intentOpenBluetoothSettings.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-        startActivity(intentOpenBluetoothSettings);
     }
 
 }

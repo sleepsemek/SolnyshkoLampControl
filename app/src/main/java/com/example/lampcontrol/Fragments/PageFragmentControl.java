@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,10 +46,9 @@ public class PageFragmentControl extends Fragment {
 
         RecyclerView devicesList = requireView().findViewById(R.id.devicesList);
         devicesList.setHasFixedSize(true);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(requireActivity().getApplicationContext());
-        devicesList.setLayoutManager(layoutManager);
-        AddedDevicesAdapter addedDevicesAdapter = new AddedDevicesAdapter(requireActivity().getApplicationContext(), dataBase);
-        devicesList.setAdapter(addedDevicesAdapter);
+        devicesList.setLayoutManager(new LinearLayoutManager(requireActivity().getApplicationContext()));
+        devicesList.setItemAnimator(new DefaultItemAnimator());
+        devicesList.setAdapter(new AddedDevicesAdapter(requireActivity().getApplicationContext(), dataBase));
     }
 
     public class Hint {

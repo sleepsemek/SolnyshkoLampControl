@@ -7,29 +7,30 @@
     android:background="?attr/colorOnPrimary"
     tools:context=".Activities.MainActivity">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@drawable/nav_bar"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/actionButton"
+        android:layout_width="63dp"
+        android:layout_height="70dp"
+        android:clickable="true"
+        android:translationZ="10dp"
+        android:layout_margin="25dp"
+        android:background="@drawable/button"
+        android:backgroundTint="@color/dark_blue"
+        android:foreground="@drawable/ic_baseline_add_48"
+        android:foregroundTint="?attr/colorOnPrimary"
+        android:foregroundGravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:tabIndicatorColor="@color/main_blue"
-        app:tabSelectedTextColor="@color/main_blue"
-        app:tabTextColor="@color/dark_blue">
-
-    </com.google.android.material.tabs.TabLayout>
+        app:srcCompat="@drawable/ic_baseline_add_48" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="60dp"
-        app:layout_constraintBottom_toTopOf="@+id/tabLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
     </FrameLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
