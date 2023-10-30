@@ -10,15 +10,15 @@ import android.database.sqlite.SQLiteDatabase;
 import com.example.lampcontrol.Models.Lamp;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LampsDataBase {
 
     private final SQLiteDatabase lampsDataBase;
     private final ArrayList<Lamp> devicesAddedList = new ArrayList<>();
-    private DataBaseListener listener;
+    private List<DataBaseListener> listeners = new ArrayList<>();
 
     public LampsDataBase(Context context) {
-        this.listener = null;
         lampsDataBase = context.openOrCreateDatabase("lamps.db", MODE_PRIVATE, null);
         lampsDataBase.execSQL("CREATE TABLE IF NOT EXISTS lamps (" +
                 "id INTEGER PRIMARY KEY," +
@@ -47,8 +47,8 @@ public class LampsDataBase {
             devicesAddedList.add(createList);
         }
         cursor.close();
-        if (listener != null) {
-            listener.onSetChange(devicesAddedList);
+        if (!listeners.isEmpty()) {
+            triggerEvent();
         }
         return devicesAddedList;
     }
@@ -62,12 +62,19 @@ public class LampsDataBase {
         return updateList();
     }
 
-    public void setDataBaseListener(DataBaseListener listener) {
-        this.listener = listener;
+    public void addDataBaseListener(DataBaseListener listener) {
+        listeners.add(listener);
+    }
+
+    public void triggerEvent() {
+        for (DataBaseListener listener : listeners) {
+            listener.onSetChange(devicesAddedList);
+        }
     }
 
     public interface DataBaseListener {
         void onSetChange(ArrayList<Lamp> list);
     }
+
 
 }

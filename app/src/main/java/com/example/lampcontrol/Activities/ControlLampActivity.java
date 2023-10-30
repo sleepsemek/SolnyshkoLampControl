@@ -65,9 +65,7 @@ public class ControlLampActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-        if (address != null) {
-            connectedThread.cancelRunning();
-        }
+        hideInterface();
         bottomSheetTimer.secTimer.stopPreheat();
         bottomSheetTimer.secTimer.stopTimer();
     }
@@ -75,7 +73,7 @@ public class ControlLampActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        connectedThread.cancelRunning();
+        connectedThread.cancel();
     }
 
     @Override
@@ -94,21 +92,7 @@ public class ControlLampActivity extends AppCompatActivity {
             }
         });
 
-        connectedThread.setOnCommandReceivedListener(new BluetoothConnectionThread.onCommandReceivedListener() {
-            @Override
-            public void onCommandReceived(int command) {
-                buttons.setState(command);
-            }
-
-            @Override
-            public void onTimerTimeReceived(long millis) {
-                bottomSheetTimer.secTimer.setTimerTime(millis);
-            }
-
-            @Override
-            public void onPreheatTimeReceived(long millis) {
-                bottomSheetTimer.secTimer.setPreheatTimerTime(millis);
-            }
+        connectedThread.setOnCommandReceivedListener(command -> {
 
         });
 
@@ -129,7 +113,7 @@ public class ControlLampActivity extends AppCompatActivity {
     private void showInterface() {
         lampName.setText(name);
         buttons.show();
-        connectedThread.getStatus();
+        connectedThread.getLampStatus();
     }
 
     private class SecTimer {
@@ -156,11 +140,11 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void beginDevicePreheatTimer() {
-            connectedThread.sendData("timer:preheat#");
+            connectedThread.sendCommand("timer:preheat#");
         }
 
         private void beginDeviceTimer() {
-            connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
+            connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
         }
 
         private void setPreheatTimerTime(long millis) {
@@ -179,7 +163,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    connectedThread.sendData("timer:preheatstop#");
+                    connectedThread.sendCommand("timer:preheatstop#");
                     stopPreheat();
                     bottomSheetTimer.secTimer.beginDeviceTimer();
                 }
@@ -239,8 +223,8 @@ public class ControlLampActivity extends AppCompatActivity {
                 @Override
                 public void onFinish() {
                     if (remainedIterations != iterations && remainedIterations != 0) {
-                        connectedThread.sendData("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
-                        connectedThread.sendData("timer:pause#");
+                        connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
+                        connectedThread.sendCommand("timer:pause#");
                     }
 
                 }
@@ -365,10 +349,10 @@ public class ControlLampActivity extends AppCompatActivity {
                         break;
 
                     case 3: //timer playing
-                        connectedThread.sendData("timer:pause#");
+                        connectedThread.sendCommand("timer:pause#");
                         break;
                     case 4: //timer paused
-                        connectedThread.sendData("timer:resume#");
+                        connectedThread.sendCommand("timer:resume#");
                         break;
                     case 5: //preheating
                         break;
@@ -383,7 +367,7 @@ public class ControlLampActivity extends AppCompatActivity {
                             return;
                         }
 
-                        connectedThread.sendData("relay:off#");
+                        connectedThread.sendCommand("relay:off#");
                         break;
 
                     case 0: //idle
@@ -391,7 +375,7 @@ public class ControlLampActivity extends AppCompatActivity {
                             return;
                         }
 
-                        connectedThread.sendData("relay:on#");
+                        connectedThread.sendCommand("relay:on#");
                         break;
 
                     case 3: //timer playing
@@ -399,7 +383,7 @@ public class ControlLampActivity extends AppCompatActivity {
                         if (bottomSheetTimer.secTimer.isPreheating) {
                             displayAlert();
                         } else if (bottomSheetTimer.secTimer.isPlaying) {
-                            connectedThread.sendData("timer:stop#");
+                            connectedThread.sendCommand("timer:stop#");
                         }
                         break;
 
@@ -529,8 +513,8 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                connectedThread.sendData("timer:preheatstop#");
-                connectedThread.sendData("relay:off#");
+                connectedThread.sendCommand("timer:preheatstop#");
+                connectedThread.sendCommand("relay:off#");
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});

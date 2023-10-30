@@ -40,7 +40,7 @@ public class PageFragmentControl extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         application = (LampApplication) requireActivity().getApplication();
         dataBase = application.getLampsDataBase();
-        dataBase.setDataBaseListener(list -> hintText.setHintText(list.isEmpty()));
+        dataBase.addDataBaseListener(list -> hintText.setHintText(list.isEmpty()));
 
         hintText = new Hint(R.id.textHint);
 

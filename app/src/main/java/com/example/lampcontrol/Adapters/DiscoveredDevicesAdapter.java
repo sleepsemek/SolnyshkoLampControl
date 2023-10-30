@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,7 +39,7 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
     public void onBindViewHolder(@NonNull DiscoveredDevicesAdapter.ViewHolder holder, int position) {
         holder.title.setText(devices.get(position).getName());
         holder.address.setText(devices.get(position).getAddress());
-        holder.addDeviceBox.setOnClickListener(view -> {
+        holder.itemView.setOnClickListener(view -> {
             Intent intent = new Intent(context, EditLampActivity.class);
             intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("address", devices.get(holder.getAdapterPosition()).getAddress() + "");
@@ -64,13 +63,11 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
     public static class ViewHolder extends RecyclerView.ViewHolder{
         private final TextView title;
         private final TextView address;
-        private final LinearLayout addDeviceBox;
 
         public ViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.BTdeviceName);
             address = view.findViewById(R.id.BTdeviceAddress);
-            addDeviceBox = view.findViewById(R.id.addDeviceBox);
         }
     }
 

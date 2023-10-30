@@ -64,6 +64,10 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
             intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");
             context.startActivity(intent);
         });
+        holder.itemView.setOnLongClickListener(view -> {
+
+            return true;
+        });
 
         holder.edit.setOnClickListener(view -> {
             Context wrapper = new ContextThemeWrapper(context, R.style.PopupMenu);
