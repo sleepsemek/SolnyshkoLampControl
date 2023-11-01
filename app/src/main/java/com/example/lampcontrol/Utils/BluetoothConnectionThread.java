@@ -7,10 +7,17 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 
 import androidx.annotation.NonNull;
 
+import com.example.lampcontrol.Models.CommandData;
+
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BluetoothConnectionThread extends Thread {
 
@@ -20,9 +27,18 @@ public class BluetoothConnectionThread extends Thread {
 
     private final BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
-    private BluetoothGattCharacteristic characteristic;
+    private BluetoothGattCharacteristic commandCharacteristic;
+    private BluetoothGattCharacteristic notifyCharacteristic;
+
+    private final Queue<CommandData> commandQueue = new ConcurrentLinkedQueue<>();
+    private HandlerThread commandHandlerThread;
+    private Handler commandHandler;
 
     private String address;
+
+    private final UUID serviceUUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
+    private final UUID commandCharacteristicsUUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8");
+    private final UUID notifyCharacteristicsUUID = UUID.fromString("1fd32b0a-aa51-4e49-92b2-9a8be97473c9");
 
     public BluetoothConnectionThread(Context context, String address) {
         this.stateListener = null;
@@ -34,8 +50,43 @@ public class BluetoothConnectionThread extends Thread {
 
     }
 
+    private void releaseResources() {
+        if (commandHandlerThread != null) {
+            commandHandlerThread.quitSafely();
+
+            try {
+                commandHandlerThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            commandHandlerThread = null;
+            commandHandler = null;
+        }
+    }
+
     public void run() {
         connectToDevice();
+        commandHandlerThread = new HandlerThread("CommandHandlerThread");
+        commandHandlerThread.start();
+        commandHandler = new Handler(commandHandlerThread.getLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                String command = (String) msg.obj;
+                handleCommand(command);
+                commandQueue.poll();
+            }
+        };
+
+    }
+
+    private void handleCommand(CommandData commandData) {
+        String command = commandData.getCommand();
+        String sourceCharacteristicUUID = commandData.getSourceCharacteristicUUID();
+
+        if (commandListener != null) {
+            commandListener.onCommandReceived("");
+        }
     }
 
     private void connectToDevice() {
@@ -79,28 +130,33 @@ public class BluetoothConnectionThread extends Thread {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                characteristic = gatt.getService(UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b"))
-                        .getCharacteristic(UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8"));
+                commandCharacteristic = gatt.getService(serviceUUID)
+                        .getCharacteristic(commandCharacteristicsUUID);
+                notifyCharacteristic = gatt.getService(serviceUUID)
+                                .getCharacteristic(notifyCharacteristicsUUID);
 
-                gatt.setCharacteristicNotification(characteristic, true);
+
+                gatt.setCharacteristicNotification(commandCharacteristic, true);
+                gatt.setCharacteristicNotification(notifyCharacteristic, true);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            UUID characteristicUUID = characteristic.getUuid();
             byte[] value = characteristic.getValue();
             String receivedData = new String(value);
-            System.out.println("Уведомление от устройства: " + receivedData);
-            if (commandListener != null) {
-                commandListener.onCommandReceived(receivedData);
-            }
+            CommandData commandData = new CommandData(receivedData, characteristicUUID.toString());
+            commandQueue.add(commandData);
+            commandHandler.sendMessage(commandHandler.obtainMessage(0, commandData));
         }
+
     };
 
     public void sendCommand(@NonNull String command) {
-        if (characteristic != null) {
-            characteristic.setValue(command);
-            bluetoothGatt.writeCharacteristic(characteristic);
+        if (commandCharacteristic != null) {
+            commandCharacteristic.setValue(command);
+            bluetoothGatt.writeCharacteristic(commandCharacteristic);
         }
     }
 
@@ -109,6 +165,7 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     public void cancel() {
+        releaseResources();
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }

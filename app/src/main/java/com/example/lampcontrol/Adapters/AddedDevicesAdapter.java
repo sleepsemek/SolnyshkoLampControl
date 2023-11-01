@@ -13,7 +13,6 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -64,14 +63,10 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
             intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");
             context.startActivity(intent);
         });
-//        holder.itemView.setOnLongClickListener(view -> {
-//
-//            return true;
-//        });
 
-        holder.edit.setOnClickListener(view -> {
+        holder.itemView.setOnLongClickListener(view -> {
             Context wrapper = new ContextThemeWrapper(context, R.style.PopupMenu);
-            PopupMenu popup = new PopupMenu(wrapper, holder.edit);
+            PopupMenu popup = new PopupMenu(wrapper, holder.itemView);
             popup.inflate(R.menu.added_lamp_menu);
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
@@ -86,7 +81,9 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
                 }
             });
             popup.show();
+            return true;
         });
+
     }
 
     private void remove(String address) {
@@ -130,12 +127,10 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView title;
-        private final ImageButton edit;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.addedName);
-            edit = itemView.findViewById(R.id.edit);
         }
     }
 }

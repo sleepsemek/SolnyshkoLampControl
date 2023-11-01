@@ -7,7 +7,7 @@
     android:background="?attr/colorOnPrimary"
     tools:context=".Activities.MainActivity">
 
-    <androidx.appcompat.widget.AppCompatButton
+    <com.example.lampcontrol.Views.FloatingActionButton
         android:id="@+id/actionButton"
         android:layout_width="63dp"
         android:layout_height="70dp"
