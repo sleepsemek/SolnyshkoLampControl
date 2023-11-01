@@ -13,8 +13,6 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-import com.example.lampcontrol.Models.CommandData;
-
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,7 +28,7 @@ public class BluetoothConnectionThread extends Thread {
     private BluetoothGattCharacteristic commandCharacteristic;
     private BluetoothGattCharacteristic notifyCharacteristic;
 
-    private final Queue<CommandData> commandQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<BluetoothGattCharacteristic> commandQueue = new ConcurrentLinkedQueue<>();
     private HandlerThread commandHandlerThread;
     private Handler commandHandler;
 
@@ -72,17 +70,22 @@ public class BluetoothConnectionThread extends Thread {
         commandHandler = new Handler(commandHandlerThread.getLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                String command = (String) msg.obj;
-                handleCommand(command);
+                if (msg.obj instanceof BluetoothGattCharacteristic) {
+                    BluetoothGattCharacteristic characteristic = (BluetoothGattCharacteristic) msg.obj;
+                    handleCommand(characteristic);
+                }
                 commandQueue.poll();
             }
         };
 
     }
 
-    private void handleCommand(CommandData commandData) {
-        String command = commandData.getCommand();
-        String sourceCharacteristicUUID = commandData.getSourceCharacteristicUUID();
+    private void handleCommand(BluetoothGattCharacteristic characteristic) {
+        final String value = new String(characteristic.getStringValue(0));
+
+        if (characteristic.getUuid() != null && characteristic.getUuid().equals(characteristic.getUuid())) {
+            System.out.println(value);
+        }
 
         if (commandListener != null) {
             commandListener.onCommandReceived("");
@@ -135,29 +138,34 @@ public class BluetoothConnectionThread extends Thread {
                 notifyCharacteristic = gatt.getService(serviceUUID)
                                 .getCharacteristic(notifyCharacteristicsUUID);
 
-
-                gatt.setCharacteristicNotification(commandCharacteristic, true);
                 gatt.setCharacteristicNotification(notifyCharacteristic, true);
+                bluetoothGatt.readCharacteristic(commandCharacteristic);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            UUID characteristicUUID = characteristic.getUuid();
-            byte[] value = characteristic.getValue();
-            String receivedData = new String(value);
-            CommandData commandData = new CommandData(receivedData, characteristicUUID.toString());
-            commandQueue.add(commandData);
-            commandHandler.sendMessage(commandHandler.obtainMessage(0, commandData));
+            commandQueue.add(characteristic);
+            commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
         }
 
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                commandQueue.add(characteristic);
+                commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
+            }
+        }
     };
 
-    public void sendCommand(@NonNull String command) {
-        if (commandCharacteristic != null) {
-            commandCharacteristic.setValue(command);
-            bluetoothGatt.writeCharacteristic(commandCharacteristic);
+    public boolean sendCommand(@NonNull String command) {
+        if (commandCharacteristic == null) {
+            return false;
         }
+
+        commandCharacteristic.setValue(command);
+        return bluetoothGatt.writeCharacteristic(commandCharacteristic);
     }
 
     public void getLampStatus() {
