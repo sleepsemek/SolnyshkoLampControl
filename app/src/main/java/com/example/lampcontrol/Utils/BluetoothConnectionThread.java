@@ -13,6 +13,9 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
+import com.example.lampcontrol.Models.ReceivedLampState;
+import com.google.gson.Gson;
+
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -32,6 +35,8 @@ public class BluetoothConnectionThread extends Thread {
     private HandlerThread commandHandlerThread;
     private Handler commandHandler;
 
+    Gson gson = new Gson();
+
     private String address;
 
     private final UUID serviceUUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
@@ -45,7 +50,6 @@ public class BluetoothConnectionThread extends Thread {
         this.address = address;
 
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     }
 
     private void releaseResources() {
@@ -81,15 +85,24 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     private void handleCommand(BluetoothGattCharacteristic characteristic) {
+        if (characteristic.getUuid() == null) {
+            return;
+        }
+
         final String value = new String(characteristic.getStringValue(0));
 
-        if (characteristic.getUuid() != null && characteristic.getUuid().equals(characteristic.getUuid())) {
-            System.out.println(value);
+        if (characteristic.getUuid().equals(commandCharacteristicsUUID)) {
+            ReceivedLampState lampState = gson.fromJson(value, ReceivedLampState.class);
+            System.out.println(lampState.getState());
+            System.out.println(lampState.getPreheat());
+            System.out.println(lampState.getTimer());
+            if (commandListener != null) {
+                commandListener.onCommandReceived(lampState);
+            }
+        } else if (characteristic.getUuid().equals(notifyCharacteristicsUUID)) {
+            bluetoothGatt.readCharacteristic(commandCharacteristic);
         }
 
-        if (commandListener != null) {
-            commandListener.onCommandReceived("");
-        }
     }
 
     private void connectToDevice() {
@@ -193,7 +206,7 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     public interface onCommandReceivedListener {
-        void onCommandReceived(String command);
+        void onCommandReceived(ReceivedLampState lampState);
     }
 
 

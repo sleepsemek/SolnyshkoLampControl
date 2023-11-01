@@ -92,7 +92,7 @@ public class ControlLampActivity extends AppCompatActivity {
             }
         });
 
-        connectedThread.setOnCommandReceivedListener(command -> {
+        connectedThread.setOnCommandReceivedListener(lampState -> {
 
         });
 
