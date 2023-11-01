@@ -94,8 +94,8 @@ public class BluetoothConnectionThread extends Thread {
         if (characteristic.getUuid().equals(commandCharacteristicsUUID)) {
             ReceivedLampState lampState = gson.fromJson(value, ReceivedLampState.class);
             System.out.println(lampState.getState());
-            System.out.println(lampState.getPreheat());
-            System.out.println(lampState.getTimer());
+            System.out.println(lampState.getPreheat().getTimeLeft());
+            System.out.println(lampState.getTimer().getTimeLeft());
             if (commandListener != null) {
                 commandListener.onCommandReceived(lampState);
             }
