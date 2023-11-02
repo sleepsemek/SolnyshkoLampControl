@@ -3,7 +3,13 @@ package com.example.lampcontrol.Models;
 import com.google.gson.annotations.SerializedName;
 
 public class ReceivedLampState {
-    private int state;
+
+    public enum RelayState {
+        OFF, ON, PREHEATING, ACTIVE, PAUSED
+    }
+
+    @SerializedName("state")
+    private RelayState lampState;
 
     @SerializedName("timer")
     private Timer timer;
@@ -11,8 +17,8 @@ public class ReceivedLampState {
     @SerializedName("preheat")
     private Preheat preheat;
 
-    public int getState() {
-        return state;
+    public RelayState getState() {
+        return lampState;
     }
 
     public Timer getTimer() {

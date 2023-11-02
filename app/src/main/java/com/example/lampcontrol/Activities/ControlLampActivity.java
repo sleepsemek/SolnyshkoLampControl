@@ -3,14 +3,10 @@ package com.example.lampcontrol.Activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Html;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -18,11 +14,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.content.ContextCompat;
 
+import com.example.lampcontrol.Models.ReceivedLampState;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.BluetoothConnectionThread;
 import com.example.lampcontrol.Utils.ValuesSavingManager;
+import com.example.lampcontrol.Views.MainControlButton;
+import com.example.lampcontrol.Views.MainOnOffButton;
 import com.example.lampcontrol.Views.TimerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -93,7 +91,7 @@ public class ControlLampActivity extends AppCompatActivity {
         });
 
         connectedThread.setOnCommandReceivedListener(lampState -> {
-
+            buttons.setState(lampState.getState());
         });
 
     }
@@ -102,11 +100,8 @@ public class ControlLampActivity extends AppCompatActivity {
         lampName.setText("Установка соединения");
         buttons.hide();
 
-        if (bottomSheetTimer.secTimer.isPreheating) {
-            bottomSheetTimer.secTimer.stopPreheat();
-        } else if (bottomSheetTimer.secTimer.isPlaying) {
-            bottomSheetTimer.secTimer.stopTimer();
-        }
+        bottomSheetTimer.secTimer.stopPreheat();
+        bottomSheetTimer.secTimer.stopTimer();
 
     }
 
@@ -117,12 +112,8 @@ public class ControlLampActivity extends AppCompatActivity {
     }
 
     private class SecTimer {
-
         private CountDownTimer preheatTimer;
         private CountDownTimer mainTimer;
-
-        private boolean isPreheating = false;
-        private boolean isPlaying = false;
 
         private int iterations;
         private long iterationTimeMillis;
@@ -148,10 +139,9 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void setPreheatTimerTime(long millis) {
-            if (millis == 0) {
+            if (millis == 1) {
                 return;
             }
-            isPreheating = true;
 
             timerDialView.setBounds(60000, 1);
 
@@ -173,7 +163,6 @@ public class ControlLampActivity extends AppCompatActivity {
 
         private void runPreheat() {
             if (preheatTimer != null) {
-                isPreheating = true;
                 preheatTimer.start();
             } else {
                 this.stopPreheat();
@@ -187,22 +176,19 @@ public class ControlLampActivity extends AppCompatActivity {
 
             timerDialView.setBounds(0, 1);
             setTimerViewTime(0, 0, 0);
-            isPreheating = false;
         }
 
         private void cancelPreheat() {
             if (preheatTimer != null) {
                 preheatTimer.cancel();
             }
-            isPreheating = false;
         }
 
         private void setTimerTime(long millis) {
             millis -= 10;
-            if (millis == 0) {
+            if (millis <= 0) {
                 return;
             }
-            isPlaying = true;
 
             int remainedIterations = (int) Math.floor(millis / (float) iterationTimeMillis);
             long remainedTime = millis % iterationTimeMillis;
@@ -239,7 +225,6 @@ public class ControlLampActivity extends AppCompatActivity {
             if (mainTimer != null) {
                 mainTimer.start();
                 timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
-                isPlaying = true;
             }
 
         }
@@ -250,14 +235,12 @@ public class ControlLampActivity extends AppCompatActivity {
             }
             timerDialView.setBounds(0, 1);
             setTimerViewTime(0, 0, 0);
-            isPlaying = false;
         }
 
         public void pauseTimer() {
             if (mainTimer != null) {
                 mainTimer.cancel();
             }
-            isPlaying = true;
         }
 
     }
@@ -319,172 +302,82 @@ public class ControlLampActivity extends AppCompatActivity {
     }
 
     private class Buttons {
-        private final AppCompatButton mainButton;
 
-        private final Button onOffButton;
+        private final MainControlButton mainButton;
+        private final MainOnOffButton onOffButton;
         private final LinearLayout onOffButtonHolder;
-        private final TextView onOffButtonText;
 
-        private int state = 0;
         private final Context context;
 
         public Buttons(Context context) {
             mainButton = findViewById(R.id.main_button);
-
             onOffButton = findViewById(R.id.onOffBtn);
             onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
-            onOffButtonText = findViewById(R.id.onOffBtnText);
 
             this.context = context;
 
             mainButton.setOnClickListener(view -> {
-                switch (state) {
-                    case 0:
-                    case 1: //relay is on/idle
-                        if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
-                            return;
-                        }
-
+                switch (mainButton.getState()) {
+                    case OFF:
+                    case ON:
                         bottomSheetTimer.bottomSheetDialog.show();
                         break;
-
-                    case 3: //timer playing
+                    case ACTIVE:
                         connectedThread.sendCommand("timer:pause#");
                         break;
-                    case 4: //timer paused
+                    case PAUSED:
                         connectedThread.sendCommand("timer:resume#");
                         break;
-                    case 5: //preheating
+                    case PREHEATING:
                         break;
 
                 }
             });
 
             onOffButton.setOnClickListener(view1 -> {
-                switch (state) {
-                    case 1: //on
-                        if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
-                            return;
-                        }
-
+                switch (mainButton.getState()) {
+                    case ON:
                         connectedThread.sendCommand("relay:off#");
                         break;
 
-                    case 0: //idle
-                        if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
-                            return;
-                        }
-
+                    case OFF:
                         connectedThread.sendCommand("relay:on#");
                         break;
 
-                    case 3: //timer playing
-                    case 4: //timer paused
-                        if (bottomSheetTimer.secTimer.isPreheating) {
-                            displayAlert();
-                        } else if (bottomSheetTimer.secTimer.isPlaying) {
-                            connectedThread.sendCommand("timer:stop#");
-                        }
+                    case ACTIVE:
+                    case PAUSED:
+                        connectedThread.sendCommand("timer:stop#");
                         break;
 
-                    case 5: //preheating
+                    case PREHEATING:
                         displayAlert();
                         break;
                 }
             });
         }
 
-        public void setState(int state) {
+        public void setState(ReceivedLampState.RelayState state) {
+            mainButton.setState(state);
+            onOffButton.setState(state);
             switch (state) {
-                case 2: //turned off
-                    if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
-                        return;
-                    }
-
-                    this.state = 0;
-
+                case OFF:
                     bottomSheetTimer.secTimer.stopPreheat();
-
-                    mainButton.setText("Таймер");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-
-                    onOffButtonText.setText("Вкл");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-
-                    break;
-
-                case 1: //turned on
-                    if (bottomSheetTimer.secTimer.isPlaying || bottomSheetTimer.secTimer.isPreheating) {
-                        return;
-                    }
-
-                    this.state = 1;
-
-                    onOffButtonText.setText("Выкл");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-
-                    break;
-
-                case 3: //timer started
-                    this.state = 3;
-
-                    bottomSheetTimer.secTimer.startTimer();
-
-                    mainButton.setText("Пауза");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-                    onOffButtonText.setText("Отмена");
-                    break;
-
-                case 4: //timer is not active
-                    if (bottomSheetTimer.secTimer.isPreheating) {
-                        return;
-                    }
-                    this.state = 0;
-
                     bottomSheetTimer.secTimer.stopTimer();
-
-                    mainButton.setText("Таймер");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-
-                    onOffButtonText.setText("Вкл");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
 
-                case 5: //timer paused
-                    this.state = 4;
+                case ON:
+                    break;
 
+                case ACTIVE:
+                    bottomSheetTimer.secTimer.startTimer();
+                    break;
+
+                case PAUSED:
                     bottomSheetTimer.secTimer.pauseTimer();
-
-                    onOffButtonText.setText("Отмена");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-
-                    mainButton.setText("Пуск");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
 
-                case 6: //preheat started
-                    this.state = 5;
-
-                    mainButton.setText("Прогрев");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.dark_blue)));
-
-                    onOffButtonText.setText("Отмена");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-
+                case PREHEATING:
                     bottomSheetTimer.secTimer.runPreheat();
-                    break;
-                case 7: //preheat finished or not active
-                    this.state = 0;
-
-                    bottomSheetTimer.secTimer.cancelPreheat();
-
-                    mainButton.setText("Таймер");
-                    mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_blue)));
-
-                    onOffButtonText.setText("Вкл");
-                    onOffButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
                     break;
 
             }
@@ -492,19 +385,13 @@ public class ControlLampActivity extends AppCompatActivity {
         }
 
         private void hide() {
-            mainButton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(getApplicationContext(), R.color.main_red)));
-            mainButton.setClickable(false);
-            mainButton.setText("");
+            mainButton.hideButton();
             onOffButtonHolder.setVisibility(View.INVISIBLE);
-            mainButton.animate().rotationBy(360000).setDuration(500000).setInterpolator(new LinearInterpolator()).start();
         }
 
         private void show() {
-            mainButton.clearAnimation();
-            mainButton.setClickable(true);
+            mainButton.showButton();
             onOffButtonHolder.setVisibility(View.VISIBLE);
-            mainButton.animate().cancel();
-            mainButton.animate().rotation(0).setDuration(0).setInterpolator(new DecelerateInterpolator());
         }
 
         private void displayAlert() {

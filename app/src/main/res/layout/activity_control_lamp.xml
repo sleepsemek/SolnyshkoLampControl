@@ -75,7 +75,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/button" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.example.lampcontrol.Views.MainControlButton
             android:id="@+id/main_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
         android:paddingStart="25dp"
         android:paddingBottom="25dp">
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.example.lampcontrol.Views.MainOnOffButton
             android:id="@+id/onOffBtn"
             android:layout_width="52dp"
             android:layout_height="60dp"
@@ -130,20 +130,12 @@
             android:backgroundTint="@color/main_red"
             android:foreground="@drawable/ic_baseline_power_settings_new_24"
             android:foregroundTint="?attr/colorOnPrimary"
-            android:foregroundGravity="center" />
-
-        <TextView
-            android:id="@+id/onOffBtnText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/timerDialView"
-            android:gravity="center"
-            android:text="Вкл"
             android:textColor="?attr/colorSecondary"
+            android:textAllCaps="false"
             android:textSize="18dp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:foregroundGravity="center"/>
+
 
     </LinearLayout>
 
