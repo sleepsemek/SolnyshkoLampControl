@@ -14,6 +14,7 @@ import android.os.Message;
 import androidx.annotation.NonNull;
 
 import com.example.lampcontrol.Models.ReceivedLampState;
+import com.example.lampcontrol.Models.SentCommand;
 import com.google.gson.Gson;
 
 import java.util.Queue;
@@ -24,7 +25,6 @@ public class BluetoothConnectionThread extends Thread {
 
     private onConnectionStateChangeListener stateListener;
     private onCommandReceivedListener commandListener;
-    private final Context context;
 
     private final BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
@@ -35,9 +35,9 @@ public class BluetoothConnectionThread extends Thread {
     private HandlerThread commandHandlerThread;
     private Handler commandHandler;
 
-    Gson gson = new Gson();
-
-    private String address;
+    private final Gson gson = new Gson();
+    private final Context context;
+    private final String address;
 
     private final UUID serviceUUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
     private final UUID commandCharacteristicsUUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8");
@@ -89,6 +89,7 @@ public class BluetoothConnectionThread extends Thread {
             return;
         }
 
+        System.out.println("something came in");
         final String value = new String(characteristic.getStringValue(0));
 
         if (characteristic.getUuid().equals(commandCharacteristicsUUID)) {
@@ -107,7 +108,7 @@ public class BluetoothConnectionThread extends Thread {
         bluetoothGatt = device.connectGatt(context, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
     }
 
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -167,19 +168,22 @@ public class BluetoothConnectionThread extends Thread {
                 commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
             }
         }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            bluetoothGatt.readCharacteristic(commandCharacteristic);
+        }
     };
 
-    public boolean sendCommand(@NonNull String command) {
+    public boolean sendCommand(@NonNull SentCommand command) {
         if (commandCharacteristic == null) {
             return false;
         }
 
-        commandCharacteristic.setValue(command);
+        String jsonCommand = gson.toJson(command);
+        commandCharacteristic.setValue(jsonCommand);
         return bluetoothGatt.writeCharacteristic(commandCharacteristic);
-    }
-
-    public void getLampStatus() {
-
     }
 
     public void cancel() {

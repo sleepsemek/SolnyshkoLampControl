@@ -20,9 +20,9 @@ import com.example.lampcontrol.R;
 public class MainOnOffButton extends AppCompatButton {
 
     private ReceivedLampState.RelayState state = OFF;
-    private Context context;
+    private final Context context;
     private String text = "Вкл";
-    private Paint paint;
+    private final Paint paint;
 
     public MainOnOffButton(@NonNull Context context) {
         super(context);
@@ -40,6 +40,7 @@ public class MainOnOffButton extends AppCompatButton {
         super(context, attrs, defStyleAttr);
         this.context = context;
         this.paint = new Paint();
+        invalidate();
     }
 
     public ReceivedLampState.RelayState getState() {
@@ -55,43 +56,53 @@ public class MainOnOffButton extends AppCompatButton {
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
 
         float textX = (getWidth() - paint.measureText(text)) / 2;
-        float textY = getHeight() + getTextSize();
+        float textY = getHeight() + 2 * getTextSize();
 
         canvas.drawText(text, textX, textY, paint);
     }
 
     public void setState(ReceivedLampState.RelayState state) {
         this.state = state;
-        switch (state) {
-            case OFF:
-                text = "Вкл";
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
-                break;
+        post(new Runnable() {
+            @Override
+            public void run() {
+                switch (state) {
+                    case OFF:
+                        setTextBelow("Вкл");
+                        MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
+                        break;
 
-            case ON:
-                text = "Выкл";
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
+                    case ON:
+                        setTextBelow("Выкл");
+                        MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
 
-                break;
+                        break;
 
-            case ACTIVE:
-                text = "Пауза";
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
+                    case ACTIVE:
+                        setTextBelow("Пауза");
+                        MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
 
-                break;
+                        break;
 
-            case PAUSED:
-                text = "Пуск";
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
+                    case PAUSED:
+                        setTextBelow("Пуск");
+                        MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
 
-                break;
+                        break;
 
-            case PREHEATING:
-                text = "Прогрев";
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
+                    case PREHEATING:
+                        setTextBelow("Прогрев");
+                        MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
 
-                break;
+                        break;
 
-        }
+                }
+            }
+        });
+    }
+
+    private void setTextBelow(String text) {
+        this.text = text;
+        invalidate();
     }
 }

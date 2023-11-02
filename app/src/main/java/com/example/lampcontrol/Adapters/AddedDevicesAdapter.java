@@ -7,7 +7,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -33,8 +32,6 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     private final ArrayList<Lamp> addedList;
     private final LampsDataBase dataBase;
 
-    private Handler handler;
-
     private final int MENU_RENAME = R.id.rename;
     private final int MENU_DELETE = R.id.delete;
 
@@ -42,8 +39,6 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
         this.context = applicationContext;
         this.addedList = dataBase.getList();
         this.dataBase = dataBase;
-
-        handler = new Handler();
     }
 
     @NonNull

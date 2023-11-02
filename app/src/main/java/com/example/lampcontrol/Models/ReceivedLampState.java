@@ -1,6 +1,12 @@
 package com.example.lampcontrol.Models;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
 
 public class ReceivedLampState {
 
@@ -9,6 +15,7 @@ public class ReceivedLampState {
     }
 
     @SerializedName("state")
+    @JsonAdapter(RelayStateAdapter.class)
     private RelayState lampState;
 
     @SerializedName("timer")
@@ -44,6 +51,19 @@ public class ReceivedLampState {
 
         public int getTimeLeft() {
             return timeLeft;
+        }
+    }
+
+    public static class RelayStateAdapter extends TypeAdapter<RelayState> {
+        @Override
+        public void write(JsonWriter out, RelayState value) throws IOException {
+            out.value(value.name());
+        }
+
+        @Override
+        public RelayState read(JsonReader in) throws IOException {
+            int numericValue = in.nextInt();
+            return RelayState.values()[numericValue];
         }
     }
 }

@@ -16,7 +16,7 @@ public class LampsDataBase {
 
     private final SQLiteDatabase lampsDataBase;
     private final ArrayList<Lamp> devicesAddedList = new ArrayList<>();
-    private List<DataBaseListener> listeners = new ArrayList<>();
+    private final List<DataBaseListener> listeners = new ArrayList<>();
 
     public LampsDataBase(Context context) {
         lampsDataBase = context.openOrCreateDatabase("lamps.db", MODE_PRIVATE, null);

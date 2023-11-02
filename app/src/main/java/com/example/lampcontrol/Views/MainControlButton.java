@@ -20,7 +20,7 @@ import com.example.lampcontrol.R;
 public class MainControlButton extends AppCompatButton implements View.OnClickListener {
 
     private ReceivedLampState.RelayState state = OFF;
-    private Context context;
+    private final Context context;
 
     public MainControlButton(@NonNull Context context) {
         super(context);
@@ -48,38 +48,38 @@ public class MainControlButton extends AppCompatButton implements View.OnClickLi
 
     public void setState(ReceivedLampState.RelayState state) {
         this.state = state;
-        switch (state) {
-            case OFF:
-                this.setText("Таймер");
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
+        post(new Runnable() {
+            @Override
+            public void run() {
+                switch (state) {
+                    case ON:
+                    case OFF:
+                        MainControlButton.this.setText("Таймер");
+                        MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
 
-                break;
+                        break;
 
-            case ON:
-                this.setText("Выкл");
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
-
-                break;
-
-            case ACTIVE:
-                this.setText("Пауза");
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
-                break;
+                    case ACTIVE:
+                        MainControlButton.this.setText("Пауза");
+                        MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
+                        break;
 
 
-            case PAUSED:
-                this.setText("Пуск");
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
+                    case PAUSED:
+                        MainControlButton.this.setText("Пуск");
+                        MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
 
-                break;
+                        break;
 
-            case PREHEATING:
-                this.setText("Прогрев");
-                this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
+                    case PREHEATING:
+                        MainControlButton.this.setText("Прогрев");
+                        MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
 
-                break;
+                        break;
 
-        }
+                }
+            }
+        });
     }
 
     public void startRotatingAnimation() {

@@ -48,7 +48,7 @@ public class PageFragmentConnect extends Fragment {
     private PermissionManager permissionManager;
 
     private boolean scanning = false;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

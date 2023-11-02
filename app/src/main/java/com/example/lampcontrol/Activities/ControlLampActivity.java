@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
 import com.example.lampcontrol.Models.ReceivedLampState;
+import com.example.lampcontrol.Models.SentCommand;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.BluetoothConnectionThread;
 import com.example.lampcontrol.Utils.ValuesSavingManager;
@@ -108,7 +109,6 @@ public class ControlLampActivity extends AppCompatActivity {
     private void showInterface() {
         lampName.setText(name);
         buttons.show();
-        connectedThread.getLampStatus();
     }
 
     private class SecTimer {
@@ -126,16 +126,10 @@ public class ControlLampActivity extends AppCompatActivity {
         private void start() {
             iterations = valuesSavingManager.getIterations();
             iterationTimeMillis = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
-
-            beginDevicePreheatTimer();
-        }
-
-        private void beginDevicePreheatTimer() {
-            connectedThread.sendCommand("timer:preheat#");
         }
 
         private void beginDeviceTimer() {
-            connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * iterations) + "#");
+            connectedThread.sendCommand(new SentCommand("set", (iterationTimeMillis / 1000 * iterations)));
         }
 
         private void setPreheatTimerTime(long millis) {
@@ -153,7 +147,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    connectedThread.sendCommand("timer:preheatstop#");
+                    connectedThread.sendCommand(new SentCommand(0));
                     stopPreheat();
                     bottomSheetTimer.secTimer.beginDeviceTimer();
                 }
@@ -209,8 +203,8 @@ public class ControlLampActivity extends AppCompatActivity {
                 @Override
                 public void onFinish() {
                     if (remainedIterations != iterations && remainedIterations != 0) {
-                        connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
-                        connectedThread.sendCommand("timer:pause#");
+//                        connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
+//                        connectedThread.sendCommand("timer:pause#");
                     }
 
                 }
@@ -323,10 +317,10 @@ public class ControlLampActivity extends AppCompatActivity {
                         bottomSheetTimer.bottomSheetDialog.show();
                         break;
                     case ACTIVE:
-                        connectedThread.sendCommand("timer:pause#");
+                        connectedThread.sendCommand(new SentCommand("pause"));
                         break;
                     case PAUSED:
-                        connectedThread.sendCommand("timer:resume#");
+                        connectedThread.sendCommand(new SentCommand("resume"));
                         break;
                     case PREHEATING:
                         break;
@@ -337,16 +331,16 @@ public class ControlLampActivity extends AppCompatActivity {
             onOffButton.setOnClickListener(view1 -> {
                 switch (mainButton.getState()) {
                     case ON:
-                        connectedThread.sendCommand("relay:off#");
+                        connectedThread.sendCommand(new SentCommand(0));
                         break;
 
                     case OFF:
-                        connectedThread.sendCommand("relay:on#");
+                        connectedThread.sendCommand(new SentCommand(1));
                         break;
 
                     case ACTIVE:
                     case PAUSED:
-                        connectedThread.sendCommand("timer:stop#");
+                        connectedThread.sendCommand(new SentCommand("stop"));
                         break;
 
                     case PREHEATING:
@@ -400,8 +394,8 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                connectedThread.sendCommand("timer:preheatstop#");
-                connectedThread.sendCommand("relay:off#");
+                connectedThread.sendCommand(new SentCommand(0));
+                connectedThread.sendCommand(new SentCommand(0));
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
