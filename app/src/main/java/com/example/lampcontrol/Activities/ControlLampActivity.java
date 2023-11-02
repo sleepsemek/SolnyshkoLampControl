@@ -147,7 +147,7 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    connectedThread.sendCommand(new SentCommand(0));
+                    connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
                     stopPreheat();
                     bottomSheetTimer.secTimer.beginDeviceTimer();
                 }
@@ -331,11 +331,11 @@ public class ControlLampActivity extends AppCompatActivity {
             onOffButton.setOnClickListener(view1 -> {
                 switch (mainButton.getState()) {
                     case ON:
-                        connectedThread.sendCommand(new SentCommand(0));
+                        connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
                         break;
 
                     case OFF:
-                        connectedThread.sendCommand(new SentCommand(1));
+                        connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.ON.ordinal()));
                         break;
 
                     case ACTIVE:
@@ -394,8 +394,7 @@ public class ControlLampActivity extends AppCompatActivity {
             builder.setMessage(R.string.off_warning);
 
             builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                connectedThread.sendCommand(new SentCommand(0));
-                connectedThread.sendCommand(new SentCommand(0));
+                connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
             });
 
             builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
