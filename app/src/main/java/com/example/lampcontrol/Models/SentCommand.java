@@ -13,8 +13,8 @@ public class SentCommand {
         this.relay = relay;
     }
 
-    public SentCommand(String action, long time) {
-        this.timer = new Timer(action, time);
+    public SentCommand(String action, long time, int cycles) {
+        this.timer = new Timer(action, time, cycles);
     }
 
     public SentCommand(String action) {
@@ -24,10 +24,12 @@ public class SentCommand {
     public static class Timer {
         private String action;
         private Long time;
+        private Integer cycles;
 
-        public Timer(String action, Long time) {
+        public Timer(String action, Long time, int cycles) {
             this.action = action;
             this.time = time;
+            this.cycles = cycles;
         }
 
         public Timer(String action) {

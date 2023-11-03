@@ -40,8 +40,22 @@ public class ReceivedLampState {
         @SerializedName("time_left")
         private int timeLeft;
 
+        @SerializedName("cycles")
+        private int generalCycles;
+
+        @SerializedName("cycle_time")
+        private int cycleTime;
+
         public int getTimeLeft() {
             return timeLeft;
+        }
+
+        public int getGeneralCycles() {
+            return generalCycles;
+        }
+
+        public int getGeneralCycleTime() {
+            return cycleTime;
         }
     }
 

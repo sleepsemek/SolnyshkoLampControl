@@ -92,7 +92,7 @@ public class ControlLampActivity extends AppCompatActivity {
         });
 
         connectedThread.setOnCommandReceivedListener(lampState -> {
-            buttons.setState(lampState.getState());
+            buttons.setState(lampState);
         });
 
     }
@@ -115,31 +115,16 @@ public class ControlLampActivity extends AppCompatActivity {
         private CountDownTimer preheatTimer;
         private CountDownTimer mainTimer;
 
-        private int iterations;
-        private long iterationTimeMillis;
-
-        public SecTimer() {
-            iterations = valuesSavingManager.getIterations();
-            iterationTimeMillis = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
-        }
-
-        private void start() {
-            iterations = valuesSavingManager.getIterations();
-            iterationTimeMillis = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
-        }
-
         private void beginDeviceTimer() {
-            connectedThread.sendCommand(new SentCommand("set", (iterationTimeMillis / 1000 * iterations)));
+            int cycles = valuesSavingManager.getIterations();
+            long cycleTime = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
+            connectedThread.sendCommand(new SentCommand("set", cycleTime, cycles));
         }
 
-        private void setPreheatTimerTime(long millis) {
-            if (millis == 1) {
-                return;
-            }
-
+        private void startPreheat(ReceivedLampState.Preheat preheatData) {
             timerDialView.setBounds(60000, 1);
 
-            preheatTimer = new CountDownTimer(millis, 1000) {
+            preheatTimer = new CountDownTimer(preheatData.getTimeLeft(), 1000) {
                 @Override
                 public void onTick(long l) {
                     setTimerViewTime(60000, l, 1);
@@ -147,20 +132,10 @@ public class ControlLampActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
-                    stopPreheat();
-                    bottomSheetTimer.secTimer.beginDeviceTimer();
+
                 }
-            };
+            }.start();
 
-        }
-
-        private void runPreheat() {
-            if (preheatTimer != null) {
-                preheatTimer.start();
-            } else {
-                this.stopPreheat();
-            }
         }
 
         private void stopPreheat() {
@@ -172,55 +147,36 @@ public class ControlLampActivity extends AppCompatActivity {
             setTimerViewTime(0, 0, 0);
         }
 
-        private void cancelPreheat() {
+        private void startTimer(ReceivedLampState.Timer timerData) {
             if (preheatTimer != null) {
                 preheatTimer.cancel();
             }
-        }
-
-        private void setTimerTime(long millis) {
-            millis -= 10;
-            if (millis <= 0) {
-                return;
-            }
-
-            int remainedIterations = (int) Math.floor(millis / (float) iterationTimeMillis);
-            long remainedTime = millis % iterationTimeMillis;
-
-
-            timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
-            setTimerViewTime(iterationTimeMillis, remainedTime, remainedIterations + 1);
 
             if (mainTimer != null) {
                 mainTimer.cancel();
             }
+
+            int generalCycles = timerData.getGeneralCycles();
+            int generalCycleTime = timerData.getGeneralCycleTime();
+            int remainedTime = timerData.getTimeLeft();
+            int generalTime = generalCycles * generalCycleTime;
+            int remainedCycleTime = remainedTime / generalCycles;
+            int remainedCycles = remainedTime / generalCycleTime;
+
+            timerDialView.setBounds(generalTime, generalCycles);
+            setTimerViewTime(remainedCycleTime, remainedCycleTime, remainedCycles + 1);
+
             mainTimer = new CountDownTimer(remainedTime, 1000) {
                 @Override
                 public void onTick(long l) {
-                    setTimerViewTime(iterationTimeMillis, l, remainedIterations + 1);
+                    setTimerViewTime(remainedCycleTime, l, remainedCycles + 1);
                 }
 
                 @Override
                 public void onFinish() {
-                    if (remainedIterations != iterations && remainedIterations != 0) {
-//                        connectedThread.sendCommand("timer:settimer:" + (iterationTimeMillis / 1000 * remainedIterations) + "#");
-//                        connectedThread.sendCommand("timer:pause#");
-                    }
 
                 }
-            };
-        }
-
-        private void startTimer() {
-            if (preheatTimer != null) {
-                preheatTimer.cancel();
-            }
-
-            if (mainTimer != null) {
-                mainTimer.start();
-                timerDialView.setBounds(iterationTimeMillis * iterations, iterations);
-            }
-
+            }.start();
         }
 
         public void stopTimer() {
@@ -231,10 +187,24 @@ public class ControlLampActivity extends AppCompatActivity {
             setTimerViewTime(0, 0, 0);
         }
 
-        public void pauseTimer() {
+        public void pauseTimer(ReceivedLampState.Timer timerData) {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+            }
+
             if (mainTimer != null) {
                 mainTimer.cancel();
             }
+
+            int generalCycles = timerData.getGeneralCycles();
+            int generalCycleTime = timerData.getGeneralCycleTime();
+            int remainedTime = timerData.getTimeLeft();
+            int generalTime = generalCycles * generalCycleTime;
+            int remainedCycleTime = remainedTime / generalCycles;
+            int remainedCycles = remainedTime / generalCycleTime;
+
+            timerDialView.setBounds(generalTime, generalCycles);
+            setTimerViewTime(remainedCycleTime, remainedCycleTime, remainedCycles + 1);
         }
 
     }
@@ -287,7 +257,7 @@ public class ControlLampActivity extends AppCompatActivity {
                 }
                 valuesSavingManager.setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
                 valuesSavingManager.setIterations(iterationPicker.getValue());
-                secTimer.start();
+                secTimer.beginDeviceTimer();
                 bottomSheetDialog.cancel();
             });
 
@@ -350,28 +320,26 @@ public class ControlLampActivity extends AppCompatActivity {
             });
         }
 
-        public void setState(ReceivedLampState.RelayState state) {
-            mainButton.setState(state);
-            onOffButton.setState(state);
-            switch (state) {
+        public void setState(ReceivedLampState lampState) {
+            mainButton.setState(lampState.getState());
+            onOffButton.setState(lampState.getState());
+            switch (lampState.getState()) {
                 case OFF:
+                case ON:
                     bottomSheetTimer.secTimer.stopPreheat();
                     bottomSheetTimer.secTimer.stopTimer();
                     break;
 
-                case ON:
-                    break;
-
                 case ACTIVE:
-                    bottomSheetTimer.secTimer.startTimer();
+                    bottomSheetTimer.secTimer.startTimer(lampState.getTimer());
                     break;
 
                 case PAUSED:
-                    bottomSheetTimer.secTimer.pauseTimer();
+                    bottomSheetTimer.secTimer.pauseTimer(lampState.getTimer());
                     break;
 
                 case PREHEATING:
-                    bottomSheetTimer.secTimer.runPreheat();
+                    bottomSheetTimer.secTimer.startPreheat(lampState.getPreheat());
                     break;
 
             }
