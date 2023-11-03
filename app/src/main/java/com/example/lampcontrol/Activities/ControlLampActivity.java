@@ -160,16 +160,16 @@ public class ControlLampActivity extends AppCompatActivity {
             int generalCycleTime = timerData.getGeneralCycleTime();
             int remainedTime = timerData.getTimeLeft();
             int generalTime = generalCycles * generalCycleTime;
-            int remainedCycleTime = remainedTime / generalCycles;
+            int remainedCycleTime = remainedTime % generalCycleTime;
             int remainedCycles = remainedTime / generalCycleTime;
 
             timerDialView.setBounds(generalTime, generalCycles);
-            setTimerViewTime(remainedCycleTime, remainedCycleTime, remainedCycles + 1);
+            setTimerViewTime(generalCycleTime, remainedCycleTime, remainedCycles + 1);
 
-            mainTimer = new CountDownTimer(remainedTime, 1000) {
+            mainTimer = new CountDownTimer(remainedCycleTime, 1000) {
                 @Override
                 public void onTick(long l) {
-                    setTimerViewTime(remainedCycleTime, l, remainedCycles + 1);
+                    setTimerViewTime(generalCycleTime, l, remainedCycles + 1);
                 }
 
                 @Override
@@ -200,11 +200,11 @@ public class ControlLampActivity extends AppCompatActivity {
             int generalCycleTime = timerData.getGeneralCycleTime();
             int remainedTime = timerData.getTimeLeft();
             int generalTime = generalCycles * generalCycleTime;
-            int remainedCycleTime = remainedTime / generalCycles;
+            int remainedCycleTime = remainedTime % generalCycleTime;
             int remainedCycles = remainedTime / generalCycleTime;
 
             timerDialView.setBounds(generalTime, generalCycles);
-            setTimerViewTime(remainedCycleTime, remainedCycleTime, remainedCycles + 1);
+            setTimerViewTime(generalCycleTime, remainedCycleTime, remainedCycles + 1);
         }
 
     }

@@ -31,6 +31,8 @@ public class BluetoothConnectionThread extends Thread {
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattCharacteristic commandCharacteristic;
     private BluetoothGattCharacteristic notifyCharacteristic;
+    private BluetoothGattDescriptor descriptor;
+    private boolean firstConnection = true;
 
     private final Queue<BluetoothGattCharacteristic> commandQueue = new ConcurrentLinkedQueue<>();
     private HandlerThread commandHandlerThread;
@@ -87,6 +89,10 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     private void handleCommand(BluetoothGattCharacteristic characteristic) {
+        if (firstConnection && stateListener != null) {
+            firstConnection = false;
+            stateListener.onStateChange(true);
+        }
         if (characteristic.getUuid() == null) {
             return;
         }
@@ -119,7 +125,7 @@ public class BluetoothConnectionThread extends Thread {
                 switch (newState) {
                     case BluetoothProfile.STATE_CONNECTED:
                         bluetoothGatt.discoverServices();
-                        if (stateListener != null) {
+                        if (stateListener != null && !firstConnection) {
                             stateListener.onStateChange(true);
                         }
                         break;
@@ -153,10 +159,9 @@ public class BluetoothConnectionThread extends Thread {
                                 .getCharacteristic(NOTIFY_CHARACTERISTICS_UUID);
 
                 gatt.setCharacteristicNotification(notifyCharacteristic, true);
-                BluetoothGattDescriptor descriptor = notifyCharacteristic.getDescriptor(NOTIFY_DESCRIPTOR_UUID);
+                descriptor = notifyCharacteristic.getDescriptor(NOTIFY_DESCRIPTOR_UUID);
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 bluetoothGatt.writeDescriptor(descriptor);
-                bluetoothGatt.readCharacteristic(commandCharacteristic);
             }
         }
 
@@ -178,6 +183,12 @@ public class BluetoothConnectionThread extends Thread {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
+            bluetoothGatt.readCharacteristic(commandCharacteristic);
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorWrite(gatt, descriptor, status);
             bluetoothGatt.readCharacteristic(commandCharacteristic);
         }
     };
