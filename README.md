@@ -2,7 +2,7 @@
 [ESP32 Firmware](https://github.com/ValeraDanger/Solnyshko_BLE)\
 **BLE version. Currently in work.**\
 App parses POJO classes to JSON string commands and vice versa to communicate with the device.\
-UUIDs are:\
+UUIDs are:
 |Service UUID|Command characteriscic UUID|Notification UUID|
 |-|-|-|
 |_`4fafc201-1fb5-459e-8fcc-c5c9c331914b`_|_`beb5483e-36e1-4688-b7f5-ea07361b26a8`_|_`1fd32b0a-aa51-4e49-92b2-9a8be97473c9`_|
