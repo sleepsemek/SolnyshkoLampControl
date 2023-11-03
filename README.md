@@ -42,10 +42,10 @@ Sent command looks something like:
 }
 ```   
 There are 4 actions:
-- 0 - `set`
-- 1 - `pause`
-- 2 - `resume`
-- 3 - `stop`
+- `set`
+- `pause`
+- `resume`
+- `stop`
 
 To set up timer this JSON should have all the fields correctly filled, so all POJO class fields should be initialized. To pause, resume or stop timer only the `action` field should be initialized, i.e.:
 ```
