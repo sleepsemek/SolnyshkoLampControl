@@ -4,10 +4,8 @@ import static com.example.lampcontrol.Models.ReceivedLampState.RelayState.OFF;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,45 +19,31 @@ public class MainOnOffButton extends AppCompatButton {
 
     private ReceivedLampState.RelayState state = OFF;
     private final Context context;
-    private String text = "Вкл";
-    private final Paint paint;
+    private TextView textView;
 
     public MainOnOffButton(@NonNull Context context) {
         super(context);
         this.context = context;
-        this.paint = new Paint();
     }
 
     public MainOnOffButton(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        this.paint = new Paint();
     }
 
     public MainOnOffButton(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
-        this.paint = new Paint();
-        invalidate();
+    }
+
+    public void setTextView(TextView textView) {
+        this.textView = textView;
     }
 
     public ReceivedLampState.RelayState getState() {
         return state;
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        paint.setColor(getCurrentTextColor());
-        paint.setTextSize(getTextSize());
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-
-        float textX = (getWidth() - paint.measureText(text)) / 2;
-        float textY = getHeight() + 2 * getTextSize();
-
-        canvas.drawText(text, textX, textY, paint);
-    }
 
     public void setState(ReceivedLampState.RelayState state) {
         this.state = state;
@@ -90,7 +74,8 @@ public class MainOnOffButton extends AppCompatButton {
     }
 
     private void setTextBelow(String text) {
-        this.text = text;
-        invalidate();
+        if (textView != null) {
+            textView.setText(text);
+        }
     }
 }

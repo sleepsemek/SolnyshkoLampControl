@@ -80,9 +80,8 @@ public class TimerView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         int height = getDefaultSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-        System.out.println(width + "  " + height);
 
-        int dimen = 0;
+        int dimen;
 
         if ((height - width) < 650) {
             dimen = height - 650;

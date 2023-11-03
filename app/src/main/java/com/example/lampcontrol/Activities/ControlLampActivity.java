@@ -276,6 +276,7 @@ public class ControlLampActivity extends AppCompatActivity {
         public Buttons(Context context) {
             mainButton = findViewById(R.id.main_button);
             onOffButton = findViewById(R.id.onOffBtn);
+            onOffButton.setTextView(findViewById(R.id.onOffBtnTextView));
             onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
 
             this.context = context;
