@@ -19,12 +19,29 @@
         <!-- Customize your theme here. -->
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:actionMenuTextColor">@color/main_blue</item>
+        <item name="bottomSheetDialogTheme">@style/DialogStyle</item>
 
     </style>
 
     <style name="PopupMenu" parent="Widget.AppCompat.PopupMenu">
         <item name="android:textColor">@color/main_blue</item>
         <item name="android:itemBackground">@color/night_grey</item>
+    </style>
+
+    <style name="DialogStyle" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="bottomSheetStyle">@style/AppModalStyle</item>
+        <item name="colorSecondary">@color/main_blue</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="android:textColorPrimary">@color/main_blue</item>
+    </style>
+
+    <style name="AppModalStyle"
+        parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bottom_sheet_corners</item>
     </style>
 
 </resources>

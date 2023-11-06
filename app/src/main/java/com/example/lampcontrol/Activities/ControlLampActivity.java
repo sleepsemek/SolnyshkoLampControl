@@ -4,26 +4,22 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.text.Html;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 
 import com.example.lampcontrol.Models.ReceivedLampState;
 import com.example.lampcontrol.Models.SentCommand;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.BluetoothConnectionThread;
+import com.example.lampcontrol.Utils.LampTimer;
 import com.example.lampcontrol.Utils.ValuesSavingManager;
+import com.example.lampcontrol.Views.LampTimerBottomSheet;
 import com.example.lampcontrol.Views.MainControlButton;
 import com.example.lampcontrol.Views.MainOnOffButton;
-import com.example.lampcontrol.Views.TimerView;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class ControlLampActivity extends AppCompatActivity {
 
@@ -33,12 +29,11 @@ public class ControlLampActivity extends AppCompatActivity {
     private String name;
 
     private TextView lampName;
-    private TextView timerTextView;
-    private TimerView timerDialView;
 
     private Buttons buttons;
 
-    private BottomSheetTimer bottomSheetTimer;
+    private LampTimer timer;
+    private LampTimerBottomSheet timerBottomSheet;
     private ValuesSavingManager valuesSavingManager;
 
     @Override
@@ -52,21 +47,35 @@ public class ControlLampActivity extends AppCompatActivity {
 
         valuesSavingManager = new ValuesSavingManager(this, address);
 
-        bottomSheetTimer = new BottomSheetTimer(this);
+        timerBottomSheet = new LampTimerBottomSheet(this);
         buttons = new Buttons(this);
 
         lampName = findViewById(R.id.lampName);
-        timerTextView = findViewById(R.id.timerTextView);
-        timerDialView = findViewById(R.id.timerDialView);
+        timer = new LampTimer(findViewById(R.id.timerTextView), findViewById(R.id.timerDialView));
 
+        timerBottomSheet.setTimeAndIterations(valuesSavingManager.getLastTime(), valuesSavingManager.getIterations());
+
+        timerBottomSheet.setOnStartClickListener(view -> {
+            valuesSavingManager.setLastTime(timerBottomSheet.getTime());
+            int iterations = timerBottomSheet.getIterations();
+            int iterationTime = (int) (timerBottomSheet.getTime().getMinutes() * 60000
+                                + timerBottomSheet.getTime().getSeconds() * 1000);
+            valuesSavingManager.setIterations(iterations);
+
+            beginDeviceTimer(iterations, iterationTime);
+            timerBottomSheet.cancel();
+        });
+
+    }
+
+    private void beginDeviceTimer(int cycles, long cycleTime) {
+        connectedThread.sendCommand(new SentCommand("set", cycleTime, cycles));
     }
 
     @Override
     public void onPause() {
         super.onPause();
         hideInterface();
-        bottomSheetTimer.secTimer.stopPreheat();
-        bottomSheetTimer.secTimer.stopTimer();
     }
 
     @Override
@@ -101,168 +110,13 @@ public class ControlLampActivity extends AppCompatActivity {
         lampName.setText("Установка соединения");
         buttons.hide();
 
-        bottomSheetTimer.secTimer.stopPreheat();
-        bottomSheetTimer.secTimer.stopTimer();
-
+        timer.stopPreheat();
+        timer.stopTimer();
     }
 
     private void showInterface() {
         lampName.setText(name);
         buttons.show();
-    }
-
-    private class SecTimer {
-        private CountDownTimer preheatTimer;
-        private CountDownTimer mainTimer;
-
-        private void beginDeviceTimer() {
-            int cycles = valuesSavingManager.getIterations();
-            long cycleTime = ((valuesSavingManager.getLastTime().getMinutes() * 60) + valuesSavingManager.getLastTime().getSeconds()) * 1000;
-            connectedThread.sendCommand(new SentCommand("set", cycleTime, cycles));
-        }
-
-        private void startPreheat(ReceivedLampState.Preheat preheatData) {
-            timerDialView.setBounds(60000, 1);
-
-            preheatTimer = new CountDownTimer(preheatData.getTimeLeft(), 1000) {
-                @Override
-                public void onTick(long l) {
-                    setTimerViewTime(60000, l, 1);
-                }
-
-                @Override
-                public void onFinish() {
-
-                }
-            }.start();
-
-        }
-
-        private void stopPreheat() {
-            if (preheatTimer != null) {
-                preheatTimer.cancel();
-            }
-
-            timerDialView.setBounds(0, 1);
-            setTimerViewTime(0, 0, 0);
-        }
-
-        private void startTimer(ReceivedLampState.Timer timerData) {
-            if (preheatTimer != null) {
-                preheatTimer.cancel();
-            }
-
-            if (mainTimer != null) {
-                mainTimer.cancel();
-            }
-
-            int generalCycles = timerData.getGeneralCycles();
-            int generalCycleTime = timerData.getGeneralCycleTime();
-            int remainedTime = timerData.getTimeLeft();
-            int generalTime = generalCycles * generalCycleTime;
-            int remainedCycleTime = remainedTime % generalCycleTime;
-            int remainedCycles = remainedTime / generalCycleTime;
-
-            timerDialView.setBounds(generalTime, generalCycles);
-            setTimerViewTime(generalCycleTime, remainedCycleTime, remainedCycles + 1);
-
-            mainTimer = new CountDownTimer(remainedCycleTime, 1000) {
-                @Override
-                public void onTick(long l) {
-                    setTimerViewTime(generalCycleTime, l, remainedCycles + 1);
-                }
-
-                @Override
-                public void onFinish() {
-
-                }
-            }.start();
-        }
-
-        public void stopTimer() {
-            if (mainTimer != null) {
-                mainTimer.cancel();
-            }
-            timerDialView.setBounds(0, 1);
-            setTimerViewTime(0, 0, 0);
-        }
-
-        public void pauseTimer(ReceivedLampState.Timer timerData) {
-            if (preheatTimer != null) {
-                preheatTimer.cancel();
-            }
-
-            if (mainTimer != null) {
-                mainTimer.cancel();
-            }
-
-            int generalCycles = timerData.getGeneralCycles();
-            int generalCycleTime = timerData.getGeneralCycleTime();
-            int remainedTime = timerData.getTimeLeft();
-            int generalTime = generalCycles * generalCycleTime;
-            int remainedCycleTime = remainedTime % generalCycleTime;
-            int remainedCycles = remainedTime / generalCycleTime;
-
-            timerDialView.setBounds(generalTime, generalCycles);
-            setTimerViewTime(generalCycleTime, remainedCycleTime, remainedCycles + 1);
-        }
-
-    }
-
-    private class BottomSheetTimer {
-
-        private final BottomSheetDialog bottomSheetDialog;
-
-        private final NumberPicker iterationPicker;
-        private final NumberPicker minutesPicker;
-        private final NumberPicker secondsPicker;
-
-        private final AppCompatButton startTimerButton;
-
-        private final SecTimer secTimer;
-
-        public BottomSheetTimer(Context context) {
-            bottomSheetDialog = new BottomSheetDialog(context);
-            bottomSheetDialog.setContentView(R.layout.lamp_bottom_sheet);
-
-            iterationPicker = bottomSheetDialog.findViewById(R.id.preheat_picker);
-            assert iterationPicker != null;
-            iterationPicker.setMinValue(1);
-            iterationPicker.setMaxValue(10);
-
-            minutesPicker = bottomSheetDialog.findViewById(R.id.minutes_picker);
-            secondsPicker = bottomSheetDialog.findViewById(R.id.seconds_picker);
-
-            assert minutesPicker != null;
-            minutesPicker.setMinValue(0);
-            minutesPicker.setMaxValue(30);
-
-            assert secondsPicker != null;
-            secondsPicker.setMinValue(0);
-            secondsPicker.setMaxValue(59);
-
-            minutesPicker.setValue((int) valuesSavingManager.getLastTime().getMinutes());
-            secondsPicker.setValue((int) valuesSavingManager.getLastTime().getSeconds());
-            iterationPicker.setValue(valuesSavingManager.getIterations());
-
-            startTimerButton = bottomSheetDialog.findViewById(R.id.start_timer);
-
-            secTimer = new SecTimer();
-
-            assert startTimerButton != null;
-            startTimerButton.setOnClickListener(view -> {
-                if (minutesPicker.getValue() + secondsPicker.getValue() == 0) {
-                    Toast.makeText(context, "Установите длительность таймера", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                valuesSavingManager.setLastTime(minutesPicker.getValue(), secondsPicker.getValue());
-                valuesSavingManager.setIterations(iterationPicker.getValue());
-                secTimer.beginDeviceTimer();
-                bottomSheetDialog.cancel();
-            });
-
-        }
-
     }
 
     private class Buttons {
@@ -285,7 +139,7 @@ public class ControlLampActivity extends AppCompatActivity {
                 switch (mainButton.getState()) {
                     case OFF:
                     case ON:
-                        bottomSheetTimer.bottomSheetDialog.show();
+                        timerBottomSheet.show();
                         break;
                     case ACTIVE:
                         connectedThread.sendCommand(new SentCommand("pause"));
@@ -327,20 +181,20 @@ public class ControlLampActivity extends AppCompatActivity {
             switch (lampState.getState()) {
                 case OFF:
                 case ON:
-                    bottomSheetTimer.secTimer.stopPreheat();
-                    bottomSheetTimer.secTimer.stopTimer();
+                    timer.stopPreheat();
+                    timer.stopTimer();
                     break;
 
                 case ACTIVE:
-                    bottomSheetTimer.secTimer.startTimer(lampState.getTimer());
+                    timer.startTimer(lampState.getTimer());
                     break;
 
                 case PAUSED:
-                    bottomSheetTimer.secTimer.pauseTimer(lampState.getTimer());
+                    timer.pauseTimer(lampState.getTimer());
                     break;
 
                 case PREHEATING:
-                    bottomSheetTimer.secTimer.startPreheat(lampState.getPreheat());
+                    timer.startPreheat(lampState.getPreheat());
                     break;
 
             }
@@ -372,14 +226,6 @@ public class ControlLampActivity extends AppCompatActivity {
             alertDialog.show();
         }
 
-    }
-
-    private void setTimerViewTime(long iterationTimeMillis, long millis, int iterations) {
-        int sec = (int) ((millis + 50) / 1000);
-        int min = sec / 60;
-        sec = sec % 60;
-        timerTextView.setText(String.format("%02d", min) + ":" + String.format("%02d", sec));
-        timerDialView.setCurrentTime(iterationTimeMillis * (iterations - 1) + millis);
     }
 
 }

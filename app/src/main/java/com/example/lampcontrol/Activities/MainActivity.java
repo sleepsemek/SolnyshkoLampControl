@@ -38,12 +38,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        fragmentManager = getSupportFragmentManager();
-        beginTransaction(new PageFragmentControl());
+        actionButton = findViewById(R.id.actionButton);
 
         lampApplication = (LampApplication) getApplication();
         lampsDataBase = lampApplication.getLampsDataBase();
-        actionButton = findViewById(R.id.actionButton);
 
         lampsDataBase.addDataBaseListener(list -> setBreathingAnimation(list.isEmpty()));
 
@@ -58,6 +56,17 @@ public class MainActivity extends AppCompatActivity {
                 actionButton.onClick(view);
             }
         });
+
+        fragmentManager = getSupportFragmentManager();
+        fragmentManager.addOnBackStackChangedListener(() -> {
+            Fragment currentFragment = fragmentManager.findFragmentById(R.id.frameLayout);
+            if (currentFragment instanceof PageFragmentConnect) {
+                actionButton.toggleOn();
+            } else {
+                actionButton.toggleOff();
+            }
+        });
+        beginTransaction(new PageFragmentControl());
 
         permissionManager = new PermissionManager(this);
         permissionManager.checkForPermissions();
@@ -85,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.replace(R.id.frameLayout, fragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 

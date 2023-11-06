@@ -1,9 +1,13 @@
 package com.example.lampcontrol.Fragments;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,16 +16,21 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lampcontrol.Activities.ControlLampActivity;
 import com.example.lampcontrol.Adapters.AddedDevicesAdapter;
 import com.example.lampcontrol.Application.LampApplication;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.LampsDataBase;
+import com.example.lampcontrol.Views.EditLampBottomSheet;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class PageFragmentControl extends Fragment {
 
     private Hint hintText;
     private LampsDataBase dataBase;
     private LampApplication application;
+    private AddedDevicesAdapter adapter;
+    private EditLampBottomSheet editLampBottomSheet;
 
     public PageFragmentControl() {}
 
@@ -43,12 +52,36 @@ public class PageFragmentControl extends Fragment {
         dataBase.addDataBaseListener(list -> hintText.setHintText(list.isEmpty()));
 
         hintText = new Hint(R.id.textHint);
+        editLampBottomSheet = new EditLampBottomSheet(requireContext());
 
         RecyclerView devicesList = requireView().findViewById(R.id.devicesList);
         devicesList.setHasFixedSize(true);
         devicesList.setLayoutManager(new LinearLayoutManager(requireActivity().getApplicationContext()));
         devicesList.setItemAnimator(new DefaultItemAnimator());
-        devicesList.setAdapter(new AddedDevicesAdapter(requireActivity().getApplicationContext(), dataBase));
+        adapter = new AddedDevicesAdapter(this, dataBase.getList());
+        devicesList.setAdapter(adapter);
+    }
+
+    public void startControlActivity(int index) {
+        Intent intent = new Intent(requireActivity(), ControlLampActivity.class);
+        intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("address", dataBase.getLamp(index).getAddress());
+        intent.putExtra("name", dataBase.getLamp(index).getName());
+        startActivity(intent);
+    }
+
+    public void deleteLamp(String address) {
+        dataBase.deleteLamp(address);
+    }
+
+    public void renameLamp(int index) {
+        editLampBottomSheet.setName(dataBase.getLamp(index).getName());
+        editLampBottomSheet.getConfirmButton().setOnClickListener(view -> {
+            dataBase.addLamp(editLampBottomSheet.getName(), dataBase.getLamp(index).getAddress());
+            adapter.notifyItemChanged(index);
+            editLampBottomSheet.cancel();
+        });
+        editLampBottomSheet.show();
     }
 
     public class Hint {

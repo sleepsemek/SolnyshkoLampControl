@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="35dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:text="Переименовать" />
+
+    <EditText
+        android:id="@+id/lamp_name"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:backgroundTint="@color/main_blue"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Введите название устройства"
+        android:textColor="?attr/colorPrimary"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/cancel_rename_button"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_blue"
+            android:backgroundTint="@color/main_red"
+            android:text="Отмена"
+            android:textAppearance="@null"
+            android:textSize="20dp"
+            android:textColor="?attr/colorContainer"
+            android:padding="14dp"
+            android:textStyle="bold"
+            android:layout_marginRight="5dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/confirm_rename_button"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_blue"
+            android:text="Изменить"
+            android:textAppearance="@null"
+            android:textSize="20dp"
+            android:textColor="?attr/colorContainer"
+            android:padding="14dp"
+            android:textStyle="bold"
+            android:layout_marginLeft="5dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

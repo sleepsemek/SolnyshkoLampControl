@@ -20,24 +20,26 @@ import com.example.lampcontrol.R;
 public class FloatingActionButton extends AppCompatButton implements OnClickListener {
 
     private ValueAnimator animator;
+    private Context context;
     private boolean isToggled = false;
 
     public FloatingActionButton(@NonNull Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public FloatingActionButton(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public FloatingActionButton(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(Context context) {
+        this.context = context;
         animator = ValueAnimator.ofFloat(1f, 1.2f);
         animator.setDuration(1000);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -57,6 +59,23 @@ public class FloatingActionButton extends AppCompatButton implements OnClickList
 
     @Override
     public void onClick(View view) {
+        startRotatingAnimation();
+    }
+
+    public void toggleOn() {
+        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_lightbulb_48));
+        cancelBreathingAnimation();
+        startRotatingAnimation();
+        isToggled = true;
+    }
+
+    public void toggleOff() {
+        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_add_48));
+        startRotatingAnimation();
+        isToggled = false;
+    }
+
+    private void startRotatingAnimation() {
         this.animate().rotation(360).setDuration(500).setInterpolator(new DecelerateInterpolator()).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -64,15 +83,6 @@ public class FloatingActionButton extends AppCompatButton implements OnClickList
                 FloatingActionButton.this.setRotation(0);
             }
         });
-
-        if (!isToggled) {
-            this.setForeground(ContextCompat.getDrawable(view.getContext(), R.drawable.ic_baseline_lightbulb_48));
-            cancelBreathingAnimation();
-        } else {
-            this.setForeground(ContextCompat.getDrawable(view.getContext(), R.drawable.ic_baseline_add_48));
-        }
-
-        isToggled = !isToggled;
     }
 
     public void startBreathingAnimation() {

@@ -18,27 +18,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.Activities.ControlLampActivity;
-import com.example.lampcontrol.Activities.EditLampActivity;
+import com.example.lampcontrol.Fragments.PageFragmentControl;
 import com.example.lampcontrol.Models.Lamp;
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.Utils.LampsDataBase;
 
 import java.util.ArrayList;
 
 public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapter.ViewHolder> {
 
-    private final Context context;
+    private final PageFragmentControl fragmentControl;
     private final ArrayList<Lamp> addedList;
-    private final LampsDataBase dataBase;
 
     private final int MENU_RENAME = R.id.rename;
     private final int MENU_DELETE = R.id.delete;
 
-    public AddedDevicesAdapter(Context applicationContext, LampsDataBase dataBase) {
-        this.context = applicationContext;
-        this.addedList = dataBase.getList();
-        this.dataBase = dataBase;
+    public AddedDevicesAdapter(PageFragmentControl fragmentControl, ArrayList<Lamp> addedList) {
+        this.fragmentControl = (PageFragmentControl) fragmentControl;
+        this.addedList = addedList;
     }
 
     @NonNull
@@ -52,21 +48,17 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     public void onBindViewHolder(@NonNull AddedDevicesAdapter.ViewHolder holder, int position) {
         holder.title.setText(addedList.get(position).getName());
         holder.itemView.setOnClickListener(view -> {
-            Intent intent = new Intent(context, ControlLampActivity.class);
-            intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("address", addedList.get(holder.getAdapterPosition()).getAddress() + "");
-            intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");
-            context.startActivity(intent);
+            fragmentControl.startControlActivity(holder.getAdapterPosition());
         });
 
         holder.itemView.setOnLongClickListener(view -> {
-            Context wrapper = new ContextThemeWrapper(context, R.style.PopupMenu);
+            Context wrapper = new ContextThemeWrapper(fragmentControl.getContext(), R.style.PopupMenu);
             PopupMenu popup = new PopupMenu(wrapper, holder.itemView);
             popup.inflate(R.menu.added_lamp_menu);
             popup.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case MENU_RENAME:
-                        renameActivity(holder);
+                        renameLamp(holder.getAdapterPosition());
                         return true;
                     case MENU_DELETE:
                         deleteDialogShow(holder);
@@ -82,7 +74,11 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
     }
 
     private void remove(String address) {
-        dataBase.removeLamp(address);
+        fragmentControl.deleteLamp(address);
+    }
+
+    private void renameLamp(int index) {
+        fragmentControl.renameLamp(index);
     }
 
     private void deleteDialogShow(ViewHolder holder) {
@@ -105,14 +101,6 @@ public class AddedDevicesAdapter extends RecyclerView.Adapter<AddedDevicesAdapte
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
-    }
-
-    private void renameActivity(ViewHolder holder) {
-        Intent intent = new Intent(context, EditLampActivity.class);
-        intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("address", addedList.get(holder.getAdapterPosition()).getAddress() + "");
-        intent.putExtra("name", addedList.get(holder.getAdapterPosition()).getName() + "");
-        context.startActivity(intent);
     }
 
     @Override

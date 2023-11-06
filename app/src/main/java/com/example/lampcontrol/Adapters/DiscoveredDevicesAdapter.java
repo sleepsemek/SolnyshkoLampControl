@@ -13,18 +13,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.Activities.EditLampActivity;
+import com.example.lampcontrol.Fragments.PageFragmentConnect;
 import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
 
 public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDevicesAdapter.ViewHolder> {
 
-    private final Context context;
+    private final PageFragmentConnect pageFragmentConnect;
     private final ArrayList<BluetoothDevice> devices;
 
-    public DiscoveredDevicesAdapter(Context applicationContext, ArrayList<BluetoothDevice> devices) {
-        this.context = applicationContext;
+    public DiscoveredDevicesAdapter(PageFragmentConnect pageFragmentConnect, ArrayList<BluetoothDevice> devices) {
+        this.pageFragmentConnect = (PageFragmentConnect) pageFragmentConnect;
         this.devices = devices;
     }
 
@@ -40,11 +40,7 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
         holder.title.setText(devices.get(position).getName());
         holder.address.setText(devices.get(position).getAddress());
         holder.itemView.setOnClickListener(view -> {
-            Intent intent = new Intent(context, EditLampActivity.class);
-            intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("address", devices.get(holder.getAdapterPosition()).getAddress() + "");
-            intent.putExtra("name", (devices.get(holder.getAdapterPosition()).getName() == null) ? "Без имени" : (devices.get(holder.getAdapterPosition()).getName() + ""));
-            context.startActivity(intent);
+            pageFragmentConnect.addLamp(devices.get(position).getName(), devices.get(position).getAddress());
         });
     }
 

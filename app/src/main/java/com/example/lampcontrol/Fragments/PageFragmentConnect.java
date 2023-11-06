@@ -19,14 +19,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lampcontrol.Activities.MainActivity;
 import com.example.lampcontrol.Adapters.DiscoveredDevicesAdapter;
+import com.example.lampcontrol.Application.LampApplication;
 import com.example.lampcontrol.Models.AdvertisementData;
 import com.example.lampcontrol.R;
+import com.example.lampcontrol.Utils.LampsDataBase;
 import com.example.lampcontrol.Utils.PermissionManager;
 
 import java.util.ArrayList;
@@ -36,6 +39,9 @@ public class PageFragmentConnect extends Fragment {
 
     private DiscoveredDevicesAdapter discoveredDevicesAdapter;
     private RecyclerView recyclerView;
+
+    private LampsDataBase dataBase;
+    private LampApplication application;
 
     private AppCompatButton refreshButton;
     private ValueAnimator animator;
@@ -63,11 +69,13 @@ public class PageFragmentConnect extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        application = (LampApplication) requireActivity().getApplication();
+        dataBase = application.getLampsDataBase();
         recyclerView = requireView().findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity().getApplicationContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        discoveredDevicesAdapter = new DiscoveredDevicesAdapter(requireActivity().getApplicationContext(), devicesList);
+        discoveredDevicesAdapter = new DiscoveredDevicesAdapter(this, devicesList);
         recyclerView.setAdapter(discoveredDevicesAdapter);
 
         MainActivity mAct = (MainActivity) requireActivity();
@@ -84,6 +92,14 @@ public class PageFragmentConnect extends Fragment {
 
         scanForDevices();
 
+    }
+
+    public void addLamp(String name, String address) {
+        dataBase.addLamp(name, address);
+        FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frameLayout, new PageFragmentControl());
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     private void startRefreshAnimation() {
@@ -119,6 +135,7 @@ public class PageFragmentConnect extends Fragment {
                 public void run() {
                     scanning = false;
                     bluetoothScanner.stopScan(scanCallback);
+
                 }
             }, 10000);
 

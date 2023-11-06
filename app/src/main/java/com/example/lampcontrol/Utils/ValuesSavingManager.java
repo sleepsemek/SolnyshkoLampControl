@@ -5,7 +5,7 @@ import static android.content.Context.MODE_PRIVATE;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.lampcontrol.Models.TimerTime;
+import com.example.lampcontrol.Models.LampTimerTime;
 
 public class ValuesSavingManager {
 
@@ -17,15 +17,15 @@ public class ValuesSavingManager {
         this.address = address;
     }
 
-    public void setLastTime(long minutes, long seconds) {
+    public void setLastTime(LampTimerTime time) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(address + "minutes", minutes);
-        editor.putLong(address + "seconds", seconds);
+        editor.putLong(address + "minutes", time.getMinutes());
+        editor.putLong(address + "seconds", time.getSeconds());
         editor.apply();
     }
 
-    public TimerTime getLastTime() {
-        return new TimerTime(sharedPreferences.getLong(address + "minutes", 1), sharedPreferences.getLong(address + "seconds", 0));
+    public LampTimerTime getLastTime() {
+        return new LampTimerTime(sharedPreferences.getLong(address + "minutes", 1), sharedPreferences.getLong(address + "seconds", 0));
     }
 
     public void setIterations(int iterations) {

@@ -53,9 +53,13 @@ public class LampsDataBase {
         return devicesAddedList;
     }
 
-    public void removeLamp(String address) {
+    public void deleteLamp(String address) {
         lampsDataBase.delete("lamps", "address='" + address + "'", null);
         updateList();
+    }
+
+    public Lamp getLamp(int index) {
+        return devicesAddedList.get(index);
     }
 
     public ArrayList<Lamp> getList() {

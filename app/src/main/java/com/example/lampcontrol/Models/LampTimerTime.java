@@ -1,11 +1,11 @@
 package com.example.lampcontrol.Models;
 
-public class TimerTime {
+public class LampTimerTime {
 
     private long minutes;
     private long seconds;
 
-    public TimerTime(long minutes, long seconds) {
+    public LampTimerTime(long minutes, long seconds) {
         this.minutes = minutes;
         this.seconds = seconds;
     }
