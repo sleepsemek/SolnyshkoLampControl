@@ -29,13 +29,6 @@
         android:theme="@style/Theme.LampControl"
         tools:targetApi="31">
         <activity
-            android:name=".Activities.EditLampActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
-        <activity
             android:name=".Activities.ControlLampActivity"
             android:exported="false"
             android:screenOrientation="portrait">

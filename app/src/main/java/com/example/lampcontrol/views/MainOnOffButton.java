@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Views;
+package com.example.lampcontrol.views;
 
 import static com.example.lampcontrol.Models.ReceivedLampState.RelayState.OFF;
 

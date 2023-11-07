@@ -17,9 +17,9 @@ import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.BluetoothConnectionThread;
 import com.example.lampcontrol.Utils.LampTimer;
 import com.example.lampcontrol.Utils.ValuesSavingManager;
-import com.example.lampcontrol.Views.LampTimerBottomSheet;
-import com.example.lampcontrol.Views.MainControlButton;
-import com.example.lampcontrol.Views.MainOnOffButton;
+import com.example.lampcontrol.views.LampTimerBottomSheet;
+import com.example.lampcontrol.views.MainControlButton;
+import com.example.lampcontrol.views.MainOnOffButton;
 
 public class ControlLampActivity extends AppCompatActivity {
 

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,8 +20,7 @@ import com.example.lampcontrol.Adapters.AddedDevicesAdapter;
 import com.example.lampcontrol.Application.LampApplication;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.Utils.LampsDataBase;
-import com.example.lampcontrol.Views.EditLampBottomSheet;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.example.lampcontrol.views.EditLampBottomSheet;
 
 public class PageFragmentControl extends Fragment {
 

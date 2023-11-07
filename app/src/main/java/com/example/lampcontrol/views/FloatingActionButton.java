@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Views;
+package com.example.lampcontrol.views;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -59,6 +59,11 @@ public class FloatingActionButton extends AppCompatButton implements OnClickList
 
     @Override
     public void onClick(View view) {
+        if (isToggled) {
+            toggleOff();
+        } else {
+            toggleOn();
+        }
         startRotatingAnimation();
     }
 

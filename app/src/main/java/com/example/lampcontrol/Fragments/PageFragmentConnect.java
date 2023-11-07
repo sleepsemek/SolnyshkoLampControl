@@ -51,8 +51,6 @@ public class PageFragmentConnect extends Fragment {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothScanner;
 
-    private PermissionManager permissionManager;
-
     private boolean scanning = false;
     private final Handler handler = new Handler();
 
@@ -77,9 +75,6 @@ public class PageFragmentConnect extends Fragment {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         discoveredDevicesAdapter = new DiscoveredDevicesAdapter(this, devicesList);
         recyclerView.setAdapter(discoveredDevicesAdapter);
-
-        MainActivity mAct = (MainActivity) requireActivity();
-        permissionManager = mAct.getPermissionManager();
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -125,10 +120,10 @@ public class PageFragmentConnect extends Fragment {
     }
 
     private void scanForDevices() {
-        if (!permissionManager.checkForPermissions()) {
-            makeToast("Пожалуйста, выдайте необходимые для работы разрешения");
-            return;
-        }
+//        if (!permissionManager.checkForPermissions()) {
+//            makeToast("Пожалуйста, выдайте необходимые для работы разрешения");
+//            return;
+//        }
         if (!scanning) {
             handler.postDelayed(new Runnable() {
                 @Override

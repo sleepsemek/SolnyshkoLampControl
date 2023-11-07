@@ -4,7 +4,7 @@ import android.os.CountDownTimer;
 import android.widget.TextView;
 
 import com.example.lampcontrol.Models.ReceivedLampState;
-import com.example.lampcontrol.Views.TimerView;
+import com.example.lampcontrol.views.TimerView;
 
 public class LampTimer {
 

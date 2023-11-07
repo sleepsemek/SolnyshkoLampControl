@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Views;
+package com.example.lampcontrol.views;
 
 import android.content.Context;
 import android.view.View;

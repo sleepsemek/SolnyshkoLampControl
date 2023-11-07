@@ -25,7 +25,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lampName">
 
-        <com.example.lampcontrol.Views.TimerView
+        <com.example.lampcontrol.views.TimerView
             android:id="@+id/timerDialView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/button" />
 
-        <com.example.lampcontrol.Views.MainControlButton
+        <com.example.lampcontrol.views.MainControlButton
             android:id="@+id/main_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
         android:paddingStart="25dp"
         android:paddingBottom="25dp">
 
-        <com.example.lampcontrol.Views.MainOnOffButton
+        <com.example.lampcontrol.views.MainOnOffButton
             android:id="@+id/onOffBtn"
             android:layout_width="52dp"
             android:layout_height="60dp"
