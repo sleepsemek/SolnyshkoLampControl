@@ -1,6 +1,6 @@
 package com.example.lampcontrol;
 
-import com.example.lampcontrol.models.LampsDataBaseManager;
+import com.example.lampcontrol.repository.LampsDataBaseManager;
 
 public class LampApplication extends android.app.Application {
 

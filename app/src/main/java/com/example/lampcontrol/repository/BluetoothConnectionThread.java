@@ -1,4 +1,4 @@
-package com.example.lampcontrol.models;
+package com.example.lampcontrol.repository;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

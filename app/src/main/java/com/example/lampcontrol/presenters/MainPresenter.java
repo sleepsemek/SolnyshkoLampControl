@@ -7,18 +7,17 @@ import android.bluetooth.BluetoothAdapter;
 import com.example.lampcontrol.LampApplication;
 import com.example.lampcontrol.Fragments.PageFragmentConnect;
 import com.example.lampcontrol.Fragments.PageFragmentControl;
-import com.example.lampcontrol.models.LampsDataBaseManager;
-import com.example.lampcontrol.models.POJO.Lamp;
+import com.example.lampcontrol.repository.LampsDataBaseManager;
 import com.example.lampcontrol.views.MainView;
 
-import java.util.ArrayList;
-
-import moxy.InjectViewState;
 import moxy.MvpPresenter;
 
 public class MainPresenter extends MvpPresenter<MainView> {
 
     private LampsDataBaseManager lampsDataBaseManager;
+
+    private PageFragmentControl pageFragmentControl;
+    private PageFragmentConnect pageFragmentConnect;
 
     private BluetoothAdapter bluetoothAdapter;
     public static final int REQUEST_ENABLE_BT = 202;
@@ -27,10 +26,13 @@ public class MainPresenter extends MvpPresenter<MainView> {
     protected void onFirstViewAttach() {
         super.onFirstViewAttach();
 
+        pageFragmentControl = new PageFragmentControl();
+        pageFragmentConnect = new PageFragmentConnect();
+
         LampApplication application = LampApplication.getInstance();
         lampsDataBaseManager = application.getDatabaseManager();
         getViewState().switchFabBreathing(lampsDataBaseManager.getList().isEmpty());
-        getViewState().showFragment(new PageFragmentControl());
+        getViewState().showFragment(pageFragmentControl);
 
         getViewState().checkForPermissions();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -62,12 +64,12 @@ public class MainPresenter extends MvpPresenter<MainView> {
     public void handleFragmentSwitchFAB(boolean isActionButtonToggled) {
         if (isActionButtonToggled) {
             getViewState().updateFab(false);
-            getViewState().showFragment(new PageFragmentControl());
+            getViewState().showFragment(pageFragmentControl);
             getViewState().switchFabBreathing(lampsDataBaseManager.getList().isEmpty());
 
         } else {
             getViewState().updateFab(true);
-            getViewState().showFragment(new PageFragmentConnect());
+            getViewState().showFragment(pageFragmentConnect);
             getViewState().switchFabBreathing(false);
 
         }
@@ -76,7 +78,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
     public void handleBackPress(boolean isActionButtonToggled) {
         if (isActionButtonToggled) {
             getViewState().updateFab(false);
-            getViewState().showFragment(new PageFragmentControl());
+            getViewState().showFragment(pageFragmentControl);
         }
     }
 

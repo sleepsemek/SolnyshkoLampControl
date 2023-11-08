@@ -1,13 +1,12 @@
 package com.example.lampcontrol.presenters;
 
 import com.example.lampcontrol.LampApplication;
-import com.example.lampcontrol.models.LampsDataBaseManager;
+import com.example.lampcontrol.repository.LampsDataBaseManager;
 import com.example.lampcontrol.models.POJO.Lamp;
 import com.example.lampcontrol.views.ControlView;
 
 import java.util.ArrayList;
 
-import moxy.InjectViewState;
 import moxy.MvpPresenter;
 
 public class ControlPresenter extends MvpPresenter<ControlView> {
@@ -33,6 +32,12 @@ public class ControlPresenter extends MvpPresenter<ControlView> {
             }
         });
         getViewState().setDevicesListAdapter(lampsDataBaseManager.getList());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("destroyed");
     }
 
     public void startLampControlActivity(Lamp lamp) {

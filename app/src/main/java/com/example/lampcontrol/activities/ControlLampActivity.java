@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.lampcontrol.models.POJO.ReceivedLampState;
 import com.example.lampcontrol.models.POJO.SentCommand;
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.models.BluetoothConnectionThread;
+import com.example.lampcontrol.repository.BluetoothConnectionThread;
 import com.example.lampcontrol.models.LampTimer;
 import com.example.lampcontrol.models.ValuesSavingManager;
 import com.example.lampcontrol.ui.views.LampTimerBottomSheet;

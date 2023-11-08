@@ -4,12 +4,11 @@ import android.bluetooth.BluetoothDevice;
 
 import com.example.lampcontrol.Fragments.PageFragmentControl;
 import com.example.lampcontrol.LampApplication;
-import com.example.lampcontrol.models.BluetoothLeDeviceScanner;
-import com.example.lampcontrol.models.LampsDataBaseManager;
+import com.example.lampcontrol.repository.BluetoothLeDeviceScanner;
+import com.example.lampcontrol.repository.LampsDataBaseManager;
 import com.example.lampcontrol.models.POJO.Lamp;
 import com.example.lampcontrol.views.ConnectView;
 
-import moxy.InjectViewState;
 import moxy.MvpPresenter;
 
 public class ConnectPresenter extends MvpPresenter<ConnectView> {
@@ -28,6 +27,12 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
         bluetoothLeDeviceScanner.setOnDeviceScannedListener(new BluetoothLeDeviceScanner.OnDeviceScannedListener() {
             @Override
             public void onDeviceScanned(BluetoothDevice device) {
+                for (Lamp lamp:
+                        lampsDataBaseManager.getList()) {
+                    if (lamp.getAddress().contains(device.getAddress())) {
+                        return;
+                    }
+                }
                 getViewState().updateScanningDeviceList(device);
             }
 
@@ -45,8 +50,16 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
         bluetoothLeDeviceScanner.startScanning();
     }
 
-    public void handleAddButtonClick(String name, String address) {
-        lampsDataBaseManager.addLamp(new Lamp(name == null ? "Без названия" : name, address));
-        getViewState().openFragment(new PageFragmentControl());
+    public void handleAddButtonClick(BluetoothDevice device) {
+        lampsDataBaseManager.addLamp(new Lamp(device.getName() == null ? "Без названия" : device.getName(), device.getAddress()));
+        getViewState().removeAddedDeviceFromScanningList(device);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("destroyed");
+        bluetoothLeDeviceScanner.setOnDeviceScannedListener(null);
+        bluetoothLeDeviceScanner.cancel();
     }
 }

@@ -13,24 +13,24 @@ import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
 
-public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDevicesAdapter.ViewHolder> {
+public class ConnectAdapter extends RecyclerView.Adapter<ConnectAdapter.ViewHolder> {
 
     private final ArrayList<BluetoothDevice> devices = new ArrayList<>();
     private final OnButtonClickListener onClickListener;
 
-    public DiscoveredDevicesAdapter(OnButtonClickListener onClickListener) {
+    public ConnectAdapter(OnButtonClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }
 
     @NonNull
     @Override
-    public DiscoveredDevicesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ConnectAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.discovered_lamp, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DiscoveredDevicesAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ConnectAdapter.ViewHolder holder, int position) {
         holder.bind(devices.get(holder.getAdapterPosition()), onClickListener);
     }
 
@@ -38,6 +38,13 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
         if (!devices.contains(device)) {
             devices.add(device);
             notifyItemInserted(devices.size() - 1);
+        }
+    }
+
+    public void removeDevice(BluetoothDevice device) {
+        if (devices.contains(device)) {
+            notifyItemRemoved(devices.indexOf(device));
+            devices.remove(device);
         }
     }
 
@@ -65,13 +72,13 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
             }
 
             itemView.setOnClickListener(view -> {
-                onClickListener.onAddClicked(device.getName(), device.getAddress());
+                onClickListener.onAddClicked(device);
             });
         }
     }
 
     public interface OnButtonClickListener {
-        void onAddClicked(String name, String address);
+        void onAddClicked(BluetoothDevice device);
     }
 
 }

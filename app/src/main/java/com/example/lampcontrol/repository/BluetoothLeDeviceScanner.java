@@ -1,4 +1,4 @@
-package com.example.lampcontrol.models;
+package com.example.lampcontrol.repository;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,6 +8,8 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.os.Handler;
+
+import com.example.lampcontrol.models.AdvertisementData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,14 @@ public class BluetoothLeDeviceScanner {
             bluetoothScanner.stopScan(scanCallback);
         }
 
+    }
+
+    public void cancel() {
+        isScanning = false;
+        if (onDeviceScannedListener != null) {
+            onDeviceScannedListener.onScanningStateChanged(isScanning);
+        }
+        bluetoothScanner.stopScan(scanCallback);
     }
 
     private List<ScanFilter> setupFilters() {

@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.adapters.DiscoveredDevicesAdapter;
+import com.example.lampcontrol.adapters.ConnectAdapter;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.presenters.ConnectPresenter;
 import com.example.lampcontrol.views.ConnectView;
@@ -30,7 +30,7 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     ConnectPresenter connectPresenter;
 
     private RecyclerView recyclerView;
-    DiscoveredDevicesAdapter discoveredDevicesAdapter;
+    ConnectAdapter connectAdapter;
 
     private AppCompatButton refreshButton;
     private ValueAnimator animator;
@@ -80,14 +80,14 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
 
     @Override
     public void setScannedDevicesListAdapter() {
-        discoveredDevicesAdapter = new DiscoveredDevicesAdapter(new DiscoveredDevicesAdapter.OnButtonClickListener() {
+        connectAdapter = new ConnectAdapter(new ConnectAdapter.OnButtonClickListener() {
             @Override
-            public void onAddClicked(String name, String address) {
-                connectPresenter.handleAddButtonClick(name, address);
+            public void onAddClicked(BluetoothDevice device) {
+                connectPresenter.handleAddButtonClick(device);
             }
         });
 
-        recyclerView.setAdapter(discoveredDevicesAdapter);
+        recyclerView.setAdapter(connectAdapter);
     }
 
     @Override
@@ -102,7 +102,12 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
 
     @Override
     public void updateScanningDeviceList(BluetoothDevice device) {
-        discoveredDevicesAdapter.addDevice(device);
+        connectAdapter.addDevice(device);
+    }
+
+    @Override
+    public void removeAddedDeviceFromScanningList(BluetoothDevice device) {
+        connectAdapter.removeDevice(device);
     }
 
     @Override

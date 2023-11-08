@@ -1,4 +1,4 @@
-package com.example.lampcontrol.models;
+package com.example.lampcontrol.repository;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -74,10 +74,6 @@ public class LampsDataBaseManager {
             listener.onSetChange(devicesAddedList);
         }
 
-    }
-
-    public Lamp getLamp(int index) {
-        return devicesAddedList.get(index);
     }
 
     public ArrayList<Lamp> getList() {

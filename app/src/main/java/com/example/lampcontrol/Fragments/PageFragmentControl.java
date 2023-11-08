@@ -55,6 +55,14 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (alertDialog != null) {
+            alertDialog.cancel();
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 
         editLampBottomSheet = new EditLampBottomSheet(requireContext());
@@ -161,6 +169,7 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
 
     public void notifyDeleteLampFromList(int position) {
         adapter.deleteLamp(position);
+        System.out.println("delete");
     }
 
     @Override
