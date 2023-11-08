@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="delete_dialog_message">Вы уверены, что хотите удалить устройство?</string>
+    <string name="delete_dialog_title"><![CDATA[<font color=\'#e31e24\'>Подтвердите удаление</font>]]></string>
+    <string name="delete_dialog_confirm_button"><![CDATA[<font color=\'#e31e24\'>Удалить</font>]]></string>
+</resources>

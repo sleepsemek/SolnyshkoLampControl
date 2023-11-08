@@ -1,6 +1,6 @@
-package com.example.lampcontrol.views;
+package com.example.lampcontrol.ui.views;
 
-import static com.example.lampcontrol.Models.ReceivedLampState.RelayState.OFF;
+import static com.example.lampcontrol.models.POJO.ReceivedLampState.RelayState.OFF;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
-import com.example.lampcontrol.Models.ReceivedLampState;
+import com.example.lampcontrol.models.POJO.ReceivedLampState;
 import com.example.lampcontrol.R;
 
 public class MainOnOffButton extends AppCompatButton {

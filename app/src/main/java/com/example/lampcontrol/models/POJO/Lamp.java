@@ -1,8 +1,14 @@
-package com.example.lampcontrol.Models;
+package com.example.lampcontrol.models.POJO;
 
 public class Lamp {
+
     private String name;
     private String address;
+
+    public Lamp(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
 
     public String getName() {
         return name;
@@ -16,4 +22,5 @@ public class Lamp {
     public void setAddress(String android_address) {
         this.address = android_address;
     }
+
 }

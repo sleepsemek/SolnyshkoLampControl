@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/background_blue"
-            android:text="Изменить"
+            android:text="Подтвердить"
             android:textAppearance="@null"
             android:textSize="20dp"
             android:textColor="?attr/colorContainer"

@@ -1,4 +1,4 @@
-package com.example.lampcontrol.views;
+package com.example.lampcontrol.ui.views;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.R;
 
-public class FloatingActionButton extends AppCompatButton implements OnClickListener {
+public class FloatingActionButton extends AppCompatButton {
 
     private ValueAnimator animator;
     private Context context;
@@ -57,26 +57,15 @@ public class FloatingActionButton extends AppCompatButton implements OnClickList
         animator.setRepeatMode(ValueAnimator.REVERSE);
     }
 
-    @Override
-    public void onClick(View view) {
-        if (isToggled) {
-            toggleOff();
-        } else {
-            toggleOn();
-        }
-        startRotatingAnimation();
-    }
-
     public void toggleOn() {
-        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_lightbulb_48));
-        cancelBreathingAnimation();
         startRotatingAnimation();
+        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_lightbulb_48));
         isToggled = true;
     }
 
     public void toggleOff() {
-        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_add_48));
         startRotatingAnimation();
+        this.setForeground(ContextCompat.getDrawable(context, R.drawable.ic_baseline_add_48));
         isToggled = false;
     }
 

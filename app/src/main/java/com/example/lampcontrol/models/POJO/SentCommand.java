@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Models;
+package com.example.lampcontrol.models.POJO;
 
 import com.google.gson.annotations.SerializedName;
 

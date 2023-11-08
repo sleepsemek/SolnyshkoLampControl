@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Models;
+package com.example.lampcontrol.models;
 
 public class AdvertisementData {
     private String id;

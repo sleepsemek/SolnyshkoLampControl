@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.ControlLampActivity"
+    tools:context=".activities.ControlLampActivity"
     android:keepScreenOn="true">
 
 
@@ -25,7 +25,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lampName">
 
-        <com.example.lampcontrol.views.TimerView
+        <com.example.lampcontrol.ui.views.TimerView
             android:id="@+id/timerDialView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/button" />
 
-        <com.example.lampcontrol.views.MainControlButton
+        <com.example.lampcontrol.ui.views.MainControlButton
             android:id="@+id/main_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
         android:paddingStart="25dp"
         android:paddingBottom="25dp">
 
-        <com.example.lampcontrol.views.MainOnOffButton
+        <com.example.lampcontrol.ui.views.MainOnOffButton
             android:id="@+id/onOffBtn"
             android:layout_width="52dp"
             android:layout_height="60dp"

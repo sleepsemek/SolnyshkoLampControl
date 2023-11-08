@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Models;
+package com.example.lampcontrol.models.POJO;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;

@@ -1,10 +1,10 @@
-package com.example.lampcontrol.Utils;
+package com.example.lampcontrol.models;
 
 import android.os.CountDownTimer;
 import android.widget.TextView;
 
-import com.example.lampcontrol.Models.ReceivedLampState;
-import com.example.lampcontrol.views.TimerView;
+import com.example.lampcontrol.models.POJO.ReceivedLampState;
+import com.example.lampcontrol.ui.views.TimerView;
 
 public class LampTimer {
 

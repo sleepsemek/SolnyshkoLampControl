@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Activities;
+package com.example.lampcontrol.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,15 +11,15 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.lampcontrol.Models.ReceivedLampState;
-import com.example.lampcontrol.Models.SentCommand;
+import com.example.lampcontrol.models.POJO.ReceivedLampState;
+import com.example.lampcontrol.models.POJO.SentCommand;
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.Utils.BluetoothConnectionThread;
-import com.example.lampcontrol.Utils.LampTimer;
-import com.example.lampcontrol.Utils.ValuesSavingManager;
-import com.example.lampcontrol.views.LampTimerBottomSheet;
-import com.example.lampcontrol.views.MainControlButton;
-import com.example.lampcontrol.views.MainOnOffButton;
+import com.example.lampcontrol.models.BluetoothConnectionThread;
+import com.example.lampcontrol.models.LampTimer;
+import com.example.lampcontrol.models.ValuesSavingManager;
+import com.example.lampcontrol.ui.views.LampTimerBottomSheet;
+import com.example.lampcontrol.ui.views.MainControlButton;
+import com.example.lampcontrol.ui.views.MainOnOffButton;
 
 public class ControlLampActivity extends AppCompatActivity {
 

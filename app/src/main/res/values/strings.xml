@@ -3,4 +3,8 @@
 
     <string name="off_warning">В настоящий момент происходит нагрев и стабилизация лампы.\nЕё отключение в течение этого периода может привести к нарушению работы устройства.</string>
     <string name="list_empty">Список пуст.\nДобавьте устройство в соответствующем разделе.</string>
+    <string name="delete_dialog_message">Вы уверены, что хотите удалить устройство?</string>
+    <string name="delete_dialog_title"><![CDATA[<font color=\'#e31e24\'>Подтвердите удаление</font>]]></string>
+    <string name="delete_dialog_confirm_button"><![CDATA[<font color=\'#e31e24\'>Удалить</font>]]></string>
+    <string name="delete_dialog_cancel_button">Отменить</string>
 </resources>

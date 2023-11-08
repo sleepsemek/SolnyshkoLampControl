@@ -1,4 +1,4 @@
-package com.example.lampcontrol.Utils;
+package com.example.lampcontrol.models;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -14,8 +14,8 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-import com.example.lampcontrol.Models.ReceivedLampState;
-import com.example.lampcontrol.Models.SentCommand;
+import com.example.lampcontrol.models.POJO.ReceivedLampState;
+import com.example.lampcontrol.models.POJO.SentCommand;
 import com.google.gson.Gson;
 
 import java.util.Queue;

@@ -1,4 +1,4 @@
-package com.example.lampcontrol.views;
+package com.example.lampcontrol.ui.views;
 
 import android.content.Context;
 import android.view.View;
@@ -8,7 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 
-import com.example.lampcontrol.Models.LampTimerTime;
+import com.example.lampcontrol.models.POJO.LampTimerTime;
 import com.example.lampcontrol.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 

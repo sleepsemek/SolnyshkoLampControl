@@ -1,10 +1,6 @@
-package com.example.lampcontrol.Adapters;
-
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+package com.example.lampcontrol.adapters;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,19 +9,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lampcontrol.Fragments.PageFragmentConnect;
 import com.example.lampcontrol.R;
 
 import java.util.ArrayList;
 
 public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDevicesAdapter.ViewHolder> {
 
-    private final PageFragmentConnect pageFragmentConnect;
-    private final ArrayList<BluetoothDevice> devices;
+    private final ArrayList<BluetoothDevice> devices = new ArrayList<>();
+    private final OnButtonClickListener onClickListener;
 
-    public DiscoveredDevicesAdapter(PageFragmentConnect pageFragmentConnect, ArrayList<BluetoothDevice> devices) {
-        this.pageFragmentConnect = (PageFragmentConnect) pageFragmentConnect;
-        this.devices = devices;
+    public DiscoveredDevicesAdapter(OnButtonClickListener onClickListener) {
+        this.onClickListener = onClickListener;
     }
 
     @NonNull
@@ -37,11 +31,7 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
 
     @Override
     public void onBindViewHolder(@NonNull DiscoveredDevicesAdapter.ViewHolder holder, int position) {
-        holder.title.setText(devices.get(position).getName());
-        holder.address.setText(devices.get(position).getAddress());
-        holder.itemView.setOnClickListener(view -> {
-            pageFragmentConnect.addLamp(devices.get(position).getName(), devices.get(position).getAddress());
-        });
+        holder.bind(devices.get(holder.getAdapterPosition()), onClickListener);
     }
 
     public void addDevice(BluetoothDevice device) {
@@ -65,6 +55,23 @@ public class DiscoveredDevicesAdapter extends RecyclerView.Adapter<DiscoveredDev
             title = view.findViewById(R.id.BTdeviceName);
             address = view.findViewById(R.id.BTdeviceAddress);
         }
+
+        public void bind(BluetoothDevice device, OnButtonClickListener onClickListener) {
+            title.setText(device.getName());
+            address.setText(device.getAddress());
+
+            if (onClickListener == null) {
+                return;
+            }
+
+            itemView.setOnClickListener(view -> {
+                onClickListener.onAddClicked(device.getName(), device.getAddress());
+            });
+        }
+    }
+
+    public interface OnButtonClickListener {
+        void onAddClicked(String name, String address);
     }
 
 }

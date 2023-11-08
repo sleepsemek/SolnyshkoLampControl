@@ -3,38 +3,49 @@ package com.example.lampcontrol.presenters;
 import static android.app.Activity.RESULT_OK;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 
-import com.example.lampcontrol.Application.LampApplication;
+import com.example.lampcontrol.LampApplication;
 import com.example.lampcontrol.Fragments.PageFragmentConnect;
 import com.example.lampcontrol.Fragments.PageFragmentControl;
-import com.example.lampcontrol.Utils.LampsDataBase;
-import com.example.lampcontrol.Utils.PermissionManager;
+import com.example.lampcontrol.models.LampsDataBaseManager;
+import com.example.lampcontrol.models.POJO.Lamp;
 import com.example.lampcontrol.views.MainView;
+
+import java.util.ArrayList;
 
 import moxy.InjectViewState;
 import moxy.MvpPresenter;
 
-@InjectViewState
 public class MainPresenter extends MvpPresenter<MainView> {
 
-    private LampApplication lampApplication;
-    private LampsDataBase lampsDataBase;
-    private BluetoothAdapter bluetoothAdapter;
-    private PermissionManager permissionManager;
+    private LampsDataBaseManager lampsDataBaseManager;
 
+    private BluetoothAdapter bluetoothAdapter;
     public static final int REQUEST_ENABLE_BT = 202;
 
-    public MainPresenter() {
+    @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+
+        LampApplication application = LampApplication.getInstance();
+        lampsDataBaseManager = application.getDatabaseManager();
+        getViewState().switchFabBreathing(lampsDataBaseManager.getList().isEmpty());
         getViewState().showFragment(new PageFragmentControl());
+
+        getViewState().checkForPermissions();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         checkIfBluetoothEnabled();
-
     }
 
     private void checkIfBluetoothEnabled() {
         if (!bluetoothAdapter.isEnabled()) {
             getViewState().requestBluetoothEnable();
+        }
+    }
+
+    public void handlePermissionResult(boolean result) {
+        if (!result) {
+            getViewState().requestPermissions();
         }
     }
 
@@ -44,19 +55,30 @@ public class MainPresenter extends MvpPresenter<MainView> {
         }
 
         if (resultCode != RESULT_OK) {
-            getViewState().makeMessage("Bluetooth недоступен");
+            getViewState().makeMessage("Для работы приложения требуется включение Bluetooth");
         }
     }
 
-    public void handleFragmentSwitchFAB(boolean toggled) {
-        if (toggled) {
+    public void handleFragmentSwitchFAB(boolean isActionButtonToggled) {
+        if (isActionButtonToggled) {
+            getViewState().updateFab(false);
             getViewState().showFragment(new PageFragmentControl());
+            getViewState().switchFabBreathing(lampsDataBaseManager.getList().isEmpty());
+
         } else {
+            getViewState().updateFab(true);
             getViewState().showFragment(new PageFragmentConnect());
+            getViewState().switchFabBreathing(false);
+
         }
     }
 
-    public void handleAddButtonClick(BluetoothDevice device) {
-
+    public void handleBackPress(boolean isActionButtonToggled) {
+        if (isActionButtonToggled) {
+            getViewState().updateFab(false);
+            getViewState().showFragment(new PageFragmentControl());
+        }
     }
+
+
 }
