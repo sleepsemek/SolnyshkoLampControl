@@ -95,7 +95,9 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         if (isScanning) {
             startRefreshAnimation();
         } else {
-            animator.cancel();
+            if (animator != null) {
+                animator.cancel();
+            }
             refreshButton.setRotation(0);
         }
     }
