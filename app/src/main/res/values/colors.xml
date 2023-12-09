@@ -9,4 +9,6 @@
     <color name="transparent">#00000000</color>
     <color name="night_grey">#000000</color>
     <color name="night_white">#090909</color>
+    <color name="darker_grey">#0F0F0F</color>
+    <color name="lighter_grey">#E1E1E1</color>
 </resources>

@@ -8,6 +8,7 @@
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/main_blue</item>
         <item name="colorSecondaryVariant">@color/night_grey</item>
+        <item name="colorSecondaryContainer">@color/darker_grey</item>
         <item name="colorPrimary">@color/main_blue</item>
 
         <item name="colorContainer">@color/night_white</item>

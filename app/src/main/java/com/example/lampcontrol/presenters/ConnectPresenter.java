@@ -1,8 +1,10 @@
 package com.example.lampcontrol.presenters;
 
-import android.bluetooth.BluetoothDevice;
+import static android.content.Context.LOCATION_SERVICE;
 
-import com.example.lampcontrol.Fragments.PageFragmentControl;
+import android.bluetooth.BluetoothDevice;
+import android.location.LocationManager;
+
 import com.example.lampcontrol.LampApplication;
 import com.example.lampcontrol.repository.BluetoothLeDeviceScanner;
 import com.example.lampcontrol.repository.LampsDataBaseManager;
@@ -23,6 +25,7 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
         LampApplication application = LampApplication.getInstance();
         lampsDataBaseManager = application.getDatabaseManager();
 
+
         bluetoothLeDeviceScanner = new BluetoothLeDeviceScanner();
         bluetoothLeDeviceScanner.setOnDeviceScannedListener(new BluetoothLeDeviceScanner.OnDeviceScannedListener() {
             @Override
@@ -42,6 +45,8 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
             }
         });
 
+        getViewState().checkForLocation();
+
         getViewState().setScannedDevicesListAdapter();
         bluetoothLeDeviceScanner.startScanning();
     }
@@ -58,7 +63,6 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        System.out.println("destroyed");
         bluetoothLeDeviceScanner.setOnDeviceScannedListener(null);
         bluetoothLeDeviceScanner.cancel();
     }

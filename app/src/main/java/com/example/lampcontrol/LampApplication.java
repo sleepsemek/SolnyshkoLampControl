@@ -1,16 +1,20 @@
 package com.example.lampcontrol;
 
+import com.example.lampcontrol.models.PreferencesManager;
+import com.example.lampcontrol.repository.BluetoothConnectionThread;
 import com.example.lampcontrol.repository.LampsDataBaseManager;
 
 public class LampApplication extends android.app.Application {
 
     private static LampApplication instance;
+    private PreferencesManager preferencesManager;
     private LampsDataBaseManager lampsDataBaseManager;
 
     @Override
     public void onCreate() {
         super.onCreate();
         lampsDataBaseManager = new LampsDataBaseManager(this.getApplicationContext());
+        preferencesManager = new PreferencesManager(this.getApplicationContext());
         instance = this;
     }
 
@@ -19,6 +23,12 @@ public class LampApplication extends android.app.Application {
     }
     public LampsDataBaseManager getDatabaseManager() {
         return this.lampsDataBaseManager;
+    }
+    public PreferencesManager getPreferencesManager() {
+        return this.preferencesManager;
+    }
+    public BluetoothConnectionThread getBluetoothConnectionThread() {
+        return new BluetoothConnectionThread(getApplicationContext());
     }
 
 }

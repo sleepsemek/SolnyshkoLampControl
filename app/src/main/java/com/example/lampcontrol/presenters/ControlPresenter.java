@@ -37,7 +37,6 @@ public class ControlPresenter extends MvpPresenter<ControlView> {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        System.out.println("destroyed");
     }
 
     public void startLampControlActivity(Lamp lamp) {

@@ -24,8 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BluetoothConnectionThread extends Thread {
 
-    private onConnectionStateChangeListener stateListener;
-    private onCommandReceivedListener commandListener;
+    private onDataReceivedListener dataReceivedListener;
 
     private final BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
@@ -40,35 +39,23 @@ public class BluetoothConnectionThread extends Thread {
 
     private final Gson gson = new Gson();
     private final Context context;
-    private final String address;
+    private String address;
 
     private static final UUID SERVICE_UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
     private static final UUID COMMAND_CHARACTERISTICS_UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8");
     private static final UUID NOTIFY_CHARACTERISTICS_UUID = UUID.fromString("1fd32b0a-aa51-4e49-92b2-9a8be97473c9");
     protected static final UUID NOTIFY_DESCRIPTOR_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    public BluetoothConnectionThread(Context context, String address) {
-        this.stateListener = null;
-        this.commandListener = null;
+    public BluetoothConnectionThread(Context context) {
+        this.dataReceivedListener = null;
         this.context = context;
-        this.address = address;
-
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
-    private void releaseResources() {
-        if (commandHandlerThread != null) {
-            commandHandlerThread.quitSafely();
-
-            try {
-                commandHandlerThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            commandHandlerThread = null;
-            commandHandler = null;
-        }
+    public void startConnection(String address) {
+        this.address = address;
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) return;
+        this.start();
     }
 
     public void run() {
@@ -89,9 +76,9 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     private void handleCommand(BluetoothGattCharacteristic characteristic) {
-        if (firstConnection && stateListener != null) {
+        if (firstConnection && dataReceivedListener != null) {
             firstConnection = false;
-            stateListener.onStateChange(true);
+            dataReceivedListener.onStateChange(true);
         }
         if (characteristic.getUuid() == null) {
             return;
@@ -102,8 +89,8 @@ public class BluetoothConnectionThread extends Thread {
         if (characteristic.getUuid().equals(COMMAND_CHARACTERISTICS_UUID)) {
             ReceivedLampState lampState = gson.fromJson(value, ReceivedLampState.class);
             System.out.println(gson.toJson(lampState));
-            if (commandListener != null) {
-                commandListener.onCommandReceived(lampState);
+            if (dataReceivedListener != null) {
+                dataReceivedListener.onCommandReceived(lampState);
             }
         } else if (characteristic.getUuid().equals(NOTIFY_CHARACTERISTICS_UUID)) {
             bluetoothGatt.readCharacteristic(commandCharacteristic);
@@ -125,26 +112,26 @@ public class BluetoothConnectionThread extends Thread {
                 switch (newState) {
                     case BluetoothProfile.STATE_CONNECTED:
                         bluetoothGatt.discoverServices();
-                        if (stateListener != null && !firstConnection) {
-                            stateListener.onStateChange(true);
+                        if (dataReceivedListener != null && !firstConnection) {
+                            dataReceivedListener.onStateChange(true);
                         }
                         break;
                     case BluetoothProfile.STATE_CONNECTING:
                     case BluetoothProfile.STATE_DISCONNECTING:
-                        if (stateListener != null) {
-                            stateListener.onStateChange(false);
+                        if (dataReceivedListener != null) {
+                            dataReceivedListener.onStateChange(false);
                         }
                         break;
                     case BluetoothProfile.STATE_DISCONNECTED:
-                        if (stateListener != null) {
-                            stateListener.onStateChange(false);
+                        if (dataReceivedListener != null) {
+                            dataReceivedListener.onStateChange(false);
                         }
                         bluetoothGatt.close();
                         break;
                 }
             } else {
-                if (stateListener != null) {
-                    stateListener.onStateChange(false);
+                if (dataReceivedListener != null) {
+                    dataReceivedListener.onStateChange(false);
                 }
             }
 
@@ -205,28 +192,35 @@ public class BluetoothConnectionThread extends Thread {
     }
 
     public void cancel() {
-        releaseResources();
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
+        }
+        if (commandHandlerThread != null) {
+            commandHandlerThread.quitSafely();
+
+            try {
+                commandHandlerThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            commandHandlerThread = null;
+            commandHandler = null;
+            address = null;
         }
         this.interrupt();
     }
 
-    public void setOnConnectionStateChangeListener(onConnectionStateChangeListener listener) {
-        this.stateListener = listener;
+    public void setOnDataReceivedListener(onDataReceivedListener listener) {
+        this.dataReceivedListener = listener;
     }
 
-    public void setOnCommandReceivedListener(onCommandReceivedListener listener) {
-        this.commandListener = listener;
-    }
-
-    public interface onConnectionStateChangeListener {
+    public interface onDataReceivedListener {
         void onStateChange(boolean state);
+        void onCommandReceived(ReceivedLampState lampState);
+
     }
 
-    public interface onCommandReceivedListener {
-        void onCommandReceived(ReceivedLampState lampState);
-    }
 
 
 }

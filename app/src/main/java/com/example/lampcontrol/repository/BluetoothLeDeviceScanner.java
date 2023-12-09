@@ -1,5 +1,7 @@
 package com.example.lampcontrol.repository;
 
+import static android.content.Context.LOCATION_SERVICE;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -7,6 +9,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.location.LocationManager;
 import android.os.Handler;
 
 import com.example.lampcontrol.models.AdvertisementData;
@@ -32,6 +35,12 @@ public class BluetoothLeDeviceScanner {
     }
 
     public void startScanning() {
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled() || bluetoothScanner == null) {
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
+            return;
+        }
+
         if (!isScanning) {
             handler.postDelayed(new Runnable() {
                 @Override
@@ -40,7 +49,7 @@ public class BluetoothLeDeviceScanner {
                     if (onDeviceScannedListener != null) {
                         onDeviceScannedListener.onScanningStateChanged(isScanning);
                     }
-                    bluetoothScanner.stopScan(scanCallback);
+                    stopScan();
                 }
             }, scanningTime);
 
@@ -55,7 +64,7 @@ public class BluetoothLeDeviceScanner {
             if (onDeviceScannedListener != null) {
                 onDeviceScannedListener.onScanningStateChanged(isScanning);
             }
-            bluetoothScanner.stopScan(scanCallback);
+            stopScan();
         }
 
     }
@@ -65,7 +74,7 @@ public class BluetoothLeDeviceScanner {
         if (onDeviceScannedListener != null) {
             onDeviceScannedListener.onScanningStateChanged(isScanning);
         }
-        bluetoothScanner.stopScan(scanCallback);
+        stopScan();
     }
 
     private List<ScanFilter> setupFilters() {
@@ -87,6 +96,11 @@ public class BluetoothLeDeviceScanner {
                 .setReportDelay(0L)
                 .build();
 
+    }
+
+    private void stopScan() {
+        if (bluetoothAdapter != null || bluetoothAdapter.isEnabled() || bluetoothScanner != null) return;
+        bluetoothScanner.stopScan(scanCallback);
     }
 
     private final ScanCallback scanCallback = new ScanCallback() {

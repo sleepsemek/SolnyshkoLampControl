@@ -1,12 +1,18 @@
 package com.example.lampcontrol.Fragments;
 
+import static android.content.Context.LOCATION_SERVICE;
+
 import android.animation.ValueAnimator;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
@@ -33,6 +39,7 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     ConnectAdapter connectAdapter;
 
     private AppCompatButton refreshButton;
+    private TextView refreshHint;
     private ValueAnimator animator;
 
     @Override
@@ -54,6 +61,7 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
         refreshButton = requireView().findViewById(R.id.refresh);
+        refreshHint = requireView().findViewById(R.id.refreshHint);
 
         refreshButton.setOnClickListener(view1 -> {
             connectPresenter.handleScanButton();
@@ -94,10 +102,12 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     public void updateScanningState(boolean isScanning) {
         if (isScanning) {
             startRefreshAnimation();
+            refreshHint.setText("Поиск устройств");
         } else {
             if (animator != null) {
                 animator.cancel();
             }
+            refreshHint.setText("Найти устройства");
             refreshButton.setRotation(0);
         }
     }
@@ -108,17 +118,17 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     }
 
     @Override
-    public void removeAddedDeviceFromScanningList(BluetoothDevice device) {
-        connectAdapter.removeDevice(device);
+    public void checkForLocation() {
+        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+        }
     }
 
     @Override
-    public void openFragment(Fragment fragment) {
-        PageFragmentControl pageFragmentControl = new PageFragmentControl();
-        if (getActivity() instanceof MainView) {
-            ((MainView) getActivity()).showFragment(fragment);
-            ((MainView) getActivity()).updateFab(false);
-        }
+    public void removeAddedDeviceFromScanningList(BluetoothDevice device) {
+        connectAdapter.removeDevice(device);
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import moxy.MvpView;
 import moxy.viewstate.strategy.AddToEndSingleStrategy;
+import moxy.viewstate.strategy.AddToEndSingleTagStrategy;
 import moxy.viewstate.strategy.AddToEndStrategy;
 import moxy.viewstate.strategy.OneExecutionStateStrategy;
 import moxy.viewstate.strategy.SingleStateStrategy;
@@ -16,21 +17,24 @@ public interface ControlView extends MvpView {
 
     @StateStrategyType(AddToEndSingleStrategy.class)
     void updateList(boolean isEmpty);
-    @StateStrategyType(AddToEndStrategy.class)
+    @StateStrategyType(AddToEndSingleStrategy.class)
     void setDevicesListAdapter(ArrayList<Lamp> lampList);
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "renameDialog")
     void showLampRenameMenu(Lamp lamp, int position);
-    @StateStrategyType(SingleStateStrategy.class)
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "deleteDialog")
     void showLampDeleteMenu(Lamp lamp, int position);
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "renameDialog")
     void lampRenameConfirmed();
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "renameDialog")
     void lampRenameCancelled();
+    @StateStrategyType(OneExecutionStateStrategy.class)
     void startControlLampActivity(String name, String address);
-    @StateStrategyType(OneExecutionStateStrategy.class)
     void notifyEditLampFromList(int position);
-    @StateStrategyType(OneExecutionStateStrategy.class)
     void notifyAddLampToList(int position);
-    @StateStrategyType(OneExecutionStateStrategy.class)
     void notifyDeleteLampFromList(int position);
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "deleteDialog")
     void lampDeleteConfirmed();
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "deleteDialog")
     void lampDeleteCancelled();
 
 }

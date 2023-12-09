@@ -8,7 +8,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 
-import com.example.lampcontrol.models.POJO.LampTimerTime;
 import com.example.lampcontrol.R;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -63,17 +62,21 @@ public class LampTimerBottomSheet extends BottomSheetDialog {
         });
     }
 
-    public void setTimeAndIterations(LampTimerTime time, int iterations) {
-        minutesPicker.setValue((int) time.getMinutes());
-        secondsPicker.setValue((int) time.getSeconds());
+    public void setTimeAndCycles(long minutes, long seconds, int iterations) {
+        minutesPicker.setValue((int) minutes);
+        secondsPicker.setValue((int) seconds);
         iterationPicker.setValue(iterations);
     }
 
-    public LampTimerTime getTime() {
-        return new LampTimerTime(minutesPicker.getValue(), secondsPicker.getValue());
+    public int getMinutes() {
+        return minutesPicker.getValue();
     }
 
-    public int getIterations() {
+    public int getSeconds() {
+        return  secondsPicker.getValue();
+    }
+
+    public int getCycles() {
         return iterationPicker.getValue();
     }
 

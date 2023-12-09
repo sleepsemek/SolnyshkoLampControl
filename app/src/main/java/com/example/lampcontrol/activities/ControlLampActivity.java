@@ -2,230 +2,182 @@ package com.example.lampcontrol.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.models.POJO.ReceivedLampState;
 import com.example.lampcontrol.models.POJO.SentCommand;
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.repository.BluetoothConnectionThread;
-import com.example.lampcontrol.models.LampTimer;
-import com.example.lampcontrol.models.ValuesSavingManager;
+import com.example.lampcontrol.presenters.ControlLampPresenter;
 import com.example.lampcontrol.ui.views.LampTimerBottomSheet;
 import com.example.lampcontrol.ui.views.MainControlButton;
 import com.example.lampcontrol.ui.views.MainOnOffButton;
+import com.example.lampcontrol.ui.views.TimerView;
+import com.example.lampcontrol.views.ControlLampView;
 
-public class ControlLampActivity extends AppCompatActivity {
+import moxy.MvpAppCompatActivity;
+import moxy.presenter.InjectPresenter;
+import moxy.presenter.ProvidePresenter;
 
-    private BluetoothConnectionThread connectedThread;
+public class ControlLampActivity extends MvpAppCompatActivity implements ControlLampView {
 
-    private String address;
-    private String name;
+    @InjectPresenter
+    ControlLampPresenter controlLampPresenter;
+
+    @ProvidePresenter
+    ControlLampPresenter provideControlLampPresenter() {
+        return new ControlLampPresenter(getIntent().getStringExtra("address"), getIntent().getStringExtra("name"));
+    }
 
     private TextView lampName;
-
-    private Buttons buttons;
-
-    private LampTimer timer;
     private LampTimerBottomSheet timerBottomSheet;
-    private ValuesSavingManager valuesSavingManager;
+    private AlertDialog alertDialog;
+    private TimerView timerDialView;
+    private TextView timerTextView;
+
+    private MainControlButton mainButton;
+    private MainOnOffButton onOffButton;
+    private LinearLayout onOffButtonHolder;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control_lamp);
 
-        Intent intent = getIntent();
-        address = intent.getStringExtra("address");
-        name = intent.getStringExtra("name");
-
-        valuesSavingManager = new ValuesSavingManager(this, address);
-
         timerBottomSheet = new LampTimerBottomSheet(this);
-        buttons = new Buttons(this);
-
         lampName = findViewById(R.id.lampName);
-        timer = new LampTimer(findViewById(R.id.timerTextView), findViewById(R.id.timerDialView));
 
-        timerBottomSheet.setTimeAndIterations(valuesSavingManager.getLastTime(), valuesSavingManager.getIterations());
+        mainButton = findViewById(R.id.main_button);
+        onOffButton = findViewById(R.id.onOffBtn);
+        onOffButton.setTextView(findViewById(R.id.onOffBtnTextView));
+        onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
+        timerDialView = findViewById(R.id.timerDialView);
+        timerTextView = findViewById(R.id.timerTextView);
 
-        timerBottomSheet.setOnStartClickListener(view -> {
-            valuesSavingManager.setLastTime(timerBottomSheet.getTime());
-            int iterations = timerBottomSheet.getIterations();
-            int iterationTime = (int) (timerBottomSheet.getTime().getMinutes() * 60000
-                                + timerBottomSheet.getTime().getSeconds() * 1000);
-            valuesSavingManager.setIterations(iterations);
-
-            beginDeviceTimer(iterations, iterationTime);
-            timerBottomSheet.cancel();
+        mainButton.setOnClickListener(view -> {
+            controlLampPresenter.handleButtonClick(mainButton.getState());
         });
 
-    }
+        timerBottomSheet.setOnStartClickListener(view -> {
+            controlLampPresenter.handleBottomSheetStart(timerBottomSheet.getMinutes(), timerBottomSheet.getSeconds(), timerBottomSheet.getCycles());
+        });
 
-    private void beginDeviceTimer(int cycles, long cycleTime) {
-        connectedThread.sendCommand(new SentCommand("set", cycleTime, cycles));
-    }
+        onOffButton.setOnClickListener(view -> {
+            controlLampPresenter.handleSideButtonClick(mainButton.getState());
+        });
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        hideInterface();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        connectedThread.cancel();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        hideInterface();
 
-        connectedThread = new BluetoothConnectionThread(this, address);
-        connectedThread.start();
+    }
 
-        connectedThread.setOnConnectionStateChangeListener(state -> {
-            if (state) {
-                runOnUiThread(this::showInterface);
-            } else {
-                runOnUiThread(this::hideInterface);
+    @Override
+    public void setButtonsState(ReceivedLampState.RelayState state) {
+        mainButton.setState(state);
+        onOffButton.setState(state);
+    }
+
+    @Override
+    public void openTimerBottomSheet(int minutes, int seconds, int cycles) {
+        timerBottomSheet.setTimeAndCycles(minutes, seconds, cycles);
+        timerBottomSheet.show();
+    }
+
+    @Override
+    public void closeTimerBottomSheet() {
+        timerBottomSheet.cancel();
+    }
+
+    @Override
+    public void startLoading() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                lampName.setText("Установка соединения");
+                timerTextView.setText("");
+                mainButton.hideButton();
+                onOffButtonHolder.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void stopLoading(String name) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                lampName.setText(name);
+                timerTextView.setText("Устройство готово");
+                mainButton.showButton();
+                onOffButtonHolder.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    @Override
+    public void drawTimerView(int minutes, int seconds, int iterations, int totalMinutes, int totalSeconds, int totalIterations) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                timerDialView.setDialColor(ContextCompat.getColor(getApplicationContext(), R.color.main_blue));
+                timerTextView.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds) + "\nПроцедура " + (iterations) + "/" + totalIterations);
+                timerDialView.setTime(minutes, seconds, totalMinutes, totalSeconds);
+            }
+        });
+    }
+
+    @Override
+    public void drawPreheatView(int minutes, int seconds) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                timerDialView.setDialColor(ContextCompat.getColor(getApplicationContext(), R.color.main_red));
+                timerTextView.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
+                timerDialView.setTime(minutes, seconds, 0, 60);
+            }
+        });
+    }
+
+    @Override
+    public void clearTimerView() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                timerTextView.setText("Устройство готово");
+                timerDialView.clearView();
             }
         });
 
-        connectedThread.setOnCommandReceivedListener(lampState -> {
-            buttons.setState(lampState);
-        });
-
     }
 
-    private void hideInterface() {
-        lampName.setText("Установка соединения");
-        buttons.hide();
+    @Override
+    public void showAlertDialog() {
+        alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Предупреждение")
+                .setMessage(R.string.off_warning).
+                setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
+                    controlLampPresenter.handleAlertConfirm();
+                })
+                .setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {
+                    controlLampPresenter.handleAlertCancel();
+                }).create();
 
-        timer.stopPreheat();
-        timer.stopTimer();
+        alertDialog.show();
     }
 
-    private void showInterface() {
-        lampName.setText(name);
-        buttons.show();
-    }
-
-    private class Buttons {
-
-        private final MainControlButton mainButton;
-        private final MainOnOffButton onOffButton;
-        private final LinearLayout onOffButtonHolder;
-
-        private final Context context;
-
-        public Buttons(Context context) {
-            mainButton = findViewById(R.id.main_button);
-            onOffButton = findViewById(R.id.onOffBtn);
-            onOffButton.setTextView(findViewById(R.id.onOffBtnTextView));
-            onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
-
-            this.context = context;
-
-            mainButton.setOnClickListener(view -> {
-                switch (mainButton.getState()) {
-                    case OFF:
-                    case ON:
-                        timerBottomSheet.show();
-                        break;
-                    case ACTIVE:
-                        connectedThread.sendCommand(new SentCommand("pause"));
-                        break;
-                    case PAUSED:
-                        connectedThread.sendCommand(new SentCommand("resume"));
-                        break;
-                    case PREHEATING:
-                        break;
-
-                }
-            });
-
-            onOffButton.setOnClickListener(view1 -> {
-                switch (mainButton.getState()) {
-                    case ON:
-                        connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
-                        break;
-
-                    case OFF:
-                        connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.ON.ordinal()));
-                        break;
-
-                    case ACTIVE:
-                    case PAUSED:
-                        connectedThread.sendCommand(new SentCommand("stop"));
-                        break;
-
-                    case PREHEATING:
-                        displayAlert();
-                        break;
-                }
-            });
-        }
-
-        public void setState(ReceivedLampState lampState) {
-            mainButton.setState(lampState.getState());
-            onOffButton.setState(lampState.getState());
-            switch (lampState.getState()) {
-                case OFF:
-                case ON:
-                    timer.stopPreheat();
-                    timer.stopTimer();
-                    break;
-
-                case ACTIVE:
-                    timer.startTimer(lampState.getTimer());
-                    break;
-
-                case PAUSED:
-                    timer.pauseTimer(lampState.getTimer());
-                    break;
-
-                case PREHEATING:
-                    timer.startPreheat(lampState.getPreheat());
-                    break;
-
-            }
-
-        }
-
-        private void hide() {
-            mainButton.hideButton();
-            onOffButtonHolder.setVisibility(View.INVISIBLE);
-        }
-
-        private void show() {
-            mainButton.showButton();
-            onOffButtonHolder.setVisibility(View.VISIBLE);
-        }
-
-        private void displayAlert() {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Предупреждение");
-            builder.setMessage(R.string.off_warning);
-
-            builder.setPositiveButton(Html.fromHtml("<font color='#e31e24'>Отключить в любом случае</font>"), (dialog, which) -> {
-                connectedThread.sendCommand(new SentCommand(ReceivedLampState.RelayState.OFF.ordinal()));
-            });
-
-            builder.setNegativeButton(Html.fromHtml("<font color='#0bbdff'>Отменить</font>"), (dialog, which) -> {});
-
-            AlertDialog alertDialog = builder.create();
-            alertDialog.show();
-        }
-
+    @Override
+    public void hideAlertDialog() {
+        if (alertDialog == null) return;
+        alertDialog.cancel();
     }
 
 }

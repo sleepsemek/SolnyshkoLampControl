@@ -16,9 +16,9 @@ import moxy.viewstate.strategy.StateStrategyType;
 public interface ConnectView extends MvpView {
 
     void setScannedDevicesListAdapter();
-    @StateStrategyType(AddToEndSingleStrategy.class)
+    @StateStrategyType(OneExecutionStateStrategy.class)
     void updateScanningState(boolean isScanning);
     void updateScanningDeviceList(BluetoothDevice device);
     void removeAddedDeviceFromScanningList(BluetoothDevice device);
-    void openFragment(Fragment fragment);
+    void checkForLocation();
 }

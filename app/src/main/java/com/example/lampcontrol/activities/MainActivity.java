@@ -1,7 +1,5 @@
 package com.example.lampcontrol.activities;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
@@ -19,12 +17,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.lampcontrol.R;
-import com.example.lampcontrol.models.POJO.Lamp;
+import com.example.lampcontrol.presenters.MainPresenter;
 import com.example.lampcontrol.ui.views.FloatingActionButton;
 import com.example.lampcontrol.views.MainView;
-import com.example.lampcontrol.presenters.MainPresenter;
-
-import java.util.ArrayList;
 
 import moxy.MvpAppCompatActivity;
 import moxy.presenter.InjectPresenter;
@@ -33,9 +28,8 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
     @InjectPresenter
     public MainPresenter mainPresenter;
-
     private FloatingActionButton actionButton;
-
+    private TextView actionButtonText;
     private FragmentManager fragmentManager;
 
     @Override
@@ -44,6 +38,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         setContentView(R.layout.activity_main);
 
         actionButton = findViewById(R.id.actionButton);
+        actionButtonText = findViewById(R.id.actionButtonText);
         actionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -73,8 +68,10 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     public void updateFab(boolean isToggled) {
         if (isToggled) {
             actionButton.toggleOn();
+            actionButtonText.setText("Управление");
         } else {
             actionButton.toggleOff();
+            actionButtonText.setText("Подключить");
         }
     }
 
@@ -108,18 +105,21 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     public void checkForPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
              if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                  mainPresenter.handlePermissionResult(false);
+             } else {
+                 mainPresenter.handlePermissionResult(true);
              }
         } else {
              if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
                  mainPresenter.handlePermissionResult(false);
+             } else {
+                 mainPresenter.handlePermissionResult(true);
              }
         }
-        mainPresenter.handlePermissionResult(true);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
                     new String[]{
                             Manifest.permission.BLUETOOTH,
                             Manifest.permission.BLUETOOTH_ADMIN,
-                            Manifest.permission.ACCESS_FINE_LOCATION},
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
                     101);
         }
     }

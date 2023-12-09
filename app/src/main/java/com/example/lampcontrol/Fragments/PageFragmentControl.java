@@ -142,12 +142,12 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
 
     @Override
     public void lampRenameConfirmed() {
-        editLampBottomSheet.cancel();
+        editLampBottomSheet.hide();
     }
 
     @Override
     public void lampRenameCancelled() {
-        editLampBottomSheet.cancel();
+        editLampBottomSheet.hide();
     }
 
     @Override
@@ -174,11 +174,13 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
 
     @Override
     public void lampDeleteConfirmed() {
+        if (alertDialog == null) return;
         alertDialog.cancel();
     }
 
     @Override
     public void lampDeleteCancelled() {
+        if (alertDialog == null) return;
         alertDialog.cancel();
     }
 

@@ -33,6 +33,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
         lampsDataBaseManager = application.getDatabaseManager();
         getViewState().switchFabBreathing(lampsDataBaseManager.getList().isEmpty());
         getViewState().showFragment(pageFragmentControl);
+        getViewState().updateFab(false);
 
         getViewState().checkForPermissions();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -40,7 +41,7 @@ public class MainPresenter extends MvpPresenter<MainView> {
     }
 
     private void checkIfBluetoothEnabled() {
-        if (!bluetoothAdapter.isEnabled()) {
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             getViewState().requestBluetoothEnable();
         }
     }
@@ -62,6 +63,9 @@ public class MainPresenter extends MvpPresenter<MainView> {
     }
 
     public void handleFragmentSwitchFAB(boolean isActionButtonToggled) {
+        getViewState().checkForPermissions();
+        checkIfBluetoothEnabled();
+
         if (isActionButtonToggled) {
             getViewState().updateFab(false);
             getViewState().showFragment(pageFragmentControl);
