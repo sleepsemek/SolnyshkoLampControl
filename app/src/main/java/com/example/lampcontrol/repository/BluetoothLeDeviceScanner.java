@@ -57,8 +57,8 @@ public class BluetoothLeDeviceScanner {
             if (onDeviceScannedListener != null) {
                 onDeviceScannedListener.onScanningStateChanged(isScanning);
             }
-//            bluetoothScanner.startScan(setupFilters(), setupSettings(), scanCallback);
-            bluetoothScanner.startScan(scanCallback);
+            bluetoothScanner.startScan(setupFilters(), setupSettings(), scanCallback);
+//            bluetoothScanner.startScan(scanCallback);
         } else {
             isScanning = false;
             if (onDeviceScannedListener != null) {
