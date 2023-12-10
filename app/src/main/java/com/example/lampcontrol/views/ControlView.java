@@ -36,5 +36,7 @@ public interface ControlView extends MvpView {
     void lampDeleteConfirmed();
     @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "deleteDialog")
     void lampDeleteCancelled();
+    @StateStrategyType(OneExecutionStateStrategy.class)
+    void makeMessage(String message);
 
 }

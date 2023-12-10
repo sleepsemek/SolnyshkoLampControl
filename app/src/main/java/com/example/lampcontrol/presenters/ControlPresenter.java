@@ -62,6 +62,10 @@ public class ControlPresenter extends MvpPresenter<ControlView> {
     }
 
     public void handleConfirmRenameLampButtonClick(String newName, Lamp lamp, int position) {
+        if (newName.length() >= 35) {
+            getViewState().makeMessage("Название не должно превышать 35 символов");
+            return;
+        }
         lampsDataBaseManager.renameLamp(newName, lamp);
         getViewState().lampRenameConfirmed();
         getViewState().notifyEditLampFromList(position);
