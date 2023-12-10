@@ -52,6 +52,8 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
                         if (state) {
                             getViewState().stopLoading(name);
                         } else {
+                            if (preheatTimer != null) preheatTimer.cancel();
+                            if (mainTimer != null) mainTimer.cancel();
                             getViewState().startLoading();
                         }
                     }

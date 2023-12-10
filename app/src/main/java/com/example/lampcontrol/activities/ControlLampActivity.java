@@ -104,7 +104,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
             public void run() {
                 lampName.setText("Установка соединения");
                 timerBottomSheet.cancel();
-                timerTextView.setText("");
+                timerTextView.setText("Устройство недоступно");
                 timerDialView.clearView();
                 mainButton.hideButton();
                 onOffButtonHolder.setVisibility(View.INVISIBLE);

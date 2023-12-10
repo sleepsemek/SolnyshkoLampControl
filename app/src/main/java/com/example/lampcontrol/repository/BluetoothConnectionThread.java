@@ -32,6 +32,7 @@ public class BluetoothConnectionThread extends Thread {
     private BluetoothGattCharacteristic notifyCharacteristic;
     private BluetoothGattDescriptor descriptor;
     private boolean firstConnection = true;
+    private boolean disconnectInit = false;
 
     private final Queue<BluetoothGattCharacteristic> commandQueue = new ConcurrentLinkedQueue<>();
     private HandlerThread commandHandlerThread;
@@ -126,7 +127,10 @@ public class BluetoothConnectionThread extends Thread {
                         if (dataReceivedListener != null) {
                             dataReceivedListener.onStateChange(false);
                         }
-                        bluetoothGatt.close();
+                        if (disconnectInit) {
+                            bluetoothGatt.close();
+                            disconnectInit = false;
+                        }
                         break;
                 }
             } else {
@@ -193,6 +197,7 @@ public class BluetoothConnectionThread extends Thread {
 
     public void cancel() {
         if (bluetoothGatt != null) {
+            disconnectInit = true;
             bluetoothGatt.disconnect();
         }
         if (commandHandlerThread != null) {
