@@ -1,9 +1,6 @@
 package com.example.lampcontrol.presenters;
 
-import static android.content.Context.LOCATION_SERVICE;
-
 import android.bluetooth.BluetoothDevice;
-import android.location.LocationManager;
 
 import com.example.lampcontrol.LampApplication;
 import com.example.lampcontrol.repository.BluetoothLeDeviceScanner;
@@ -45,7 +42,7 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
             }
         });
 
-        getViewState().checkForLocation();
+        getViewState().checkIfLocationEnabled();
 
         getViewState().setScannedDevicesListAdapter();
         bluetoothLeDeviceScanner.startScanning();

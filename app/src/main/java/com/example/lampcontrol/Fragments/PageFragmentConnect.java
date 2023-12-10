@@ -118,7 +118,7 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     }
 
     @Override
-    public void checkForLocation() {
+    public void checkIfLocationEnabled() {
         LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);

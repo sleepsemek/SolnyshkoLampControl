@@ -103,6 +103,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
             @Override
             public void run() {
                 lampName.setText("Установка соединения");
+                timerBottomSheet.cancel();
                 timerTextView.setText("");
                 timerDialView.clearView();
                 mainButton.hideButton();
