@@ -72,7 +72,7 @@ public class MainControlButton extends AppCompatButton implements View.OnClickLi
                         break;
 
                     case PREHEATING:
-                        MainControlButton.this.setText("Прогрев");
+                        MainControlButton.this.setText("");
                         MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
 
                         break;

@@ -21,27 +21,30 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="@color/main_red"
-                android:textSize="20dp"
-                android:text="Длительность:"/>
-
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/main_red"
+                        android:textSize="20dp"
+                        android:text="Минуты"
+                        android:layout_weight="1"/>
 
                     <NumberPicker
                         android:id="@+id/minutes_picker"
@@ -51,20 +54,23 @@
                         android:background="@drawable/btn_background_grey"
                         android:backgroundTint="?attr/colorOnPrimary" />
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        android:textColor="@color/main_red"
-                        android:textSize="20dp"
-                        android:text="минут"/>
-
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/main_red"
+                        android:textSize="20dp"
+                        android:text="Секунды"
+                        android:layout_weight="1"/>
 
                     <NumberPicker
                         android:id="@+id/seconds_picker"
@@ -73,14 +79,6 @@
                         android:background="@drawable/btn_background_grey"
                         android:backgroundTint="?attr/colorOnPrimary"
                         android:layout_margin="10dp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAlignment="center"
-                        android:textColor="@color/main_red"
-                        android:textSize="20dp"
-                        android:text="секунд"/>
 
                 </LinearLayout>
 
@@ -91,17 +89,17 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="1.25"
             android:orientation="vertical"
             android:gravity="center">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="center"
+                android:text="Количество процедур"
+                android:gravity="center"
                 android:textColor="@color/main_red"
-                android:textSize="20dp"
-                android:text="Количество:"/>
+                android:textSize="20dp" />
 
             <NumberPicker
                 android:id="@+id/preheat_picker"
@@ -110,14 +108,6 @@
                 android:background="@drawable/btn_background_grey"
                 android:backgroundTint="?attr/colorOnPrimary"
                 android:layout_margin="10dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textColor="@color/main_red"
-                android:textSize="20dp"
-                android:text="процедур"/>
 
         </LinearLayout>
 

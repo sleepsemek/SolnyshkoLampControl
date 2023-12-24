@@ -13,7 +13,7 @@ public interface ControlLampView extends MvpView {
     void openTimerBottomSheet(int minutes, int seconds, int iterations);
     void closeTimerBottomSheet();
     @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "loadingScreen")
-    void startLoading();
+    void startLoading(String name);
     @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "loadingScreen")
     void stopLoading(String name);
     void clearTimerView();

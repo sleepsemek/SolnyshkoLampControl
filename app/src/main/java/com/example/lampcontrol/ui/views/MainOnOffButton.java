@@ -52,19 +52,19 @@ public class MainOnOffButton extends AppCompatButton {
             public void run() {
                 switch (state) {
                     case OFF:
-                        setTextBelow("Вкл");
+                        setTextBelow("Включить");
                         MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
                         break;
 
                     case ACTIVE:
                     case PREHEATING:
                     case PAUSED:
-                        setTextBelow("Выкл");
+                        setTextBelow("Выключить");
                         MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
                         break;
 
                     case ON:
-                        setTextBelow("Выкл");
+                        setTextBelow("Выключить");
                         MainOnOffButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
                         break;
 

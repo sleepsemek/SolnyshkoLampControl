@@ -5,9 +5,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
 import com.example.lampcontrol.models.POJO.ReceivedLampState;
@@ -42,7 +44,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
 
     private MainControlButton mainButton;
     private MainOnOffButton onOffButton;
-    private LinearLayout onOffButtonHolder;
+    private ConstraintLayout onOffButtonHolder;
 
 
     @Override
@@ -59,6 +61,16 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
         onOffButtonHolder = findViewById(R.id.onOffBtnHolder);
         timerDialView = findViewById(R.id.timerDialView);
         timerTextView = findViewById(R.id.timerTextView);
+
+        timerTextView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                timerTextView.getLayoutParams().height = timerTextView.getWidth();
+                timerTextView.requestLayout();
+                timerTextView.getViewTreeObserver().removeOnPreDrawListener(this);
+                return true;
+            }
+        });
 
         mainButton.setOnClickListener(view -> {
             controlLampPresenter.handleButtonClick(mainButton.getState());
@@ -98,13 +110,13 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
     }
 
     @Override
-    public void startLoading() {
+    public void startLoading(String name) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                lampName.setText("Установка соединения");
+                lampName.setText(name);
                 timerBottomSheet.cancel();
-                timerTextView.setText("Устройство недоступно");
+                timerTextView.setText("Выполняется подключение");
                 timerDialView.clearView();
                 mainButton.hideButton();
                 onOffButtonHolder.setVisibility(View.INVISIBLE);
@@ -131,7 +143,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
             @Override
             public void run() {
                 timerDialView.setDialColor(ContextCompat.getColor(getApplicationContext(), R.color.main_blue));
-                timerTextView.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds) + "\nПроцедура " + (iterations) + "/" + totalIterations);
+                timerTextView.setText("Процедура " + (iterations) + "/" + totalIterations + "\nОсталось " + String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
                 timerDialView.setTime(minutes, seconds, totalMinutes, totalSeconds);
             }
         });
@@ -143,7 +155,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
             @Override
             public void run() {
                 timerDialView.setDialColor(ContextCompat.getColor(getApplicationContext(), R.color.main_red));
-                timerTextView.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
+                timerTextView.setText("Идет прогрев устройства\nОсталось " + String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
                 timerDialView.setTime(minutes, seconds, 0, 60);
             }
         });

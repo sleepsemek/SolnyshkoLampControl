@@ -41,7 +41,7 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
 
         preferencesManager = LampApplication.getInstance().getPreferencesManager();
         connectedThread = LampApplication.getInstance().getBluetoothConnectionThread();
-        getViewState().startLoading();
+        getViewState().startLoading(name);
         connectedThread.startConnection(address);
         connectedThread.setOnDataReceivedListener(new BluetoothConnectionThread.onDataReceivedListener() {
             @Override
@@ -54,7 +54,7 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
                         } else {
                             if (preheatTimer != null) preheatTimer.cancel();
                             if (mainTimer != null) mainTimer.cancel();
-                            getViewState().startLoading();
+                            getViewState().startLoading(name);
                         }
                     }
                 });
