@@ -19,6 +19,7 @@ public class TimerView extends View {
 
     private Paint backgroundPaint;
     private Paint currentPaint;
+    private Paint circlePaint;
 
     private float maxTime = 0;
     private float sweepAngle = 0;
@@ -43,6 +44,11 @@ public class TimerView extends View {
         currentPaint.setAntiAlias(true);
         currentPaint.setStrokeCap(Paint.Cap.ROUND);
 
+        circlePaint = new Paint();
+        circlePaint.setColor(ContextCompat.getColor(context, R.color.dark_blue));
+        circlePaint.setStyle(Paint.Style.FILL);
+        circlePaint.setAntiAlias(true);
+
     }
 
     @Override
@@ -53,6 +59,7 @@ public class TimerView extends View {
 //        canvas.scale(1f, -1f, 0, 0);
 
         canvas.drawCircle(0, 0, radius - 40, backgroundPaint);
+        canvas.drawCircle(0, 0, radius - 100, circlePaint);
 
         RectF rectF = new RectF(40 - radius, 40 - radius, radius - 40, radius - 40);
         canvas.drawArc(rectF, 0, sweepAngle, false, currentPaint);

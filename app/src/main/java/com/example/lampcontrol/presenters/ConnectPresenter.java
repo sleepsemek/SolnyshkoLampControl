@@ -55,6 +55,7 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
     public void handleAddButtonClick(BluetoothDevice device) {
         lampsDataBaseManager.addLamp(new Lamp(device.getName() == null ? "Без названия" : device.getName(), device.getAddress()));
         getViewState().removeAddedDeviceFromScanningList(device);
+        getViewState().makeMessage("Устройство добавлено");
     }
 
     @Override

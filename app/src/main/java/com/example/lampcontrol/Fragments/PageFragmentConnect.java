@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
@@ -119,16 +120,21 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
 
     @Override
     public void checkIfLocationEnabled() {
-        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
-        }
+//        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
+//        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+//            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//            startActivity(intent);
+//        }
     }
 
     @Override
     public void removeAddedDeviceFromScanningList(BluetoothDevice device) {
         connectAdapter.removeDevice(device);
+    }
+
+    @Override
+    public void makeMessage(String msg) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
 }

@@ -17,4 +17,6 @@ public interface ConnectView extends MvpView {
     void updateScanningDeviceList(BluetoothDevice device);
     void removeAddedDeviceFromScanningList(BluetoothDevice device);
     void checkIfLocationEnabled();
+    @StateStrategyType(OneExecutionStateStrategy.class)
+    void makeMessage(String message);
 }
