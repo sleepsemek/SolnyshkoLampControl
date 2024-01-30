@@ -52,6 +52,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         mainPresenter.handleBackPress(actionButton.isToggled());
     }
 
@@ -87,6 +88,9 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     @Override
     public void requestBluetoothEnable() {
         Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         startActivityForResult(enableIntent, MainPresenter.REQUEST_ENABLE_BT);
     }
 
@@ -114,7 +118,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
         } else {
              if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
                     || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
                  mainPresenter.handlePermissionResult(false);
              } else {
                  mainPresenter.handlePermissionResult(true);
@@ -136,7 +140,7 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
                     new String[]{
                             Manifest.permission.BLUETOOTH,
                             Manifest.permission.BLUETOOTH_ADMIN,
-                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                            Manifest.permission.ACCESS_FINE_LOCATION},
                     101);
         }
     }

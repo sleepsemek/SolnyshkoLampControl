@@ -50,7 +50,7 @@ public class TimerView extends View {
         super.onDraw(canvas);
         canvas.translate(centerX, centerY);
         canvas.rotate(-90);
-        canvas.scale(1f, -1f, 0, 0);
+//        canvas.scale(1f, -1f, 0, 0);
 
         canvas.drawCircle(0, 0, radius - 40, backgroundPaint);
 

@@ -114,6 +114,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                //TODO: Убрать надпись с кнопки во время загрузки
                 lampName.setText(name);
                 timerBottomSheet.cancel();
                 timerTextView.setText("Выполняется подключение");
