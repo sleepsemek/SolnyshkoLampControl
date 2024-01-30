@@ -113,6 +113,8 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         }
     }
 
+
+
     @Override
     public void updateScanningDeviceList(BluetoothDevice device) {
         connectAdapter.addDevice(device);

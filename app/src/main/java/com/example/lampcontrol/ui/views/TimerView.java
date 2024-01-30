@@ -28,6 +28,8 @@ public class TimerView extends View {
     private int centerY;
     private int radius;
 
+    private RectF rectF;
+
     public TimerView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
 
@@ -49,6 +51,7 @@ public class TimerView extends View {
         circlePaint.setStyle(Paint.Style.FILL);
         circlePaint.setAntiAlias(true);
 
+
     }
 
     @Override
@@ -56,12 +59,10 @@ public class TimerView extends View {
         super.onDraw(canvas);
         canvas.translate(centerX, centerY);
         canvas.rotate(-90);
-//        canvas.scale(1f, -1f, 0, 0);
 
         canvas.drawCircle(0, 0, radius - 40, backgroundPaint);
         canvas.drawCircle(0, 0, radius - 100, circlePaint);
-
-        RectF rectF = new RectF(40 - radius, 40 - radius, radius - 40, radius - 40);
+        rectF = new RectF(-(radius - 40), -(radius - 40), radius - 40, radius - 40);
         canvas.drawArc(rectF, 0, sweepAngle, false, currentPaint);
     }
 
