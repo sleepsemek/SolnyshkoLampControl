@@ -70,6 +70,18 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
 
     }
 
+    @Override
+    public void setScannedDevicesListAdapter() {
+        connectAdapter = new ConnectAdapter(new ConnectAdapter.OnButtonClickListener() {
+            @Override
+            public void onAddClicked(BluetoothDevice device) {
+                connectPresenter.handleAddButtonClick(device);
+            }
+        });
+
+        recyclerView.setAdapter(connectAdapter);
+    }
+
     private void startRefreshAnimation() {
         animator = ValueAnimator.ofFloat(0f, 360f);
         animator.setDuration(500);
@@ -86,34 +98,25 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         animator.start();
     }
 
-
     @Override
-    public void setScannedDevicesListAdapter() {
-        connectAdapter = new ConnectAdapter(new ConnectAdapter.OnButtonClickListener() {
-            @Override
-            public void onAddClicked(BluetoothDevice device) {
-                connectPresenter.handleAddButtonClick(device);
-            }
+    public void startScanningAnimation() {
+        requireActivity().runOnUiThread(() -> {
+            startRefreshAnimation();
+            refreshHint.setText("Идет поиск");
         });
-
-        recyclerView.setAdapter(connectAdapter);
     }
 
     @Override
-    public void updateScanningState(boolean isScanning) {
-        if (isScanning) {
-            startRefreshAnimation();
-            refreshHint.setText("Поиск устройств");
-        } else {
+    public void stopScanningAnimation() {
+        requireActivity().runOnUiThread(() -> {
             if (animator != null) {
                 animator.cancel();
             }
+
             refreshHint.setText("Найти устройства");
             refreshButton.setRotation(0);
-        }
+        });
     }
-
-
 
     @Override
     public void updateScanningDeviceList(BluetoothDevice device) {
@@ -122,11 +125,11 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
 
     @Override
     public void checkIfLocationEnabled() {
-//        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
-//        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//            startActivity(intent);
-//        }
+        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(intent);
+        }
     }
 
     @Override

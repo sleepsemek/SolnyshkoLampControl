@@ -38,7 +38,11 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
 
             @Override
             public void onScanningStateChanged(boolean isScanning) {
-                getViewState().updateScanningState(isScanning);
+                if (isScanning) {
+                    getViewState().startScanningAnimation();
+                } else {
+                    getViewState().stopScanningAnimation();
+                }
             }
         });
 
