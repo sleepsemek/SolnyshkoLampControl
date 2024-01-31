@@ -11,16 +11,14 @@ import com.example.lampcontrol.LampApplication;
 import com.example.lampcontrol.models.POJO.ReceivedLampState;
 import com.example.lampcontrol.models.POJO.SentCommand;
 import com.example.lampcontrol.models.PreferencesManager;
-import com.example.lampcontrol.repository.BluetoothConnectionThread;
+import com.example.lampcontrol.repository.BluetoothLeConnectionThread;
 import com.example.lampcontrol.views.ControlLampView;
-
-import java.util.concurrent.TimeUnit;
 
 import moxy.MvpPresenter;
 
 public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
 
-    private BluetoothConnectionThread connectedThread;
+    private BluetoothLeConnectionThread connectedThread;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -43,7 +41,7 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
         connectedThread = LampApplication.getInstance().getBluetoothConnectionThread();
         getViewState().startLoading(name);
         connectedThread.startConnection(address);
-        connectedThread.setOnDataReceivedListener(new BluetoothConnectionThread.onDataReceivedListener() {
+        connectedThread.setOnDataReceivedListener(new BluetoothLeConnectionThread.onDataReceivedListener() {
             @Override
             public void onStateChange(boolean state) {
                 handler.post(new Runnable() {

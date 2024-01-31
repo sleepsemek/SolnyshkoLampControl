@@ -98,8 +98,9 @@ public class BluetoothLeDeviceScanner {
 
     }
 
+    //TODO:: метод снизу изменен и удали кнопку обновления вообще, только все усложняет
     private void stopScan() {
-        if (bluetoothAdapter != null || bluetoothAdapter.isEnabled() || bluetoothScanner != null) return;
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled() || bluetoothScanner == null) return;
         bluetoothScanner.stopScan(scanCallback);
     }
 

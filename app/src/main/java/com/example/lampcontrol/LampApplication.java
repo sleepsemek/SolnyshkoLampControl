@@ -1,7 +1,7 @@
 package com.example.lampcontrol;
 
 import com.example.lampcontrol.models.PreferencesManager;
-import com.example.lampcontrol.repository.BluetoothConnectionThread;
+import com.example.lampcontrol.repository.BluetoothLeConnectionThread;
 import com.example.lampcontrol.repository.LampsDataBaseManager;
 
 public class LampApplication extends android.app.Application {
@@ -27,8 +27,8 @@ public class LampApplication extends android.app.Application {
     public PreferencesManager getPreferencesManager() {
         return this.preferencesManager;
     }
-    public BluetoothConnectionThread getBluetoothConnectionThread() {
-        return new BluetoothConnectionThread(getApplicationContext());
+    public BluetoothLeConnectionThread getBluetoothConnectionThread() {
+        return new BluetoothLeConnectionThread(getApplicationContext());
     }
 
 }

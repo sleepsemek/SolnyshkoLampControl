@@ -2,22 +2,24 @@ package com.example.lampcontrol.Fragments;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-import android.animation.ValueAnimator;
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.fragment.app.Fragment;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,7 +28,6 @@ import com.example.lampcontrol.adapters.ConnectAdapter;
 import com.example.lampcontrol.R;
 import com.example.lampcontrol.presenters.ConnectPresenter;
 import com.example.lampcontrol.views.ConnectView;
-import com.example.lampcontrol.views.MainView;
 
 import moxy.MvpAppCompatFragment;
 import moxy.presenter.InjectPresenter;
@@ -39,9 +40,8 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     private RecyclerView recyclerView;
     ConnectAdapter connectAdapter;
 
-    private AppCompatButton refreshButton;
-    private TextView refreshHint;
-    private ValueAnimator animator;
+    private TextView scanButtonText;
+    private AppCompatButton scanButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,14 +61,15 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity().getApplicationContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        refreshButton = requireView().findViewById(R.id.refresh);
-        refreshHint = requireView().findViewById(R.id.refreshHint);
+        scanButtonText = requireView().findViewById(R.id.refreshText);
+        scanButton = requireView().findViewById(R.id.refreshButton);
 
-        refreshButton.setOnClickListener(view1 -> {
-            connectPresenter.handleScanButton();
+        scanButton.setOnClickListener(view1 -> {
+            connectPresenter.handleScanButtonPress();
         });
 
     }
+
 
     @Override
     public void setScannedDevicesListAdapter() {
@@ -82,39 +83,19 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
         recyclerView.setAdapter(connectAdapter);
     }
 
-    private void startRefreshAnimation() {
-        animator = ValueAnimator.ofFloat(0f, 360f);
-        animator.setDuration(500);
-        animator.setInterpolator(new LinearInterpolator());
-        animator.setRepeatCount(ValueAnimator.INFINITE);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float rotationDegrees = (float) animation.getAnimatedValue();
-                refreshButton.setRotation(rotationDegrees);
-            }
-        });
-
-        animator.start();
-    }
-
     @Override
     public void startScanningAnimation() {
         requireActivity().runOnUiThread(() -> {
-            startRefreshAnimation();
-            refreshHint.setText("Идет поиск");
+            scanButtonText.setVisibility(View.VISIBLE);
+            scanButton.setVisibility(View.GONE);
         });
     }
 
     @Override
     public void stopScanningAnimation() {
         requireActivity().runOnUiThread(() -> {
-            if (animator != null) {
-                animator.cancel();
-            }
-
-            refreshHint.setText("Найти устройства");
-            refreshButton.setRotation(0);
+            scanButtonText.setVisibility(View.GONE);
+            scanButton.setVisibility(View.VISIBLE);
         });
     }
 
@@ -124,12 +105,40 @@ public class PageFragmentConnect extends MvpAppCompatFragment implements Connect
     }
 
     @Override
+    public void checkIfScanIsPermitted() {
+        //TODO:: возможно фризит прилу, проверить
+        connectPresenter.handlePermissionResult(Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    @Override
     public void checkIfLocationEnabled() {
-        LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
-        }
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                LocationManager locationManager = (LocationManager) requireActivity().getSystemService(LOCATION_SERVICE);
+                connectPresenter.handleGPSpermissionResult(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
+            }
+        });
+    }
+
+    @Override
+    public void backPress() {
+        requireActivity().onBackPressed();
+    }
+
+    @Override
+    public void redirectToAppSettings() {
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", requireActivity().getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }
+
+    @Override
+    public void redirectToGPSSettings() {
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        startActivity(intent);
     }
 
     @Override

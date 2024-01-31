@@ -18,17 +18,19 @@
         android:gravity="end|center">
 
         <TextView
-            android:id="@+id/refreshHint"
+            android:visibility="gone"
+            android:id="@+id/refreshText"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="55dp"
+            android:gravity="center"
             android:textColor="@color/dark_blue"
             android:textSize="20dp"
             android:textStyle="bold"
-            android:text="Найти устройства"
-            android:layout_marginRight="5dp"/>
+            android:text="Поиск устройств..."
+            android:layout_marginHorizontal="5dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/refresh"
+            android:id="@+id/refreshButton"
             android:layout_width="50dp"
             android:layout_height="55dp"
             android:background="@drawable/button"

@@ -22,7 +22,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class BluetoothConnectionThread extends Thread {
+public class BluetoothLeConnectionThread extends Thread {
 
     private onDataReceivedListener dataReceivedListener;
 
@@ -47,7 +47,7 @@ public class BluetoothConnectionThread extends Thread {
     private static final UUID NOTIFY_CHARACTERISTICS_UUID = UUID.fromString("1fd32b0a-aa51-4e49-92b2-9a8be97473c9");
     protected static final UUID NOTIFY_DESCRIPTOR_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    public BluetoothConnectionThread(Context context) {
+    public BluetoothLeConnectionThread(Context context) {
         this.dataReceivedListener = null;
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

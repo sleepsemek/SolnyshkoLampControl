@@ -22,7 +22,6 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
         LampApplication application = LampApplication.getInstance();
         lampsDataBaseManager = application.getDatabaseManager();
 
-
         bluetoothLeDeviceScanner = new BluetoothLeDeviceScanner();
         bluetoothLeDeviceScanner.setOnDeviceScannedListener(new BluetoothLeDeviceScanner.OnDeviceScannedListener() {
             @Override
@@ -46,14 +45,32 @@ public class ConnectPresenter extends MvpPresenter<ConnectView> {
             }
         });
 
-        getViewState().checkIfLocationEnabled();
-
         getViewState().setScannedDevicesListAdapter();
+
+        getViewState().checkIfLocationEnabled();
+        getViewState().checkIfScanIsPermitted();
+
+    }
+
+    public void handlePermissionResult(boolean result) {
+        if (!result) {
+            getViewState().makeMessage("Предоставтье доступ к устройствам поблизости");
+            getViewState().redirectToAppSettings();
+            return;
+        }
         bluetoothLeDeviceScanner.startScanning();
     }
 
-    public void handleScanButton() {
-        bluetoothLeDeviceScanner.startScanning();
+    public void handleGPSpermissionResult(boolean result) {
+        if (!result) {
+            getViewState().makeMessage("Включите определение местоположения");
+            getViewState().redirectToGPSSettings();
+            getViewState().backPress();
+        }
+    }
+
+    public void handleScanButtonPress() {
+        getViewState().checkIfScanIsPermitted();
     }
 
     public void handleAddButtonClick(BluetoothDevice device) {
