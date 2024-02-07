@@ -26,16 +26,13 @@ public class BluetoothLeDeviceScanner {
 
     private OnDeviceScannedListener onDeviceScannedListener;
 
-    public BluetoothLeDeviceScanner() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
-    }
-
     public void startScanning() {
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled() || bluetoothScanner == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                return;
+            }
             bluetoothScanner = bluetoothAdapter.getBluetoothLeScanner();
-            return;
         }
 
         if (!isScanning) {
