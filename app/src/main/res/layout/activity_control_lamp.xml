@@ -27,7 +27,7 @@
         app:layout_constraintTop_toBottomOf="@+id/lampNameWrapper"
         app:layout_constraintVertical_chainStyle="spread">
 
-        <com.example.lampcontrol.ui.views.TimerView
+        <com.solnyshco.lampcontrol.ui.views.TimerView
             android:id="@+id/timerDialView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/button" />
 
-        <com.example.lampcontrol.ui.views.MainControlButton
+        <com.solnyshco.lampcontrol.ui.views.MainControlButton
             android:id="@+id/main_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -128,7 +128,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.example.lampcontrol.ui.views.MainOnOffButton
+        <com.solnyshco.lampcontrol.ui.views.MainOnOffButton
             android:id="@+id/onOffBtn"
             android:layout_width="52dp"
             android:layout_height="60dp"

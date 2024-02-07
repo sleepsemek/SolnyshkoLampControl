@@ -7,7 +7,7 @@
     android:background="?attr/colorOnPrimary"
     tools:context=".activities.MainActivity">
 
-    <com.example.lampcontrol.ui.views.FloatingActionButton
+    <com.solnyshco.lampcontrol.ui.views.FloatingActionButton
         android:id="@+id/actionButton"
         android:layout_width="63dp"
         android:layout_height="70dp"

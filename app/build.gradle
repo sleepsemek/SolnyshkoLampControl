@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace 'com.example.lampcontrol'
+    namespace 'com.solnyshco.lampcontrol'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.lampcontrol"
+        applicationId "com.solnyshco.lampcontrol"
         minSdk 23
         targetSdk 34
         versionCode 1
-        versionName "1.7.5"
+        versionName "1.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
