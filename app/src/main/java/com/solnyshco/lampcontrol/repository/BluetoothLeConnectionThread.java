@@ -30,7 +30,9 @@ public class BluetoothLeConnectionThread extends Thread {
     private BluetoothGatt bluetoothGatt;
     private BluetoothGattCharacteristic commandCharacteristic;
     private BluetoothGattCharacteristic notifyCharacteristic;
-    private BluetoothGattDescriptor descriptor;
+    private BluetoothGattCharacteristic versionCharacteristic;
+    private BluetoothGattDescriptor notifyDescriptor;
+    private BluetoothGattDescriptor versionDescriptor;
     private boolean firstConnection = true;
     private boolean disconnectInit = false;
 
@@ -45,7 +47,8 @@ public class BluetoothLeConnectionThread extends Thread {
     private static final UUID SERVICE_UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
     private static final UUID COMMAND_CHARACTERISTICS_UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8");
     private static final UUID NOTIFY_CHARACTERISTICS_UUID = UUID.fromString("1fd32b0a-aa51-4e49-92b2-9a8be97473c9");
-    protected static final UUID NOTIFY_DESCRIPTOR_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private static final UUID VERSION_CHARACTERISTICS_UUID = UUID.fromString("b3103938-3c4c-4330-8f56-e58c77f4b0bd");
+    private static final UUID NOTIFY_DESCRIPTOR_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public BluetoothLeConnectionThread(Context context) {
         this.dataReceivedListener = null;
@@ -87,7 +90,8 @@ public class BluetoothLeConnectionThread extends Thread {
 
         final String value = characteristic.getStringValue(0);
 
-        if (characteristic.getUuid().equals(COMMAND_CHARACTERISTICS_UUID)) {
+        if (characteristic.getUuid().equals(COMMAND_CHARACTERISTICS_UUID)
+                || characteristic.getUuid().equals(VERSION_CHARACTERISTICS_UUID)) {
             ReceivedLampState lampState = gson.fromJson(value, ReceivedLampState.class);
             System.out.println(gson.toJson(lampState));
             if (dataReceivedListener != null) {
@@ -147,12 +151,14 @@ public class BluetoothLeConnectionThread extends Thread {
                 commandCharacteristic = gatt.getService(SERVICE_UUID)
                         .getCharacteristic(COMMAND_CHARACTERISTICS_UUID);
                 notifyCharacteristic = gatt.getService(SERVICE_UUID)
-                                .getCharacteristic(NOTIFY_CHARACTERISTICS_UUID);
+                        .getCharacteristic(NOTIFY_CHARACTERISTICS_UUID);
+                versionCharacteristic = gatt.getService(SERVICE_UUID)
+                        .getCharacteristic(VERSION_CHARACTERISTICS_UUID);
 
                 gatt.setCharacteristicNotification(notifyCharacteristic, true);
-                descriptor = notifyCharacteristic.getDescriptor(NOTIFY_DESCRIPTOR_UUID);
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                bluetoothGatt.writeDescriptor(descriptor);
+                notifyDescriptor = notifyCharacteristic.getDescriptor(NOTIFY_DESCRIPTOR_UUID);
+                notifyDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                bluetoothGatt.writeDescriptor(notifyDescriptor);
             }
         }
 
@@ -193,6 +199,10 @@ public class BluetoothLeConnectionThread extends Thread {
         commandCharacteristic.setValue(jsonCommand);
         System.out.println(jsonCommand);
         return bluetoothGatt.writeCharacteristic(commandCharacteristic);
+    }
+
+    public void getVersion() {
+        bluetoothGatt.readCharacteristic(versionCharacteristic);
     }
 
     public void cancel() {

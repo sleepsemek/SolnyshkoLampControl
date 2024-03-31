@@ -19,6 +19,7 @@ public class LampTimerBottomSheet extends BottomSheetDialog {
     private NumberPicker minutesPicker;
     private NumberPicker secondsPicker;
     private AppCompatButton startTimerButton;
+    private AppCompatButton infoButton;
 
     public LampTimerBottomSheet(@NonNull Context context) {
         super(context);
@@ -51,6 +52,7 @@ public class LampTimerBottomSheet extends BottomSheetDialog {
         secondsPicker.setMaxValue(59);
 
         startTimerButton = this.findViewById(R.id.start_timer);
+        infoButton = this.findViewById(R.id.info_button);
 
     }
 
@@ -62,6 +64,10 @@ public class LampTimerBottomSheet extends BottomSheetDialog {
                 onClickListener.onClick(view);
             }
         });
+    }
+
+    public void setOnInfoClickListener(View.OnClickListener onClickListener) {
+        infoButton.setOnClickListener(onClickListener);
     }
 
     public void setTimeAndCycles(long minutes, long seconds, int iterations) {

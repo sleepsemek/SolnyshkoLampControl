@@ -22,8 +22,8 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    private String address;
-    private String name;
+    private final String address;
+    private final String name;
     private CountDownTimer preheatTimer;
     private CountDownTimer mainTimer;
     private PreferencesManager preferencesManager;
@@ -80,6 +80,9 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
                     case PREHEATING:
                         startPreheat(lampState.getPreheat());
                         break;
+
+                    default:
+                        getViewState().makeMessage(lampState.getVersion());
 
                 }
             }
@@ -225,6 +228,10 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
         connectedThread.sendCommand(new SentCommand("set", (minutes * 60L + seconds) * 1000, cycles));
         preferencesManager.setLastTime(minutes, seconds, cycles, address);
         getViewState().closeTimerBottomSheet();
+    }
+
+    public void handleBottomSheetInfo() {
+        connectedThread.getVersion();
     }
 
     public void handleAlertConfirm() {

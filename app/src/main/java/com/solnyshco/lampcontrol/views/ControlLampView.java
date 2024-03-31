@@ -5,6 +5,7 @@ import com.solnyshco.lampcontrol.models.POJO.ReceivedLampState;
 import moxy.MvpView;
 import moxy.viewstate.strategy.AddToEndSingleStrategy;
 import moxy.viewstate.strategy.AddToEndSingleTagStrategy;
+import moxy.viewstate.strategy.SkipStrategy;
 import moxy.viewstate.strategy.StateStrategyType;
 
 @StateStrategyType(AddToEndSingleStrategy.class)
@@ -23,4 +24,6 @@ public interface ControlLampView extends MvpView {
     void showAlertDialog();
     @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "lampDisableAlert")
     void hideAlertDialog();
+    @StateStrategyType(SkipStrategy.class)
+    void makeMessage(String msg);
 }

@@ -11,18 +11,25 @@ import java.io.IOException;
 public class ReceivedLampState {
 
     public enum RelayState {
-        OFF, ON, PREHEATING, ACTIVE, PAUSED
+        OFF, ON, PREHEATING, ACTIVE, PAUSED, NONE
     }
 
     @SerializedName("state")
     @JsonAdapter(RelayStateAdapter.class)
-    private RelayState lampState;
+    private final RelayState lampState = RelayState.NONE;
 
     @SerializedName("timer")
     private Timer timer;
 
     @SerializedName("preheat")
     private Preheat preheat;
+
+    @SerializedName("version")
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
 
     public RelayState getState() {
         return lampState;

@@ -6,6 +6,7 @@ import android.text.Html;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
@@ -72,6 +73,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
         mainButton.setOnClickListener(view -> controlLampPresenter.handleButtonClick(mainButton.getState()));
 
         timerBottomSheet.setOnStartClickListener(view -> controlLampPresenter.handleBottomSheetStart(timerBottomSheet.getMinutes(), timerBottomSheet.getSeconds(), timerBottomSheet.getCycles()));
+        timerBottomSheet.setOnInfoClickListener(view -> controlLampPresenter.handleBottomSheetInfo());
 
         onOffButton.setOnClickListener(view -> controlLampPresenter.handleSideButtonClick(mainButton.getState()));
 
@@ -165,6 +167,11 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
     public void hideAlertDialog() {
         if (alertDialog == null) return;
         alertDialog.cancel();
+    }
+
+    @Override
+    public void makeMessage(String msg) {
+        Toast.makeText(this, "Версия прошивки: " + msg, Toast.LENGTH_SHORT).show();
     }
 
 }
