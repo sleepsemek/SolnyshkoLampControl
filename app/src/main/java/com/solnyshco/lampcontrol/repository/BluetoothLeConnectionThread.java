@@ -32,7 +32,6 @@ public class BluetoothLeConnectionThread extends Thread {
     private BluetoothGattCharacteristic notifyCharacteristic;
     private BluetoothGattCharacteristic versionCharacteristic;
     private BluetoothGattDescriptor notifyDescriptor;
-    private BluetoothGattDescriptor versionDescriptor;
     private boolean firstConnection = true;
     private boolean disconnectInit = false;
 

@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -20,9 +19,6 @@ import com.solnyshco.lampcontrol.R;
 import com.solnyshco.lampcontrol.presenters.MainPresenter;
 import com.solnyshco.lampcontrol.ui.views.FloatingActionButton;
 import com.solnyshco.lampcontrol.views.MainView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import moxy.MvpAppCompatActivity;
 import moxy.presenter.InjectPresenter;
@@ -105,63 +101,55 @@ public class MainActivity extends MvpAppCompatActivity implements MainView {
     @Override
     public void checkForPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                 mainPresenter.handlePermissionResult(false);
-             } else {
-                 mainPresenter.handlePermissionResult(true);
-             }
+            mainPresenter.handlePermissionResult(ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
         } else {
-             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-                 mainPresenter.handlePermissionResult(false);
-             } else {
-                 mainPresenter.handlePermissionResult(true);
-             }
+            mainPresenter.handlePermissionResult(ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
         }
     }
 
-    private void checkAndRequestMissingPermissions() {
-        List<String> missingPermissionsToBeRequested = new ArrayList<>();
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-            missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-            missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_ADMIN);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Андроид 12 и выше
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_CONNECT);
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_SCAN);
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Андроид 10 и выше
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                missingPermissionsToBeRequested.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                missingPermissionsToBeRequested.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-            }
-        }
-
-        if (!missingPermissionsToBeRequested.isEmpty()) {
-            System.out.println("Missing permissions: " + missingPermissionsToBeRequested);
-            ActivityCompat.requestPermissions(this, missingPermissionsToBeRequested.toArray(new String[0]), 101);
-        } else {
-            System.out.println("All permissions granted");
-        }
-    }
+//    private void checkAndRequestMissingPermissions() {
+//        List<String> missingPermissionsToBeRequested = new ArrayList<>();
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+//            missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH);
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+//            missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_ADMIN);
+//        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            // Андроид 12 и выше
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+//                missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_CONNECT);
+//            }
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+//                missingPermissionsToBeRequested.add(Manifest.permission.BLUETOOTH_SCAN);
+//            }
+//        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            // Андроид 10 и выше
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                missingPermissionsToBeRequested.add(Manifest.permission.ACCESS_FINE_LOCATION);
+//            }
+//        } else {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                missingPermissionsToBeRequested.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+//            }
+//        }
+//
+//        if (!missingPermissionsToBeRequested.isEmpty()) {
+//            System.out.println("Missing permissions: " + missingPermissionsToBeRequested);
+//            ActivityCompat.requestPermissions(this, missingPermissionsToBeRequested.toArray(new String[0]), 101);
+//        } else {
+//            System.out.println("All permissions granted");
+//        }
+//    }
 
     @Override
     public void requestPermissions() {

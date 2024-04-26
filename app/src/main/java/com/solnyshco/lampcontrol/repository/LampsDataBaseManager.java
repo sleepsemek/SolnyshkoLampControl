@@ -29,8 +29,11 @@ public class LampsDataBaseManager {
     }
 
     public void addLamp(Lamp lamp) {
+        int index = devicesAddedList.size() + 1;
+        String name = lamp.getName() + " (" + index + ")";
+        lamp.setName(name);
         ContentValues values = new ContentValues();
-        values.put("name", lamp.getName());
+        values.put("name", name);
         values.put("address", lamp.getAddress());
         lampsDataBase.replace("lamps", null, values);
         devicesAddedList.add(lamp);
