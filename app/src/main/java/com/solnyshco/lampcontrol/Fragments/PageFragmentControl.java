@@ -3,6 +3,7 @@ package com.solnyshco.lampcontrol.Fragments;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
@@ -110,6 +111,12 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
         editLampBottomSheet.getCancelButton().setOnClickListener(view -> {
             controlPresenter.handleCancelRenameLampButtonClick(editLampBottomSheet.getName(), lamp, position);
         });
+        editLampBottomSheet.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                controlPresenter.handleCancelRenameLampButtonClick(editLampBottomSheet.getName(), lamp, position);
+            }
+        });
         editLampBottomSheet.show();
     }
 
@@ -135,6 +142,12 @@ public class PageFragmentControl extends MvpAppCompatFragment implements Control
                 })
                 .setNegativeButton(R.string.delete_dialog_cancel_button, (dialog, which) -> {
                     controlPresenter.handleCancelDeleteButtonClick(lamp, position);
+                })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        controlPresenter.handleCancelDeleteButtonClick(lamp, position);
+                    }
                 })
                 .create();
 

@@ -41,10 +41,6 @@ public class EditLampBottomSheet extends BottomSheetDialog {
         name = this.findViewById(R.id.lamp_name);
         cancelButton = this.findViewById(R.id.cancel_rename_button);
         confirmButton = this.findViewById(R.id.confirm_rename_button);
-
-        cancelButton.setOnClickListener(v -> {
-            this.cancel();
-        });
     }
 
     public void setName(String name) {

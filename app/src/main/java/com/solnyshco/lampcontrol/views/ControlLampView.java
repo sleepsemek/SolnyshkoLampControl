@@ -26,4 +26,8 @@ public interface ControlLampView extends MvpView {
     void hideAlertDialog();
     @StateStrategyType(SkipStrategy.class)
     void makeMessage(String msg);
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "infoBottomSheet")
+    void showLampInfo(String name, String address, String version);
+    @StateStrategyType(value = AddToEndSingleTagStrategy.class, tag = "infoBottomSheet")
+    void hideLampInfo();
 }

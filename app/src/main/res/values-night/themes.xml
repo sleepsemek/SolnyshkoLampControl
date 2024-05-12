@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
     <style name="Theme.LampControl" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
@@ -38,6 +38,7 @@
         <item name="colorPrimary">@color/white</item>
         <item name="colorOnPrimary">@color/black</item>
         <item name="android:textColorPrimary">@color/main_blue</item>
+        <item name="colorPrimaryVariant">@color/main_red</item>
     </style>
 
     <style name="AppModalStyle"

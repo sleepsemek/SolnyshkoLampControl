@@ -1,6 +1,7 @@
 package com.solnyshco.lampcontrol.activities;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.core.content.ContextCompat;
 import com.solnyshco.lampcontrol.R;
 import com.solnyshco.lampcontrol.models.POJO.ReceivedLampState;
 import com.solnyshco.lampcontrol.presenters.ControlLampPresenter;
+import com.solnyshco.lampcontrol.ui.views.LampInfoBottomSheet;
 import com.solnyshco.lampcontrol.ui.views.LampTimerBottomSheet;
 import com.solnyshco.lampcontrol.ui.views.MainControlButton;
 import com.solnyshco.lampcontrol.ui.views.MainOnOffButton;
@@ -36,6 +38,7 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
 
     private TextView lampName;
     private LampTimerBottomSheet timerBottomSheet;
+    private LampInfoBottomSheet infoBottomSheet;
     private AlertDialog alertDialog;
     private TimerView timerDialView;
     private TextView timerTextView;
@@ -51,6 +54,16 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
         setContentView(R.layout.activity_control_lamp);
 
         timerBottomSheet = new LampTimerBottomSheet(this);
+        infoBottomSheet = new LampInfoBottomSheet(this);
+
+        infoBottomSheet.getCancelButton().setOnClickListener(view -> controlLampPresenter.handleInfoBottomSheetCancelButton());
+
+        infoBottomSheet.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                controlLampPresenter.handleInfoBottomSheetCancelButton();
+            }
+        });
         lampName = findViewById(R.id.lampName);
 
         mainButton = findViewById(R.id.main_button);
@@ -174,4 +187,20 @@ public class ControlLampActivity extends MvpAppCompatActivity implements Control
         Toast.makeText(this, "Версия прошивки: " + msg, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void showLampInfo(String name, String address, String version) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                infoBottomSheet.setInfo(name, address, version);
+                infoBottomSheet.show();
+            }
+        });
+
+    }
+
+    @Override
+    public void hideLampInfo() {
+        infoBottomSheet.hide();
+    }
 }

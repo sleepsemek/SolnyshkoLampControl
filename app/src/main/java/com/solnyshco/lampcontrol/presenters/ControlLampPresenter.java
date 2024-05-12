@@ -82,7 +82,7 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
                         break;
 
                     default:
-                        getViewState().makeMessage(lampState.getVersion());
+                        getViewState().showLampInfo(name, address, lampState.getVersion());
 
                 }
             }
@@ -241,5 +241,9 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
 
     public void handleAlertCancel() {
         getViewState().hideAlertDialog();
+    }
+
+    public void handleInfoBottomSheetCancelButton() {
+        getViewState().hideLampInfo();
     }
 }
