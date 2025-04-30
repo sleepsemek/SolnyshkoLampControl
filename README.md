@@ -1,6 +1,6 @@
 # SolnyshkoLampControl
 [ESP32 Firmware](https://github.com/ValeraDanger/Solnyshko_BLE)\
-**BLE version. Currently in work.**\
+**BLE version. Stable release.**\
 App parses POJO classes to JSON string commands and vice versa to communicate with the device.\
 UUIDs are:
 |Service UUID|Command characteriscic UUID|Notification UUID|
