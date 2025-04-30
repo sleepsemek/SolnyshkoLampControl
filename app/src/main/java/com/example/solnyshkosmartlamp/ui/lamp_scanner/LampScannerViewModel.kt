@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.core.scanner.FilteredManufacturerData
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import javax.inject.Inject
@@ -57,11 +58,15 @@ class LampScannerViewModel @Inject constructor(
             BleScanFilter(
                 manufacturerData = FilteredManufacturerData(
                     MANUFACTURER_ID_INT,
-                    DataByteArray.from(MANUFACTURER_DATA_STRING))
+                    DataByteArray.from(MANUFACTURER_DATA_STRING)),
             )
         )
 
-        scanningJob = bleScanner.scan(filters)
+        val settings = BleScannerSettings(
+            includeStoredBondedDevices = false
+        )
+
+        scanningJob = bleScanner.scan(filters, settings)
             .map { scanResult ->
                 LampEntity(
                     address = scanResult.device.address,
