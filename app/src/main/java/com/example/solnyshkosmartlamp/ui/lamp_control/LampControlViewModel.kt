@@ -13,6 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +59,7 @@ class LampControlViewModel @Inject constructor(
     private var connectionJob: Job? = null
     private var notificationJob: Job? = null
 
-    private lateinit var commandSender: CommandSender<LampCommand>
+    private var commandSender: CommandSender<LampCommand>? = null
 
     init {
         val address = savedStateHandle.get<String>("address")!!
@@ -90,7 +91,7 @@ class LampControlViewModel @Inject constructor(
     fun disconnect() {
         connectionJob?.cancel()
         notificationJob?.cancel()
-        commandSender.clear()
+        commandSender?.clear()
         gattClient?.disconnect()
         gattClient?.close()
         gattClient = null
@@ -185,7 +186,7 @@ class LampControlViewModel @Inject constructor(
 
     fun sendCommand(command: LampCommand) {
         try {
-            commandSender.submit(command)
+            commandSender?.submit(command)
         } catch (e: Exception) {
             _uiState.value = DeviceUiState.Error("Send command error: ${e.message}")
         }
@@ -212,24 +213,31 @@ class CommandSender<T : Any>(
 
     fun init() {
         scope.launch {
-            for (command in commandChannel) {
-                var attempt = 0
-                while (attempt < maxRetries) {
-                    try {
-                        val data = serializer(command)
-                        writer(data)
-                        delay(delayBetween)
-                        break
-                    } catch (e: Throwable) {
-                        if (attempt == maxRetries - 1) {
-                            _errors.emit(e)
-                        } else {
-                            delay(100L)
+            try {
+                for (command in commandChannel) {
+                    var attempt = 0
+                    while (attempt < maxRetries) {
+                        try {
+                            val data = serializer(command)
+                            writer(data)
+                            delay(delayBetween)
+                            break
+                        } catch (e: Throwable) {
+                            if (attempt == maxRetries - 1) {
+                                _errors.emit(e)
+                            } else {
+                                delay(100L)
+                            }
                         }
+                        attempt++
                     }
-                    attempt++
                 }
+            } catch (e: ClosedReceiveChannelException) {
+
+            } catch (e: Throwable) {
+                _errors.emit(e)
             }
+
         }
     }
 

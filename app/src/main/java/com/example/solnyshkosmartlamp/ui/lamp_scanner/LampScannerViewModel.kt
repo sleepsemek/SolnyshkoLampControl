@@ -1,6 +1,7 @@
 package com.example.solnyshkosmartlamp.ui.lamp_scanner
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.solnyshkosmartlamp.data.local.entity.LampEntity

@@ -1,7 +1,9 @@
 package com.example.solnyshkosmartlamp.ui.lamp_list
 
+import android.bluetooth.BluetoothManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -73,53 +76,73 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
         )
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        items(devices) { dev ->
+    if (devices.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 4.dp)
-                    .clickable { onDeviceSelected(dev.address, dev.name.toString()) }
+                    .wrapContentSize(),
             ) {
-                Row(
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = "Список пуст. Добавьте новые устройства в меню ＋",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            items(devices) { dev ->
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxSize()
+                        .padding(vertical = 4.dp)
+                        .clickable { onDeviceSelected(dev.address, dev.name.toString()) }
                 ) {
-                    Column(
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.Center
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = dev.name ?: "Неизвестное устройство",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    Row {
-                        IconButton(
-                            onClick = {
-                                dialogDevice = dev
-                                textState = TextFieldValue(dev.name ?: "")
-                                showDialog = true
-                            },
-                            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Переименовать")
+                            Text(
+                                text = dev.name ?: "Неизвестное устройство",
+                                style = MaterialTheme.typography.titleMedium
+                            )
                         }
-                        IconButton(
-                            onClick = { viewModel.deleteDevice(dev) },
-                            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Удалить")
+                        Row {
+                            IconButton(
+                                onClick = {
+                                    dialogDevice = dev
+                                    textState = TextFieldValue(dev.name ?: "")
+                                    showDialog = true
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Переименовать")
+                            }
+                            IconButton(
+                                onClick = { viewModel.deleteDevice(dev) },
+                                colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Удалить")
+                            }
                         }
                     }
                 }

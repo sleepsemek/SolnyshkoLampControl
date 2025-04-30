@@ -184,7 +184,7 @@ private fun PermissionItem(
                 } else {
                     Column {
                         Text(
-                            text = "Разрешение заблокировано. Необходимо включить в настройках",
+                            text = "Разрешение заблокировано. Перейдите в настройки и выдайте его вручную, или попробуйте перезагрузить приложение",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )

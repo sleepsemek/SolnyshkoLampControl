@@ -1,7 +1,10 @@
 package com.example.solnyshkosmartlamp.ble.permissions
 
 import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.ContextCompat
 
 object BlePermissions {
 
@@ -17,4 +20,11 @@ object BlePermissions {
             )
         }
     }
+    fun checkBlePermissions(context: Context): Boolean {
+        return getRequiredPermissions().all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+
 }
