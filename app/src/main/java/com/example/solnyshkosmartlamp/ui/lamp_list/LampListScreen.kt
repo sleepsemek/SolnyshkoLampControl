@@ -1,18 +1,26 @@
 package com.example.solnyshkosmartlamp.ui.lamp_list
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -52,10 +60,12 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
+                TextButton(
+                    onClick = {
                     viewModel.renameDevice(dialogDevice!!.address, textState.text)
                     showDialog = false
-                }) { Text("OK") }
+                    }
+                ) { Text("OK") }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) { Text("Отмена") }
@@ -95,14 +105,20 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
                         )
                     }
                     Row {
-                        IconButton(onClick = {
-                            dialogDevice = dev
-                            textState = TextFieldValue(dev.name ?: "")
-                            showDialog = true
-                        }) {
+                        IconButton(
+                            onClick = {
+                                dialogDevice = dev
+                                textState = TextFieldValue(dev.name ?: "")
+                                showDialog = true
+                            },
+                            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                        ) {
                             Icon(Icons.Default.Edit, contentDescription = "Переименовать")
                         }
-                        IconButton(onClick = { viewModel.deleteDevice(dev) }) {
+                        IconButton(
+                            onClick = { viewModel.deleteDevice(dev) },
+                            colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        ) {
                             Icon(Icons.Default.Delete, contentDescription = "Удалить")
                         }
                     }

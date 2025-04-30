@@ -74,9 +74,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Nordic BLE Library
-//    implementation(libs.scanner)
-//    implementation(libs.ble)
-//    implementation(libs.ble.ktx)
     implementation(libs.core)
     implementation(libs.client)
     implementation(libs.scanner)
@@ -89,4 +86,7 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // Permissions
+    implementation(libs.accompanist.permissions)
 }

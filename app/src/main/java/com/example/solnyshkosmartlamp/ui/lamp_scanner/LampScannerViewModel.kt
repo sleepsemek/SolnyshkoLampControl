@@ -1,9 +1,10 @@
 package com.example.solnyshkosmartlamp.ui.lamp_scanner
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.solnyshkosmartlamp.data.local.repository.LampRepository
 import com.example.solnyshkosmartlamp.data.local.entity.LampEntity
+import com.example.solnyshkosmartlamp.data.local.repository.LampRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +23,10 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.FilteredManufacturerData
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 import javax.inject.Inject
 
-const val MANUFACTURER_ID_INT = 0x4E53;
-const val MANUFACTURER_DATA_STRING = "Solnyshko OYFB-04M";
+const val MANUFACTURER_ID_INT = 0x4E53
+const val MANUFACTURER_DATA_STRING = "Solnyshko OYFB-04M"
 
+@SuppressLint("MissingPermission")
 @HiltViewModel
 class LampScannerViewModel @Inject constructor(
     private val bleScanner: BleScanner,

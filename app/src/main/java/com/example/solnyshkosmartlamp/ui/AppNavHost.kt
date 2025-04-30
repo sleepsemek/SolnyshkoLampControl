@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,11 +23,14 @@ import com.example.solnyshkosmartlamp.ui.lamp_control.LampControlScreen
 import com.example.solnyshkosmartlamp.ui.lamp_list.LampListScreen
 import com.example.solnyshkosmartlamp.ui.lamp_scanner.LampScannerScreen
 import com.example.solnyshkosmartlamp.ui.lamp_scanner.LampScannerViewModel
+import com.example.solnyshkosmartlamp.ui.permission.BlePermissionScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost() {
-    val navController = rememberNavController()
+fun AppNavHost(
+    navController: NavHostController = rememberNavController(),
+    startDestination: String
+) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val deviceName = backStack?.arguments?.getString("name")
@@ -38,7 +42,7 @@ fun AppNavHost() {
                     currentRoute == "lamp_list" -> "Устройства"
                     currentRoute == "scanner" -> "Сканер"
                     currentRoute?.startsWith("lamp/") == true -> deviceName.toString()
-                    else -> "Устройство"
+                    else -> "Солнышко Connect"
                 })
             })
         },
@@ -56,7 +60,7 @@ fun AppNavHost() {
     ) { padding ->
         NavHost(
             navController,
-            startDestination = "lamp_list",
+            startDestination = startDestination,
             Modifier.padding(padding)
         ) {
             composable("lamp_list") {
@@ -65,6 +69,7 @@ fun AppNavHost() {
                         navController.navigate("lamp/$address?name=$name")
                 })
             }
+
             composable("scanner") {
                 val scannerVM: LampScannerViewModel = hiltViewModel()
 
@@ -81,9 +86,21 @@ fun AppNavHost() {
                     }
                 )
             }
+
             composable("lamp/{address}?name={name}") { backStackEntry ->
                 LampControlScreen()
             }
+
+            composable("ble_permission") {
+                BlePermissionScreen(
+                    onPermissionsGranted = {
+                        navController.navigate("lamp_list") {
+                            popUpTo("ble_permission") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
         }
     }
 }
