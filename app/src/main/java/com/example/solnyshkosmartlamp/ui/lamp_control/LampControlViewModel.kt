@@ -51,19 +51,20 @@ class LampControlViewModel @Inject constructor(
     val uiState: StateFlow<DeviceUiState> = _uiState.asStateFlow()
 
     private val options = BleGattConnectOptions(autoConnect = true, closeOnDisconnect = false)
-
     private var gattClient: ClientBleGatt? = null
     private var lampChar: ClientBleGattCharacteristic? = null
     private var notifyChar: ClientBleGattCharacteristic? = null
 
     private var connectionJob: Job? = null
     private var notificationJob: Job? = null
+    private var timerJob: Job? = null
 
     private var commandSender: CommandSender<LampCommand>? = null
 
+    private val deviceAddress: String = checkNotNull(savedStateHandle.get<String>("address"))
+
     init {
-        val address = savedStateHandle.get<String>("address")!!
-        connect(address)
+        connect()
     }
 
     override fun onCleared() {
@@ -71,40 +72,44 @@ class LampControlViewModel @Inject constructor(
         disconnect()
     }
 
-    fun connect(address: String) {
+    fun connect() {
+        connectionJob?.cancel()
         connectionJob = viewModelScope.launch {
+            _uiState.value = DeviceUiState.Loading
             try {
-                _uiState.value = DeviceUiState.Loading
-                val connection = ClientBleGatt.connect(context, address, viewModelScope, options)
+                val connection = ClientBleGatt.connect(context, deviceAddress, viewModelScope, options)
                 gattClient = connection
 
                 connection.connectionState
-                    .onEach { handleConnectionState(it) }
-                    .launchIn(viewModelScope)
+                    .onEach { state -> handleConnectionState(state) }
+                    .launchIn(this)
 
             } catch (e: Exception) {
                 _uiState.value = DeviceUiState.Error("Connection error: ${e.localizedMessage}")
+                scheduleReconnect()
             }
         }
     }
 
-    fun disconnect() {
-        connectionJob?.cancel()
-        notificationJob?.cancel()
-        commandSender?.clear()
-        gattClient?.disconnect()
-        gattClient?.close()
-        gattClient = null
+    private fun handleConnectionState(state: GattConnectionState) {
+        when (state) {
+            GattConnectionState.STATE_CONNECTED -> {
+                viewModelScope.launch { initializeDevice() }
+            }
+            GattConnectionState.STATE_DISCONNECTED -> {
+                _uiState.value = DeviceUiState.Loading
+                scheduleReconnect()
+            }
+            else -> _uiState.value = DeviceUiState.Loading
+        }
     }
 
-    private suspend fun handleConnectionState(state: GattConnectionState) {
-        when (state) {
-            GattConnectionState.STATE_CONNECTED -> initializeDevice()
-            GattConnectionState.STATE_DISCONNECTED,
-            GattConnectionState.STATE_DISCONNECTING,
-            GattConnectionState.STATE_CONNECTING -> {
-                _uiState.value = DeviceUiState.Loading
-            }
+    private fun scheduleReconnect() {
+        connectionJob?.cancel()
+        connectionJob = viewModelScope.launch {
+            println("scheduled reconnection after 2 seconds")
+            delay(2000)
+            connect()
         }
     }
 
@@ -122,16 +127,16 @@ class LampControlViewModel @Inject constructor(
             notifyChar = service.findCharacteristic(NOTIFY_CHARACTERISTIC_UUID)
                 ?: throw NoSuchElementException("Notify characteristic not found")
 
-            setupCommandHandlers()
-            observeNotifications()
-            readState()
+            setupCommandSender()
+            startNotificationObserver()
+            readAndApplyState()
 
         } catch (e: Exception) {
             _uiState.value = DeviceUiState.Error("Initialization error: $ {e.message}")
         }
     }
 
-    private fun setupCommandHandlers() {
+    private fun setupCommandSender() {
         commandSender = CommandSender<LampCommand> (
             scope = viewModelScope,
             serializer = { command ->
@@ -150,31 +155,61 @@ class LampControlViewModel @Inject constructor(
 
     }
 
-    private suspend fun readState() {
-        try {
-            val data = lampChar?.read()
-                ?: throw IllegalStateException("Characteristic not initialized")
-            updateState(data)
-        } catch (e: Exception) {
-            _uiState.value = DeviceUiState.Error("Read error: ${e.message}")
-        }
-    }
-
-    private suspend fun observeNotifications() {
+    private suspend fun startNotificationObserver() {
+        notificationJob?.cancel()
         notificationJob = notifyChar?.getNotifications()
-            ?.onEach { readState() }
+            ?.onEach { readAndApplyState() }
             ?.catch { e ->
                 _uiState.value = DeviceUiState.Error("Notification error: ${e.message}")
             }
             ?.launchIn(viewModelScope)
     }
 
-    private fun updateState(data: DataByteArray) {
+    private suspend fun readAndApplyState() {
         try {
-            val state = parseState(data)
-            _uiState.value = DeviceUiState.Connected(state)
+            val data = lampChar?.read()
+                ?: throw IllegalStateException("Characteristic not initialized")
+            val newState = parseState(data)
+            _uiState.value = DeviceUiState.Connected(newState)
+            restartTimers(newState)
         } catch (e: Exception) {
-            _uiState.value = DeviceUiState.Error("State parsing error: ${e.message}")
+            _uiState.value = DeviceUiState.Error("Read error: ${e.message}")
+        }
+    }
+
+    private fun restartTimers(state: LampState) {
+        timerJob?.cancel()
+        when (state.lampState) {
+            LampState.RelayState.PREHEATING -> {
+                var left = state.preheat?.timeLeft ?: 0
+                timerJob = viewModelScope.launch {
+                    while (left > 0) {
+                        delay(1000L)
+                        left -= 1000
+                        val updated = state.copy(
+                            preheat = state.preheat!!.copy(timeLeft = left.coerceAtLeast(0))
+                        )
+                        _uiState.value = DeviceUiState.Connected(updated)
+                    }
+                }
+            }
+            LampState.RelayState.ACTIVE -> {
+                var totalLeft = state.timer?.timeLeft ?: 0
+                val cycle = state.timer?.cycleTime ?: 1
+                val totalCycles = state.timer?.generalCycles
+                var leftInCycle = (totalLeft % cycle).takeIf { it > 0 } ?: cycle
+                timerJob = viewModelScope.launch {
+                    while (leftInCycle > 0) {
+                        delay(1000L)
+                        leftInCycle -= 1000
+                        totalLeft -= 1000
+                        val updatedTimer = state.timer!!.copy(timeLeft = totalLeft.coerceAtLeast(0))
+                        val updated = state.copy(timer = updatedTimer)
+                        _uiState.value = DeviceUiState.Connected(updated)
+                    }
+                }
+            }
+            else -> {}
         }
     }
 
@@ -190,6 +225,16 @@ class LampControlViewModel @Inject constructor(
         } catch (e: Exception) {
             _uiState.value = DeviceUiState.Error("Send command error: ${e.message}")
         }
+    }
+
+    private fun disconnect() {
+        connectionJob?.cancel()
+        notificationJob?.cancel()
+        timerJob?.cancel()
+        commandSender?.clear()
+        gattClient?.disconnect()
+        gattClient?.close()
+        gattClient = null
     }
 
 }

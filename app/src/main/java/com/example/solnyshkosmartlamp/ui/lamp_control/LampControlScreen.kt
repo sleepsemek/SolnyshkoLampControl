@@ -1,24 +1,29 @@
 package com.example.solnyshkosmartlamp.ui.lamp_control
 
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,13 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.solnyshkosmartlamp.data.model.LampCommand
 import com.example.solnyshkosmartlamp.data.model.LampState
 import com.example.solnyshkosmartlamp.data.model.LampState.RelayState
-import com.example.solnyshkosmartlamp.data.model.LampCommand
-import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 
@@ -70,11 +74,7 @@ private fun DeviceControlContent(
     state: LampState,
     onCommandSend: (LampCommand) -> Unit
 ) {
-    val relayOn = when (state.lampState) {
-        RelayState.OFF, RelayState.NONE -> false
-        else -> true
-    }
-
+    val relayOn = state.lampState != RelayState.OFF && state.lampState != RelayState.NONE
     val showTimerDialog = remember { mutableStateOf(false) }
 
     if (showTimerDialog.value) {
@@ -87,36 +87,18 @@ private fun DeviceControlContent(
         )
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.align(Alignment.TopCenter)) {
-            when (state.lampState) {
-                RelayState.PREHEATING -> {
-                    PreheatStatusIndicator(timeLeft = state.preheat?.timeLeft ?: 0)
-                }
-                RelayState.ACTIVE, RelayState.PAUSED -> {
-                    state.timer?.let {
-                        TimerStatusIndicator(timer = it, active = state.lampState == RelayState.ACTIVE)
-                    }
-                }
-                else -> {}
-            }
-        }
-
-        Button(
-            onClick = {
-                val command = LampCommand(if (relayOn) 0 else 1)
-                onCommandSend(command)
-            },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(8.dp)
-        ) {
-            Text(if (relayOn) "Выключить" else "Включить")
-        }
+        LampStatusIndicator(
+            lampState = state.lampState,
+            timer = state.timer,
+            preheatTimeLeft = state.preheat?.timeLeft
+        )
 
         Button(
             onClick = {
@@ -128,9 +110,6 @@ private fun DeviceControlContent(
                 }
             },
             enabled = state.lampState != RelayState.PREHEATING && state.lampState != RelayState.NONE,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(8.dp)
         ) {
             Text(
                 when (state.lampState) {
@@ -142,43 +121,72 @@ private fun DeviceControlContent(
                 }
             )
         }
+
+        Button(
+            onClick = {
+                val command = LampCommand(if (relayOn) 0 else 1)
+                onCommandSend(command)
+            },
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(8.dp)
+        ) {
+            Text(if (relayOn) "Выключить" else "Включить")
+        }
     }
 }
 
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerSetupDialog(
     onDismiss: () -> Unit,
     onConfirm: (time: Long, cycles: Int) -> Unit
 ) {
-    var timeText by remember { mutableStateOf("") }
-    var cyclesText by remember { mutableStateOf("") }
+    var minutes by remember { mutableStateOf(1) }
+    var seconds by remember { mutableStateOf(0) }
+    var cycles by remember { mutableStateOf(2) }
+
+    val sliderRange = 0f..59f
+    val sliderSteps = 58
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Настройка таймера") },
         text = {
             Column {
-                OutlinedTextField(
-                    value = timeText,
-                    onValueChange = { timeText = it },
-                    label = { Text("Время одного цикла (сек)") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                Text("Время одного цикла")
+
+                Text("$minutes минут")
+                Slider(
+                    value = minutes.toFloat(),
+                    onValueChange = { minutes = it.toInt() },
+                    valueRange = sliderRange,
+                    steps = sliderSteps
                 )
-                OutlinedTextField(
-                    value = cyclesText,
-                    onValueChange = { cyclesText = it },
-                    label = { Text("Количество циклов") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+
+                Text("$seconds секунд")
+                Slider(
+                    value = seconds.toFloat(),
+                    onValueChange = { seconds = it.toInt() },
+                    valueRange = sliderRange,
+                    steps = sliderSteps
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Количество циклов: $cycles")
+                Slider(
+                    value = cycles.toFloat(),
+                    onValueChange = { cycles = it.toInt() },
+                    valueRange = 1f..10f,
+                    steps = 8
                 )
             }
         },
         confirmButton = {
             Button(onClick = {
-                val time = timeText.toLongOrNull()?.times(1000) ?: 0L
-                val cycles = cyclesText.toIntOrNull() ?: 0
-                onConfirm(time, cycles)
+                val totalMillis = (minutes * 60 + seconds) * 1000L
+                onConfirm(totalMillis, cycles)
             }) {
                 Text("Установить")
             }
@@ -191,72 +199,107 @@ fun TimerSetupDialog(
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun TimerStatusIndicator(timer: LampState.Timer, active: Boolean) {
-    var localTimeLeft by remember(timer) { mutableStateOf(timer.timeLeft) }
+fun LampStatusIndicator(
+    lampState: RelayState,
+    timer: LampState.Timer?,
+    preheatTimeLeft: Int?
+) {
+    val isPreheating = lampState == RelayState.PREHEATING
+    val isActive = lampState == RelayState.ACTIVE
+    val isPaused = lampState == RelayState.PAUSED
+    val isTimerState = isPreheating || isActive || isPaused
+    val isOn = lampState == RelayState.ON
 
-    // Тикаем только если активен
-    LaunchedEffect(active, timer.timeLeft) {
-        if (active) {
-            localTimeLeft = timer.timeLeft
-            while (localTimeLeft > 0) {
-                delay(1000L)
-                localTimeLeft -= 1000
+    val cycleTime = timer?.cycleTime?.takeIf { it > 0 } ?: 1
+    val totalCycles = timer?.generalCycles?.takeIf { it > 0 } ?: 1
+    val timeLeft = when {
+        isPreheating -> (preheatTimeLeft ?: 0).takeIf { it > 0 } ?: 1
+        isTimerState -> timer?.timeLeft?.takeIf { it > 0 } ?: 1
+        else -> 1
+    }
+
+    val currentCycle = if (isTimerState && !isPreheating)
+        (totalCycles - (timeLeft / cycleTime)).coerceIn(1, totalCycles)
+    else 0
+
+    val timeLeftInCurrentCycle = if (isPreheating) timeLeft else timeLeft % cycleTime
+    val targetProgress = if (isTimerState) {
+        if (isPreheating) timeLeft / 60000f else timeLeftInCurrentCycle / cycleTime.toFloat()
+    } else 1f
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress.coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 500),
+        label = "progress"
+    )
+
+    val (targetColor, trackColor) = when {
+        isPreheating -> MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.errorContainer
+        isActive || isPaused -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.outline to MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val animatedColor by animateColorAsState(
+        targetValue = targetColor,
+        animationSpec = tween(durationMillis = 500),
+        label = "color"
+    )
+    val animatedTrackColor by animateColorAsState(
+        targetValue = trackColor,
+        animationSpec = tween(durationMillis = 500),
+        label = "trackColor"
+    )
+
+    val statusText = when {
+        isPreheating -> "Преднагрев: ${timeLeft / 1000} сек"
+        isActive || isPaused -> "Таймер: ${(timeLeftInCurrentCycle / 1000.0).roundToInt()} сек\nЦикл: $currentCycle"
+        isOn -> "Лампа включена"
+        else -> "Лампа выключена"
+    }
+
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(12.dp)
+        ) {
+            CircularProgressIndicator(
+                progress = { animatedProgress },
+                modifier = Modifier.fillMaxSize(),
+                strokeWidth = 24.dp,
+                color = animatedColor,
+                trackColor = animatedTrackColor
+            )
+            Card(
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(32.dp)
+                    .fillMaxWidth(1f)
+                    .aspectRatio(1f),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        color = animatedColor
+                    )
+                }
             }
-        } else {
-            localTimeLeft = timer.timeLeft // сброс, если был перескок
-        }
-    }
 
-    val cycleTime = timer.cycleTime.takeIf { it > 0 } ?: 1
-    val totalCycles = timer.generalCycles.takeIf { it > 0 } ?: 1
-
-    val currentCycle = (totalCycles - (localTimeLeft / cycleTime))
-        .coerceIn(1, totalCycles)
-
-    val timeLeftInCurrentCycle = localTimeLeft % cycleTime
-
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation()
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text("Осталось времени: ${(localTimeLeft.toDouble() / 1000).roundToInt()} сек", style = MaterialTheme.typography.bodyMedium)
-            Text("Цикл: $currentCycle / $totalCycles", style = MaterialTheme.typography.bodyMedium)
-            Text("Текущий цикл завершится через: ${(timeLeftInCurrentCycle.toDouble() / 1000).roundToInt()} сек", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-@Composable
-fun PreheatStatusIndicator(timeLeft: Int) {
-    var localTimeLeft by remember(timeLeft) { mutableStateOf(timeLeft) }
 
-    LaunchedEffect(timeLeft) {
-        localTimeLeft = timeLeft
-        while (localTimeLeft > 0) {
-            delay(1000)
-            localTimeLeft -= 1000
-        }
-    }
 
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation()
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text("Преднагрев: ${localTimeLeft / 1000} сек", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
 
