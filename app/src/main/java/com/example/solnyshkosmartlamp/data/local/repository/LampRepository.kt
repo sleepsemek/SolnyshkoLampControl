@@ -13,4 +13,5 @@ class LampRepository @Inject constructor(
     suspend fun deleteDevice(entity: LampEntity) = dao.delete(entity)
     suspend fun renameDevice(address: String, newName: String) = dao.updateName(address, newName)
     suspend fun getDevicesCount() : Int = dao.getCount()
+    suspend fun getAllOnce() : List<LampEntity> = dao.getAllOnce()
 }

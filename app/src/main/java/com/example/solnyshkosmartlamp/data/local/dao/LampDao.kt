@@ -24,4 +24,7 @@ interface LampDao {
 
     @Query("SELECT COUNT(*) FROM lamp_list")
     suspend fun getCount() : Int
+
+    @Query("SELECT * FROM lamp_list")
+    suspend fun getAllOnce(): List<LampEntity>
 }

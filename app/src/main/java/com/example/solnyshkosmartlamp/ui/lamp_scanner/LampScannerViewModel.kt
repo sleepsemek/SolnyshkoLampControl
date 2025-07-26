@@ -53,39 +53,49 @@ class LampScannerViewModel @Inject constructor(
     }
 
     fun startScan() {
-        _isScanning.value = true
+        viewModelScope.launch {
+            val savedAddresses = repository.getAllOnce()
+                .map { it.address }
+                .toSet()
 
-        val filters = listOf<BleScanFilter>(
-            BleScanFilter(
-                manufacturerData = FilteredManufacturerData(
-                    MANUFACTURER_ID_INT,
-                    DataByteArray.from(MANUFACTURER_DATA_STRING)),
-            )
-        )
+            _isScanning.value = true
 
-        val settings = BleScannerSettings(
-            includeStoredBondedDevices = false
-        )
-
-        scanningJob = bleScanner.scan(filters, settings)
-            .map { scanResult ->
-                LampEntity(
-                    address = scanResult.device.address,
-                    name = scanResult.device.name ?: "Неизвестное устройство"
+            val filters = listOf(
+                BleScanFilter(
+                    manufacturerData = FilteredManufacturerData(
+                        MANUFACTURER_ID_INT,
+                        DataByteArray.from(MANUFACTURER_DATA_STRING)
+                    )
                 )
-            }
-            .onEach { device ->
-                if (_devices.value.none { it.address == device.address }) {
-                    _devices.update { it + device }
+            )
+
+            val settings = BleScannerSettings(
+                includeStoredBondedDevices = false
+            )
+
+            scanningJob = bleScanner.scan(filters, settings)
+                .map { scanResult ->
+                    LampEntity(
+                        address = scanResult.device.address,
+                        name = scanResult.device.name ?: "Неизвестное устройство"
+                    )
                 }
-            }
-            .catch { e ->
-                println("Scan error: ${e.message}")
-            }
-            .onCompletion {
-                _isScanning.value = false
-            }
-            .launchIn(viewModelScope)
+                .onEach { device ->
+                    if (
+                        device.address !in savedAddresses &&
+                        _devices.value.none { it.address == device.address }
+                    ) {
+                        _devices.update { it + device }
+                    }
+                }
+                .catch { e ->
+                    println("Scan error: ${e.message}")
+                }
+                .onCompletion {
+                    _isScanning.value = false
+                }
+                .launchIn(viewModelScope)
+        }
     }
 
     fun stopScan() {
