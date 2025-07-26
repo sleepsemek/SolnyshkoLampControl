@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -47,13 +48,16 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
     val viewModel = hiltViewModel<LampListViewModel>()
     val devices by viewModel.devices.collectAsState(initial = emptyList())
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
     var dialogDevice by remember { mutableStateOf<LampEntity?>(null) }
     var textState by remember { mutableStateOf(TextFieldValue()) }
 
-    if (showDialog && dialogDevice != null) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deviceToDelete by remember { mutableStateOf<LampEntity?>(null) }
+
+    if (showRenameDialog && dialogDevice != null) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showRenameDialog = false },
             title = { Text("Переименовать устройство") },
             text = {
                 OutlinedTextField(
@@ -65,13 +69,40 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                    viewModel.renameDevice(dialogDevice!!.address, textState.text)
-                    showDialog = false
+                        viewModel.renameDevice(dialogDevice!!.address, textState.text)
+                        showRenameDialog = false
                     }
                 ) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("Отмена") }
+                TextButton(onClick = { showRenameDialog = false }) { Text("Отмена") }
+            }
+        )
+    }
+
+    if (showDeleteDialog && deviceToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Подтвердите удаление") },
+            text = {
+                Text(
+                    "Вы уверены, что хотите удалить устройство из списка сохранённых? " +
+                            "Его можно будет снова добавить в меню ＋"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteDevice(deviceToDelete!!)
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) { Text("Удалить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text("Отмена") }
             }
         )
     }
@@ -131,14 +162,17 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
                                 onClick = {
                                     dialogDevice = dev
                                     textState = TextFieldValue(dev.name ?: "")
-                                    showDialog = true
+                                    showRenameDialog = true
                                 },
                                 colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = "Переименовать")
                             }
                             IconButton(
-                                onClick = { viewModel.deleteDevice(dev) },
+                                onClick = {
+                                    deviceToDelete = dev
+                                    showDeleteDialog = true
+                                },
                                 colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
                             ) {
                                 Icon(Icons.Default.Delete, contentDescription = "Удалить")
@@ -150,4 +184,5 @@ fun LampListScreen(onDeviceSelected: (String, String) -> Unit) {
         }
     }
 }
+
 
