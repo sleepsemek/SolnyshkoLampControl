@@ -45,6 +45,14 @@ class LampControlViewModel @Inject constructor(
         private val SERVICE_UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b")
         private val COMMAND_CHARACTERISTIC_UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8")
         private val NOTIFY_CHARACTERISTIC_UUID = UUID.fromString("1fd32b0a-aa51-4e49-92b2-9a8be97473c9")
+        private val FIRMWARE_VERSION_UUID = UUID.fromString("b3103938-3c4c-4330-8f56-e58c77f4b0bd")
+    }
+
+    private val _infoRequested = MutableSharedFlow<Unit>()
+    val infoRequested = _infoRequested.asSharedFlow()
+
+    suspend fun requestInfo() {
+        _infoRequested.emit(Unit)
     }
 
     private val _uiState = MutableStateFlow<DeviceUiState>(DeviceUiState.Loading)
@@ -54,6 +62,7 @@ class LampControlViewModel @Inject constructor(
     private var gattClient: ClientBleGatt? = null
     private var lampChar: ClientBleGattCharacteristic? = null
     private var notifyChar: ClientBleGattCharacteristic? = null
+    private var versionChar: ClientBleGattCharacteristic? = null
 
     private var connectionJob: Job? = null
     private var notificationJob: Job? = null
@@ -62,6 +71,9 @@ class LampControlViewModel @Inject constructor(
     private var commandSender: CommandSender<LampCommand>? = null
 
     private val deviceAddress: String = checkNotNull(savedStateHandle.get<String>("address"))
+
+    private val _firmwareVersionFlow = MutableSharedFlow<String>()
+    val firmwareVersionFlow = _firmwareVersionFlow.asSharedFlow()
 
     init {
         connect()
@@ -127,9 +139,13 @@ class LampControlViewModel @Inject constructor(
             notifyChar = service.findCharacteristic(NOTIFY_CHARACTERISTIC_UUID)
                 ?: throw NoSuchElementException("Notify characteristic not found")
 
+            versionChar = service.findCharacteristic(FIRMWARE_VERSION_UUID)
+                ?: throw NoSuchElementException("Firmware characteristic not found")
+
             setupCommandSender()
             startNotificationObserver()
             readAndApplyState()
+            readFirmwareVersion()
 
         } catch (e: Exception) {
             _uiState.value = DeviceUiState.Error("Initialization error: $ {e.message}")
@@ -172,6 +188,17 @@ class LampControlViewModel @Inject constructor(
             val newState = parseState(data)
             _uiState.value = DeviceUiState.Connected(newState)
             restartTimers(newState)
+        } catch (e: Exception) {
+            _uiState.value = DeviceUiState.Error("Read error: ${e.message}")
+        }
+    }
+
+    private suspend fun readFirmwareVersion() {
+        try {
+            val json = versionChar?.read()?.value?.toString(Charsets.UTF_8)
+            val parsed = gson.fromJson(json, FirmwareVersion::class.java)
+            val address = deviceAddress
+            _firmwareVersionFlow.emit("MAC адрес: $address\nВерсия прошивки: ${parsed.version}")
         } catch (e: Exception) {
             _uiState.value = DeviceUiState.Error("Read error: ${e.message}")
         }
@@ -244,6 +271,8 @@ sealed class DeviceUiState {
     data class Connected(val state: LampState) : DeviceUiState()
     data class Error(val message: String) : DeviceUiState()
 }
+
+data class FirmwareVersion(val version: String)
 
 class CommandSender<T : Any>(
     private val scope: CoroutineScope,

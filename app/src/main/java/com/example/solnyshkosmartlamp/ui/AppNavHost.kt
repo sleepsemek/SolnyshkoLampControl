@@ -7,14 +7,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,12 +27,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.solnyshkosmartlamp.ui.lamp_control.LampControlScreen
+import com.example.solnyshkosmartlamp.ui.lamp_control.LampControlViewModel
 import com.example.solnyshkosmartlamp.ui.lamp_list.LampListScreen
 import com.example.solnyshkosmartlamp.ui.lamp_scanner.LampScannerScreen
 import com.example.solnyshkosmartlamp.ui.lamp_scanner.LampScannerViewModel
 import com.example.solnyshkosmartlamp.ui.permission.BlePermissionScreen
 import com.example.solnyshkosmartlamp.utils.bleGuardedComposable
 import com.example.solnyshkosmartlamp.utils.checkAndHandleBle
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,14 +53,37 @@ fun AppNavHost(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = {
-                Text(text = when {
-                    currentRoute == "lamp_list" -> "Устройства"
-                    currentRoute == "scanner" -> "Сканер"
-                    currentRoute?.startsWith("lamp/") == true -> deviceName.toString()
-                    else -> "Солнышко Connect"
-                })
-            })
+            TopAppBar(
+                title = {
+                    Text(text = when {
+                        currentRoute == "lamp_list" -> "Устройства"
+                        currentRoute == "scanner" -> "Сканер"
+                        currentRoute?.startsWith("lamp/") == true -> deviceName.toString()
+                        else -> "Солнышко Connect"
+                    })
+                },
+                actions = {
+                    if (currentRoute?.startsWith("lamp/") == true) {
+                        val navBackStackEntry = backStack
+                        if (navBackStackEntry != null) {
+                            val lampViewModel: LampControlViewModel = hiltViewModel(navBackStackEntry)
+                            val scope = rememberCoroutineScope()
+
+                            IconButton(onClick = {
+                                scope.launch {
+                                    lampViewModel.requestInfo()
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Информация",
+                                    tint = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+                    }
+                }
+            )
         },
         floatingActionButton = {
             when (currentRoute) {

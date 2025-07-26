@@ -32,6 +32,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.solnyshkosmartlamp.data.model.LampCommand
 import com.example.solnyshkosmartlamp.data.model.LampState
 import com.example.solnyshkosmartlamp.data.model.LampState.RelayState
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Preview(
@@ -90,6 +92,21 @@ fun LampControlScreenPreview() {
 fun LampControlScreen() {
     val viewModel: LampControlViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
+    var showInfoDialog by remember { mutableStateOf(false) }
+    var infoDialogText by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        launch {
+            viewModel.firmwareVersionFlow.collect { text ->
+                infoDialogText = text
+            }
+        }
+        launch {
+            viewModel.infoRequested.collect {
+                showInfoDialog = true
+            }
+        }
+    }
 
     when (val state = uiState) {
         is DeviceUiState.Loading -> {
@@ -111,6 +128,20 @@ fun LampControlScreen() {
             )
         }
     }
+
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("Об устройстве") },
+            text = { Text(infoDialogText) },
+            confirmButton = {
+                Button(onClick = { showInfoDialog = false }) {
+                    Text("ОК")
+                }
+            }
+        )
+    }
+
 }
 
 @Composable
