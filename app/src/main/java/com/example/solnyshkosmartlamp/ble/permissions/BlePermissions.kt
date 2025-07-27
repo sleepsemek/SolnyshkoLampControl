@@ -15,16 +15,16 @@ object BlePermissions {
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
-            else -> arrayOf(
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
+            else -> emptyArray()
         }
     }
+
     fun checkBlePermissions(context: Context): Boolean {
-        return getRequiredPermissions().all {
-            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        return getRequiredPermissions().all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }
     }
-
-
 }

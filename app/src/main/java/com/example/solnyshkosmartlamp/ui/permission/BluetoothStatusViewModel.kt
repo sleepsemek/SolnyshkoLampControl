@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,7 +18,6 @@ class BluetoothStatusViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _bluetoothState = MutableStateFlow<BluetoothState>(BluetoothState.Unknown)
-    val bluetoothState: StateFlow<BluetoothState> = _bluetoothState
 
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         val bluetoothManager = context.getSystemService(BluetoothManager::class.java)
@@ -50,11 +48,10 @@ class BluetoothStatusViewModel @Inject constructor(
     }
 
     fun checkBluetoothState() {
-        val currentState = bluetoothAdapter?.state
+        val currentState = bluetoothAdapter?.state ?: BluetoothAdapter.STATE_OFF
         _bluetoothState.value = when (currentState) {
             BluetoothAdapter.STATE_ON -> BluetoothState.Enabled
-            BluetoothAdapter.STATE_OFF -> BluetoothState.Disabled
-            else -> BluetoothState.Unknown
+            else -> BluetoothState.Disabled
         }
     }
 

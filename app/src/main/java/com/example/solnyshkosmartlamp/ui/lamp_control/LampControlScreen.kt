@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.solnyshkosmartlamp.data.model.LampCommand
 import com.example.solnyshkosmartlamp.data.model.LampState
 import com.example.solnyshkosmartlamp.data.model.LampState.RelayState
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -89,22 +90,21 @@ fun LampControlScreenPreview() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LampControlScreen() {
-    val viewModel: LampControlViewModel = hiltViewModel()
+fun LampControlScreen(viewModel: LampControlViewModel) {
     val uiState by viewModel.uiState.collectAsState()
+    val firmwareVersion by viewModel.firmwareVersionFlow.collectAsState()
     var showInfoDialog by remember { mutableStateOf(false) }
     var infoDialogText by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        launch {
-            viewModel.firmwareVersionFlow.collect { text ->
-                infoDialogText = text
-            }
+    LaunchedEffect(firmwareVersion) {
+        if (firmwareVersion != null) {
+            infoDialogText = firmwareVersion!!
         }
-        launch {
-            viewModel.infoRequested.collect {
-                showInfoDialog = true
-            }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.infoRequested.collect {
+            showInfoDialog = true
         }
     }
 

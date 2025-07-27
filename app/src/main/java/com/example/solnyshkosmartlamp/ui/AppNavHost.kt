@@ -149,8 +149,9 @@ fun AppNavHost(
                 isWaitingForEnable = isWaitingForEnable,
                 setWaitingForEnable = setWaitingForEnable,
                 setPendingRoute = setPendingRoute
-            ) {
-                LampControlScreen()
+            ) { backStackEntry ->
+                val viewModel: LampControlViewModel = hiltViewModel(backStackEntry)
+                LampControlScreen(viewModel)
             }
 
             composable("ble_permission") {

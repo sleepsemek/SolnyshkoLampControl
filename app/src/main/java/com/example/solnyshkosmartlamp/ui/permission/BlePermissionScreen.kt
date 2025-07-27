@@ -1,6 +1,7 @@
 package com.example.solnyshkosmartlamp.ui.permission
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.BLUETOOTH_CONNECT
 import android.Manifest.permission.BLUETOOTH_SCAN
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -58,16 +59,11 @@ fun BlePermissionScreen(onPermissionsGranted: () -> Unit) {
     }
 
 
-    val permissionsInfo = mapOf(
-        BLUETOOTH_SCAN to Pair(
-            "Поиск устройств",
-            "Необходим для сканирования ближайших Bluetooth устройств"
-        ),
-        ACCESS_FINE_LOCATION to Pair(
-            "Точное местоположение",
-            "Используется для работы с Bluetooth на современных устройствах"
-        )
-    )
+    val permissionsInfo = buildMap {
+        put(BLUETOOTH_SCAN, "Поиск устройств" to "Необходим для сканирования Bluetooth-устройств")
+        put(BLUETOOTH_CONNECT, "Подключение к устройствам" to "Необходим для соединения с устройствами")
+        put(ACCESS_FINE_LOCATION, "Точное местоположение" to "Требуется для работы Bluetooth на Android 6-11")
+    }
 
     Column(
         modifier = Modifier
