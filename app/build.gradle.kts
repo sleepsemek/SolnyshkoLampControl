@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.solnyshkosmartlamp"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "2.0"
@@ -89,4 +89,8 @@ dependencies {
 
     // Permissions
     implementation(libs.accompanist.permissions)
+
+    // Number picker
+    implementation(libs.wheelpickercompose)
+    implementation(libs.androidx.datastore.preferences)
 }

@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -28,27 +26,30 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.solnyshkosmartlamp.data.model.LampCommand
 import com.example.solnyshkosmartlamp.data.model.LampState
 import com.example.solnyshkosmartlamp.data.model.LampState.RelayState
-import kotlinx.coroutines.flow.first
+import com.example.solnyshkosmartlamp.utils.TimerPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -368,52 +369,90 @@ fun TimerSetupDialog(
     onDismiss: () -> Unit,
     onConfirm: (time: Long, cycles: Int) -> Unit
 ) {
-    var minutes by remember { mutableStateOf(1) }
-    var seconds by remember { mutableStateOf(0) }
-    var cycles by remember { mutableStateOf(2) }
+    val context = LocalContext.current
+    var minutes by remember { mutableIntStateOf(0) }
+    var seconds by remember { mutableIntStateOf(30) }
+    var cycles by remember { mutableIntStateOf(2) }
+    var isLoaded by remember { mutableStateOf(false) }
 
-    val sliderRange = 0f..59f
-    val sliderSteps = 58
+    LaunchedEffect(Unit) {
+        val (savedMinutes, savedSeconds, savedCycles) = TimerPreferences.load(context)
+        minutes = savedMinutes
+        seconds = savedSeconds
+        cycles = savedCycles
+        isLoaded = true
+    }
+
+    if (!isLoaded) return
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Настройка таймера") },
         text = {
-            Column {
-                Text("Время одного цикла")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(2f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Мин., сек.:", style = MaterialTheme.typography.titleMedium)
 
-                Text("$minutes минут")
-                Slider(
-                    value = minutes.toFloat(),
-                    onValueChange = { minutes = it.toInt() },
-                    valueRange = sliderRange,
-                    steps = sliderSteps
-                )
+                        TimeWheelPicker(
+                            minutes = minutes,
+                            seconds = seconds,
+                            size = DpSize(200.dp, 160.dp),
+                            textStyle = MaterialTheme.typography.labelLarge,
+                            onTimeChange = { min, sec ->
+                                minutes = min
+                                seconds = sec
+                            }
+                        )
+                    }
 
-                Text("$seconds секунд")
-                Slider(
-                    value = seconds.toFloat(),
-                    onValueChange = { seconds = it.toInt() },
-                    valueRange = sliderRange,
-                    steps = sliderSteps
-                )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Цикл.:", style = MaterialTheme.typography.titleMedium)
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Количество циклов: $cycles")
-                Slider(
-                    value = cycles.toFloat(),
-                    onValueChange = { cycles = it.toInt() },
-                    valueRange = 1f..10f,
-                    steps = 8
-                )
+                        WheelNumberPicker(
+                            value = cycles,
+                            valueRange = 0..10,
+                            size = DpSize(100.dp, 160.dp),
+                            textStyle = MaterialTheme.typography.labelLarge,
+                            onValueChange = { cycles = it }
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
-            Button(onClick = {
-                val totalMillis = (minutes * 60 + seconds) * 1000L
-                onConfirm(totalMillis, cycles)
-            }) {
+            Button(
+                onClick = {
+                    val totalMillis = (minutes * 60 + seconds) * 1000L
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        TimerPreferences.save(
+                            context = context,
+                            minutes = minutes,
+                            seconds = seconds,
+                            cycles = cycles
+                        )
+                    }
+
+                    onConfirm(totalMillis, cycles)
+                }
+            ) {
                 Text("Установить")
             }
         },
@@ -424,6 +463,15 @@ fun TimerSetupDialog(
         }
     )
 }
+
+
+
+
+
+
+
+
+
 
 
 
