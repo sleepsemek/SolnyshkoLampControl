@@ -31,7 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,17 +39,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sleepsemek.solnyshkosmartlamp.data.model.LampCommand
 import com.sleepsemek.solnyshkosmartlamp.data.model.LampState
 import com.sleepsemek.solnyshkosmartlamp.data.model.LampState.RelayState
-import com.sleepsemek.solnyshkosmartlamp.utils.TimerPreferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,6 +115,7 @@ private fun PortraitLampControlContent(
 ) {
     val relayOn = state.lampState != RelayState.OFF && state.lampState != RelayState.NONE
     val showTimerDialog = remember { mutableStateOf(false) }
+    val lampControlViewModel: LampControlViewModel = hiltViewModel()
 
     if (showTimerDialog.value) {
         TimerSetupDialog(
@@ -126,7 +123,8 @@ private fun PortraitLampControlContent(
             onConfirm = { time, cycles ->
                 onCommandSend(LampCommand("set", time, cycles))
                 showTimerDialog.value = false
-            }
+            },
+            viewModel = lampControlViewModel
         )
     }
 
@@ -233,6 +231,7 @@ fun LandscapeLampControlContent(
 ) {
     val relayOn = state.lampState != RelayState.OFF && state.lampState != RelayState.NONE
     val showTimerDialog = remember { mutableStateOf(false) }
+    val lampControlViewModel: LampControlViewModel = hiltViewModel()
 
     if (showTimerDialog.value) {
         TimerSetupDialog(
@@ -240,7 +239,8 @@ fun LandscapeLampControlContent(
             onConfirm = { time, cycles ->
                 onCommandSend(LampCommand("set", time, cycles))
                 showTimerDialog.value = false
-            }
+            },
+            viewModel = lampControlViewModel
         )
     }
 
@@ -450,23 +450,10 @@ fun LampStatusIndicator(
 @Composable
 fun TimerSetupDialog(
     onDismiss: () -> Unit,
-    onConfirm: (time: Long, cycles: Int) -> Unit
+    onConfirm: (time: Long, cycles: Int) -> Unit,
+    viewModel: LampControlViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    var minutes by remember { mutableIntStateOf(0) }
-    var seconds by remember { mutableIntStateOf(30) }
-    var cycles by remember { mutableIntStateOf(2) }
-    var isLoaded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        val (savedMinutes, savedSeconds, savedCycles) = TimerPreferences.load(context)
-        minutes = savedMinutes
-        seconds = savedSeconds
-        cycles = savedCycles
-        isLoaded = true
-    }
-
-    if (!isLoaded) return
+    if (!viewModel.isLoaded) return
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -491,13 +478,12 @@ fun TimerSetupDialog(
                         Text("Мин., сек.:", style = MaterialTheme.typography.titleMedium)
 
                         TimeWheelPicker(
-                            minutes = minutes,
-                            seconds = seconds,
+                            minutes = viewModel.minutes,
+                            seconds = viewModel.seconds,
                             size = DpSize(200.dp, 160.dp),
                             textStyle = MaterialTheme.typography.labelLarge,
                             onTimeChange = { min, sec ->
-                                minutes = min
-                                seconds = sec
+                                viewModel.updateTime(min, sec)
                             }
                         )
                     }
@@ -508,13 +494,15 @@ fun TimerSetupDialog(
                     ) {
                         Text("Цикл.:", style = MaterialTheme.typography.titleMedium)
 
-                        WheelNumberPicker(
-                            value = cycles,
-                            valueRange = 0..10,
-                            size = DpSize(100.dp, 160.dp),
-                            textStyle = MaterialTheme.typography.labelLarge,
-                            onValueChange = { cycles = it }
-                        )
+                        key(viewModel.cycles) {
+                            WheelNumberPicker(
+                                value = viewModel.cycles,
+                                valueRange = 0..10,
+                                size = DpSize(100.dp, 160.dp),
+                                textStyle = MaterialTheme.typography.labelLarge,
+                                onValueChange = { viewModel.updateCycles(it) }
+                            )
+                        }
                     }
                 }
             }
@@ -522,18 +510,9 @@ fun TimerSetupDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val totalMillis = (minutes * 60 + seconds) * 1000L
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        TimerPreferences.save(
-                            context = context,
-                            minutes = minutes,
-                            seconds = seconds,
-                            cycles = cycles
-                        )
+                    viewModel.save {
+                        onConfirm(viewModel.getTotalMillis(), viewModel.cycles)
                     }
-
-                    onConfirm(totalMillis, cycles)
                 }
             ) {
                 Text("Установить")
@@ -546,6 +525,7 @@ fun TimerSetupDialog(
         }
     )
 }
+
 
 
 
