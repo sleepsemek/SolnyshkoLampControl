@@ -497,7 +497,7 @@ fun TimerSetupDialog(
                         key(viewModel.cycles) {
                             WheelNumberPicker(
                                 value = viewModel.cycles,
-                                valueRange = 0..10,
+                                valueRange = 1..10,
                                 size = DpSize(100.dp, 160.dp),
                                 textStyle = MaterialTheme.typography.labelLarge,
                                 onValueChange = { viewModel.updateCycles(it) }
