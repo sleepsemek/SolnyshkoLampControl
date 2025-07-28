@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.solnyshkosmartlamp"
+    namespace = "com.sleepsemek.solnyshkosmartlamp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.solnyshkosmartlamp"
+        applicationId = "com.sleepsemek.solnyshkosmartlamp"
         minSdk = 23
         targetSdk = 35
         versionCode = 1
