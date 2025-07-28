@@ -7,7 +7,6 @@ import com.sleepsemek.solnyshkosmartlamp.data.model.LampCommand
 import com.sleepsemek.solnyshkosmartlamp.data.model.LampState
 import com.sleepsemek.solnyshkosmartlamp.di.ApplicationScope
 import com.sleepsemek.solnyshkosmartlamp.ui.lamp_control.DeviceUiState
-import com.sleepsemek.solnyshkosmartlamp.ble.CommandSender
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -28,6 +27,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 @SuppressLint("MissingPermission")
 @Singleton
@@ -37,7 +37,7 @@ class BleDeviceManager @Inject constructor(
     @ApplicationScope private val scope: CoroutineScope
 ) {
 
-    private val options = BleGattConnectOptions(autoConnect = true, closeOnDisconnect = true)
+    private val options = BleGattConnectOptions(autoConnect = true, closeOnDisconnect = false)
 
     private var connectionCount = 0
     private val connectionMutex = Mutex()
@@ -63,6 +63,8 @@ class BleDeviceManager @Inject constructor(
     private val _firmwareVersionFlow = MutableStateFlow<String?>(null)
     val firmwareVersionFlow: StateFlow<String?> = _firmwareVersionFlow
 
+    private var connectTimeoutJob: Job? = null
+
     suspend fun connect(address: String) {
         connectionMutex.withLock {
             connectionCount++
@@ -71,6 +73,13 @@ class BleDeviceManager @Inject constructor(
                 connectionCount == 1 -> {
                     _deviceUiStateFlow.value = DeviceUiState.Loading
                     connectJob = scope.launch { internalConnect(address) }
+                    connectTimeoutJob = scope.launch {
+                        delay(4000)
+                        if (currentConnectionState != GattConnectionState.STATE_CONNECTED) {
+                            println("Connection timeout — forcing reconnect")
+                            reconnect(address)
+                        }
+                    }
                 }
 
                 currentAddress != address -> {
@@ -103,6 +112,7 @@ class BleDeviceManager @Inject constructor(
     suspend fun disconnect() {
         connectionMutex.withLock {
             connectionCount--
+            connectTimeoutJob?.cancel()
             if (connectionCount <= 0) {
                 connectionCount = 0
                 internalDisconnect()
@@ -113,12 +123,14 @@ class BleDeviceManager @Inject constructor(
     private fun reconnect(address: String) {
         internalDisconnect()
         _deviceUiStateFlow.value = DeviceUiState.Loading
-        connectJob = scope.launch { internalConnect(address) }
+        connectJob = scope.launch {
+            internalConnect(address)
+        }
     }
 
     private suspend fun internalConnect(address: String) {
         try {
-            val gatt = ClientBleGatt.Companion.connect(context, address, scope, options)
+            val gatt = ClientBleGatt.connect(context, address, scope, options)
             currentGatt = gatt
             currentAddress = address
 
@@ -126,6 +138,7 @@ class BleDeviceManager @Inject constructor(
                 .onEach { handleConnectionState(it) }
                 .launchIn(scope)
         } catch (e: Exception) {
+            if (e !is CancellationException)
             _deviceUiStateFlow.value = DeviceUiState.Error("Connection failed: ${e.message}")
         }
     }
@@ -193,7 +206,7 @@ class BleDeviceManager @Inject constructor(
         ).apply {
             init()
             errors.onEach {
-                _deviceUiStateFlow.value = DeviceUiState.Error("Command error: ${it.message}")
+                println("Command error: ${it.message}")
             }.launchIn(scope)
         }
     }
