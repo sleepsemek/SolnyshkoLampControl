@@ -1,5 +1,6 @@
 package com.sleepsemek.solnyshkosmartlamp.ui.lamp_control
 
+import android.content.res.Configuration
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -25,9 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,9 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.sleepsemek.solnyshkosmartlamp.data.model.LampCommand
@@ -53,46 +52,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@Preview(
-    showBackground = true,
-    )
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LampControlScreenPreview() {
-    val uiState = DeviceUiState.Connected(
-        state = LampState(
-            lampState = RelayState.ACTIVE,
-            timer = LampState.Timer(
-                timeLeft = 80000,
-                generalCycles = 2,
-                cycleTime = 60000
-            )
-        )
-    )
-
-    Scaffold(
-        topBar = {
-            TopAppBar(title = {
-                Text(text = "Солнышко ОУФБ-04М")
-            })
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            DeviceControlContent(
-                state = uiState.state,
-                onCommandSend = {  }
-            )
-        }
-    }
-
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LampControlScreen(viewModel: LampControlViewModel) {
     val uiState by viewModel.uiState.collectAsState()
+    val orientation = LocalConfiguration.current.orientation
     val firmwareVersion by viewModel.firmwareVersionFlow.collectAsState()
     var showInfoDialog by remember { mutableStateOf(false) }
     var infoDialogText by remember { mutableStateOf("") }
@@ -123,10 +87,13 @@ fun LampControlScreen(viewModel: LampControlViewModel) {
         }
 
         is DeviceUiState.Connected -> {
-            DeviceControlContent(
-                state = state.state,
-                onCommandSend = viewModel::sendCommand
-            )
+            when (orientation) {
+                Configuration.ORIENTATION_PORTRAIT ->
+                    PortraitLampControlContent(state.state, viewModel::sendCommand)
+                Configuration.ORIENTATION_LANDSCAPE ->
+                    LandscapeLampControlContent(state.state, viewModel::sendCommand)
+                else -> {}
+            }
         }
     }
 
@@ -146,7 +113,7 @@ fun LampControlScreen(viewModel: LampControlViewModel) {
 }
 
 @Composable
-private fun DeviceControlContent(
+private fun PortraitLampControlContent(
     state: LampState,
     onCommandSend: (LampCommand) -> Unit
 ) {
@@ -254,6 +221,122 @@ private fun DeviceControlContent(
                 )
             ) {
                 Text(if (relayOn) "Выключить" else "Включить")
+            }
+        }
+    }
+}
+
+@Composable
+fun LandscapeLampControlContent(
+    state: LampState,
+    onCommandSend: (LampCommand) -> Unit
+) {
+    val relayOn = state.lampState != RelayState.OFF && state.lampState != RelayState.NONE
+    val showTimerDialog = remember { mutableStateOf(false) }
+
+    if (showTimerDialog.value) {
+        TimerSetupDialog(
+            onDismiss = { showTimerDialog.value = false },
+            onConfirm = { time, cycles ->
+                onCommandSend(LampCommand("set", time, cycles))
+                showTimerDialog.value = false
+            }
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                LampStatusIndicator(
+                    lampState       = state.lampState,
+                    timer           = state.timer,
+                    preheatTimeLeft = state.preheat?.timeLeft
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                ) {
+                    Button(
+                        onClick = {
+                            when (state.lampState) {
+                                RelayState.OFF, RelayState.ON -> showTimerDialog.value = true
+                                RelayState.ACTIVE -> onCommandSend(LampCommand("pause"))
+                                RelayState.PAUSED -> onCommandSend(LampCommand("resume"))
+                                else -> {}
+                            }
+                        },
+                        enabled = state.lampState != RelayState.PREHEATING
+                                && state.lampState != RelayState.NONE,
+                        modifier = Modifier.size(100.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            text = when (state.lampState) {
+                                RelayState.OFF, RelayState.ON    -> "Таймер"
+                                RelayState.PREHEATING            -> "Преднагрев"
+                                RelayState.ACTIVE                -> "Пауза"
+                                RelayState.PAUSED                -> "Пуск"
+                                else                             -> ""
+                            },
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                val (targetContainerColor, targetContentColor) = if (relayOn) {
+                    MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
+                } else {
+                    MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+                }
+
+                val animatedContainerColor by animateColorAsState(
+                    targetValue = targetContainerColor,
+                    animationSpec = tween(durationMillis = 500),
+                    label = "buttonContainerColor"
+                )
+
+                val animatedContentColor by animateColorAsState(
+                    targetValue = targetContentColor,
+                    animationSpec = tween(durationMillis = 500),
+                    label = "buttonContentColor"
+                )
+
+                Button(
+                    onClick = {
+                        val command = LampCommand(if (relayOn) 0 else 1)
+                        onCommandSend(command)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = animatedContainerColor,
+                        contentColor = animatedContentColor
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Text(if (relayOn) "Выключить" else "Включить")
+                }
             }
         }
     }
