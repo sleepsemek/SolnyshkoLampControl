@@ -51,7 +51,7 @@ class LampScannerViewModel @Inject constructor(
         stopScan()
     }
 
-    fun startScan() {
+    private fun startScan() {
         viewModelScope.launch {
             val savedAddresses = repository.getAllOnce()
                 .map { it.address }
@@ -97,7 +97,7 @@ class LampScannerViewModel @Inject constructor(
         }
     }
 
-    fun stopScan() {
+    private fun stopScan() {
         scanningJob?.cancel()
         _isScanning.value = false
     }

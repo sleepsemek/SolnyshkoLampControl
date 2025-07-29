@@ -74,7 +74,7 @@ class BleDeviceManager @Inject constructor(
                     _deviceUiStateFlow.value = DeviceUiState.Loading
                     connectJob = scope.launch { internalConnect(address) }
                     connectTimeoutJob = scope.launch {
-                        delay(4000)
+                        delay(10000)
                         if (currentConnectionState != GattConnectionState.STATE_CONNECTED) {
                             println("Connection timeout — forcing reconnect")
                             reconnect(address)
@@ -134,12 +134,11 @@ class BleDeviceManager @Inject constructor(
             currentGatt = gatt
             currentAddress = address
 
-            gatt.connectionState
-                .onEach { handleConnectionState(it) }
+            gatt.connectionStateWithStatus
+                .onEach { handleConnectionState(it?.state ?: GattConnectionState.STATE_DISCONNECTED) }
                 .launchIn(scope)
         } catch (e: Exception) {
-            if (e !is CancellationException)
-            _deviceUiStateFlow.value = DeviceUiState.Error("Connection failed: ${e.message}")
+            if (e !is CancellationException) _deviceUiStateFlow.value = DeviceUiState.Error("Connection failed: ${e.message}")
         }
     }
 
@@ -162,6 +161,7 @@ class BleDeviceManager @Inject constructor(
     }
 
     private suspend fun handleConnectionState(state: GattConnectionState) {
+        println("Connection state changed: ${state.name}")
         currentConnectionState = state
 
         when (state) {

@@ -15,7 +15,9 @@ object BlePermissions {
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
-            else -> arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            else -> arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
         }
     }
 
