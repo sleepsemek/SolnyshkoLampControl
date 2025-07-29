@@ -37,24 +37,27 @@ class BleDeviceManager @Inject constructor(
     @ApplicationScope private val scope: CoroutineScope
 ) {
 
+    init {
+        println("BleDeviceManager initialized")
+    }
+
     private val options = BleGattConnectOptions(autoConnect = true, closeOnDisconnect = false)
+    private val connectionMutex = Mutex()
 
     private var connectionCount = 0
-    private val connectionMutex = Mutex()
     private var connectJob: Job? = null
-
-    private var currentConnectionState: GattConnectionState = GattConnectionState.STATE_DISCONNECTED
-    private var isInitialized = false
+    private var connectTimeoutJob: Job? = null
+    private var notificationJob: Job? = null
+    private var timerJob: Job? = null
 
     private var currentGatt: ClientBleGatt? = null
     private var currentAddress: String? = null
+    private var currentConnectionState: GattConnectionState = GattConnectionState.STATE_DISCONNECTED
+    private var isInitialized = false
 
     private var lampChar: ClientBleGattCharacteristic? = null
     private var notifyChar: ClientBleGattCharacteristic? = null
     private var versionChar: ClientBleGattCharacteristic? = null
-
-    private var notificationJob: Job? = null
-    private var timerJob: Job? = null
     private var commandSender: CommandSender<LampCommand>? = null
 
     private val _deviceUiStateFlow = MutableStateFlow<DeviceUiState>(DeviceUiState.Loading)
@@ -63,59 +66,36 @@ class BleDeviceManager @Inject constructor(
     private val _firmwareVersionFlow = MutableStateFlow<String?>(null)
     val firmwareVersionFlow: StateFlow<String?> = _firmwareVersionFlow
 
-    private var connectTimeoutJob: Job? = null
+    suspend fun connect(address: String) = connectionMutex.withLock {
+        connectionCount++
+        println("Connection count: $connectionCount")
 
-    suspend fun connect(address: String) {
-        connectionMutex.withLock {
-            connectionCount++
-            println("CONNECTION COUNT: $connectionCount")
-            when {
-                connectionCount == 1 -> {
-                    _deviceUiStateFlow.value = DeviceUiState.Loading
-                    connectJob = scope.launch { internalConnect(address) }
-                    connectTimeoutJob = scope.launch {
-                        delay(10000)
-                        if (currentConnectionState != GattConnectionState.STATE_CONNECTED) {
-                            println("Connection timeout — forcing reconnect")
-                            reconnect(address)
-                        }
-                    }
-                }
-
-                currentAddress != address -> {
-                    reconnect(address)
-                }
-
-                else -> {
-                    when (currentConnectionState) {
-                        GattConnectionState.STATE_CONNECTED -> {
-                            if (isInitialized) {
-                                readAndApplyState()
-                                readFirmwareVersion()
-                            } else {
-                                _deviceUiStateFlow.value = DeviceUiState.Loading
-                            }
-                        }
-
-                        GattConnectionState.STATE_DISCONNECTED -> {
-                            println("Explicit reconnect")
-                            reconnect(address)
-                        }
-
-                        else -> {}
-                    }
-                }
-            }
+        if (connectionCount == 1) {
+            startConnection(address)
+        } else if (currentAddress != address) {
+            reconnect(address)
+        } else {
+            handleReconnection()
         }
     }
 
-    suspend fun disconnect() {
-        connectionMutex.withLock {
-            connectionCount--
-            connectTimeoutJob?.cancel()
-            if (connectionCount <= 0) {
-                connectionCount = 0
-                internalDisconnect()
+    suspend fun disconnect() = connectionMutex.withLock {
+        connectionCount--
+        connectTimeoutJob?.cancel()
+        if (connectionCount <= 0) {
+            connectionCount = 0
+            internalDisconnect()
+        }
+    }
+
+    private fun startConnection(address: String) {
+        _deviceUiStateFlow.value = DeviceUiState.Loading
+        connectJob = scope.launch { internalConnect(address) }
+        connectTimeoutJob = scope.launch {
+            delay(10000)
+            if (currentConnectionState != GattConnectionState.STATE_CONNECTED) {
+                println("Connection timeout — forcing reconnect")
+                reconnect(address)
             }
         }
     }
@@ -123,8 +103,23 @@ class BleDeviceManager @Inject constructor(
     private fun reconnect(address: String) {
         internalDisconnect()
         _deviceUiStateFlow.value = DeviceUiState.Loading
-        connectJob = scope.launch {
-            internalConnect(address)
+        connectJob = scope.launch { internalConnect(address) }
+    }
+
+    private fun handleReconnection() {
+        when (currentConnectionState) {
+            GattConnectionState.STATE_CONNECTED -> {
+                if (isInitialized) {
+                    scope.launch {
+                        readAndApplyState()
+                        readFirmwareVersion()
+                    }
+                } else {
+                    _deviceUiStateFlow.value = DeviceUiState.Loading
+                }
+            }
+            GattConnectionState.STATE_DISCONNECTED -> reconnect(currentAddress ?: return)
+            else -> {}
         }
     }
 
@@ -133,12 +128,13 @@ class BleDeviceManager @Inject constructor(
             val gatt = ClientBleGatt.connect(context, address, scope, options)
             currentGatt = gatt
             currentAddress = address
-
             gatt.connectionStateWithStatus
                 .onEach { handleConnectionState(it?.state ?: GattConnectionState.STATE_DISCONNECTED) }
                 .launchIn(scope)
         } catch (e: Exception) {
-            if (e !is CancellationException) _deviceUiStateFlow.value = DeviceUiState.Error("Connection failed: ${e.message}")
+            if (e !is CancellationException) {
+                _deviceUiStateFlow.value = DeviceUiState.Error("Connection failed: ${e.message}")
+            }
         }
     }
 
@@ -164,16 +160,16 @@ class BleDeviceManager @Inject constructor(
         println("Connection state changed: ${state.name}")
         currentConnectionState = state
 
-        when (state) {
-            GattConnectionState.STATE_CONNECTED -> initializeDevice()
-            else -> _deviceUiStateFlow.value = DeviceUiState.Loading
+        if (state == GattConnectionState.STATE_CONNECTED) {
+            initializeDevice()
+        } else {
+            _deviceUiStateFlow.value = DeviceUiState.Loading
         }
     }
 
     private suspend fun initializeDevice() {
         try {
-            val gatt = currentGatt ?: return
-            val service = gatt.discoverServices().findService(SERVICE_UUID)
+            val service = currentGatt?.discoverServices()?.findService(SERVICE_UUID)
                 ?: throw NoSuchElementException("Service not found")
 
             lampChar = service.findCharacteristic(COMMAND_CHARACTERISTIC_UUID)
@@ -240,6 +236,15 @@ class BleDeviceManager @Inject constructor(
         }
     }
 
+    fun sendCommand(command: LampCommand) {
+        try {
+            println("----->$command")
+            commandSender?.submit(command)
+        } catch (e: Exception) {
+            _deviceUiStateFlow.value = DeviceUiState.Error("Cmd send error: ${e.message}")
+        }
+    }
+
     private fun restartTimers(state: LampState) {
         timerJob?.cancel()
         timerJob = scope.launch {
@@ -269,15 +274,6 @@ class BleDeviceManager @Inject constructor(
                 }
                 else -> {}
             }
-        }
-    }
-
-    fun sendCommand(command: LampCommand) {
-        try {
-            println("----->$command")
-            commandSender?.submit(command)
-        } catch (e: Exception) {
-            _deviceUiStateFlow.value = DeviceUiState.Error("Cmd send error: ${e.message}")
         }
     }
 
