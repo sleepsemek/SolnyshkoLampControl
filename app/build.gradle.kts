@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sleepsemek.solnyshkosmartlamp"
-        minSdk = 26
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "2.0"
