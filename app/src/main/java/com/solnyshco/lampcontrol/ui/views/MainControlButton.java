@@ -59,13 +59,13 @@ public class MainControlButton extends AppCompatButton implements View.OnClickLi
 
                 case ACTIVE:
                     MainControlButton.this.setText("Пауза");
-                    MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
+                    MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.dark_blue)));
                     break;
 
 
                 case PAUSED:
                     MainControlButton.this.setText("Пуск");
-                    MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_red)));
+                    MainControlButton.this.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(context.getApplicationContext(), R.color.main_blue)));
 
                     break;
 
