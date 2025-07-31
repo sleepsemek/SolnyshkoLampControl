@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
@@ -36,8 +37,15 @@ public class BluetoothLeConnectionThread extends Thread {
     private boolean disconnectInit = false;
 
     private final Queue<BluetoothGattCharacteristic> commandQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<BluetoothGattCharacteristic> readQueue = new ConcurrentLinkedQueue<>();
+    private boolean isReading = false;
+
     private HandlerThread commandHandlerThread;
     private Handler commandHandler;
+
+    private final Handler debounceHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingDebounceRunnable;
+    private ReceivedLampState pendingLampState;
 
     private final Gson gson = new Gson();
     private final Context context;
@@ -75,7 +83,6 @@ public class BluetoothLeConnectionThread extends Thread {
                 commandQueue.poll();
             }
         };
-
     }
 
     private void handleCommand(BluetoothGattCharacteristic characteristic) {
@@ -93,19 +100,36 @@ public class BluetoothLeConnectionThread extends Thread {
                 || characteristic.getUuid().equals(VERSION_CHARACTERISTICS_UUID)) {
             ReceivedLampState lampState = gson.fromJson(value, ReceivedLampState.class);
             System.out.println(gson.toJson(lampState));
-            if (dataReceivedListener != null) {
-                dataReceivedListener.onCommandReceived(lampState);
-            }
-        } else if (characteristic.getUuid().equals(NOTIFY_CHARACTERISTICS_UUID)) {
-            bluetoothGatt.readCharacteristic(commandCharacteristic);
-            System.out.println(value);
-        }
 
+            if (dataReceivedListener != null) {
+                pendingLampState = lampState;
+
+                if (pendingDebounceRunnable != null) {
+                    debounceHandler.removeCallbacks(pendingDebounceRunnable);
+                }
+
+                pendingDebounceRunnable = () -> {
+                    if (pendingLampState != null) {
+                        dataReceivedListener.onCommandReceived(pendingLampState);
+                    }
+                };
+                debounceHandler.postDelayed(pendingDebounceRunnable, 200);
+            }
+        }
     }
 
     private void connectToDevice() {
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
         bluetoothGatt = device.connectGatt(context, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
+    }
+
+    private void readNext() {
+        if (isReading) return;
+        BluetoothGattCharacteristic next = readQueue.poll();
+        if (next != null) {
+            isReading = true;
+            bluetoothGatt.readCharacteristic(next);
+        }
     }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -141,7 +165,6 @@ public class BluetoothLeConnectionThread extends Thread {
                     dataReceivedListener.onStateChange(false);
                 }
             }
-
         }
 
         @Override
@@ -163,28 +186,29 @@ public class BluetoothLeConnectionThread extends Thread {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            commandQueue.add(characteristic);
-            commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                commandQueue.add(characteristic);
-                commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
+            if (characteristic.getUuid().equals(NOTIFY_CHARACTERISTICS_UUID)) {
+                readQueue.add(commandCharacteristic);
+                readNext();
             }
         }
 
         @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            isReading = false;
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                commandQueue.add(characteristic);
+                commandHandler.sendMessage(commandHandler.obtainMessage(0, characteristic));
+            }
+            readNext();
+        }
+
+        @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicWrite(gatt, characteristic, status);
             bluetoothGatt.readCharacteristic(commandCharacteristic);
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            super.onDescriptorWrite(gatt, descriptor, status);
             bluetoothGatt.readCharacteristic(commandCharacteristic);
         }
     };
@@ -232,9 +256,5 @@ public class BluetoothLeConnectionThread extends Thread {
     public interface onDataReceivedListener {
         void onStateChange(boolean state);
         void onCommandReceived(ReceivedLampState lampState);
-
     }
-
-
-
 }
