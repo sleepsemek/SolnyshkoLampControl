@@ -93,99 +93,125 @@ public class ControlLampPresenter extends MvpPresenter<ControlLampView> {
     public void onDestroy() {
         super.onDestroy();
         connectedThread.cancel();
+
+        handler.post(() -> {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+                preheatTimer = null;
+            }
+            if (mainTimer != null) {
+                mainTimer.cancel();
+                mainTimer = null;
+            }
+        });
     }
 
     private void startPreheat(ReceivedLampState.Preheat preheatData) {
-
-        preheatTimer = new CountDownTimer(preheatData.getTimeLeft(), 1000) {
-            @Override
-            public void onTick(long l) {
-                int total = (int) Math.ceil((double) l / 1000);
-                int minutes = total / 60;
-                int seconds = total % 60;
-                getViewState().drawPreheatView(minutes, seconds);
+        handler.post(() -> {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+                preheatTimer = null;
             }
 
-            @Override
-            public void onFinish() {
+            preheatTimer = new CountDownTimer(preheatData.getTimeLeft(), 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    int totalSeconds = (int) (millisUntilFinished / 1000);
+                    int minutes = totalSeconds / 60;
+                    int seconds = totalSeconds % 60;
+                    getViewState().drawPreheatView(minutes, seconds);
+                }
 
-            }
+                @Override
+                public void onFinish() {
 
-        }.start();
-
+                }
+            }.start();
+        });
     }
 
     private void stopPreheat() {
-        if (preheatTimer != null) {
-            preheatTimer.cancel();
-        }
-        getViewState().clearTimerView();
+        handler.post(() -> {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+                preheatTimer = null;
+            }
+            getViewState().clearTimerView();
+        });
     }
 
     private void startTimer(ReceivedLampState.Timer timerData) {
-        if (preheatTimer != null) {
-            preheatTimer.cancel();
-        }
-
-        if (mainTimer != null) {
-            mainTimer.cancel();
-        }
-
-        int generalCycles = timerData.getGeneralCycles();
-        int generalCycleTime = timerData.getGeneralCycleTime();
-        int remainedTime = timerData.getTimeLeft();
-        int generalTime = generalCycles * generalCycleTime;
-        int remainedCycleTime = remainedTime % generalCycleTime;
-        int remainedCycles = remainedTime / generalCycleTime;
-
-        mainTimer = new CountDownTimer(remainedCycleTime, 1000) {
-            @Override
-            public void onTick(long l) {
-
-                int total = (int) Math.ceil((double) l / 1000);
-                int minutes = total / 60;
-                int seconds = total % 60;
-                getViewState().drawTimerView(minutes, seconds, generalCycles - remainedCycles, generalCycleTime / 60000, (generalCycleTime % 60000) / 1000, generalCycles);
+        handler.post(() -> {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+                preheatTimer = null;
+            }
+            if (mainTimer != null) {
+                mainTimer.cancel();
+                mainTimer = null;
             }
 
-            @Override
-            public void onFinish() {
+            int generalCycles = timerData.getGeneralCycles();
+            int generalCycleTime = timerData.getGeneralCycleTime();
+            int remainedTime = timerData.getTimeLeft();
+            int generalTime = generalCycles * generalCycleTime;
+            int remainedCycleTime = remainedTime % generalCycleTime;
+            int remainedCycles = remainedTime / generalCycleTime;
 
-            }
+            mainTimer = new CountDownTimer(remainedCycleTime, 1000) {
+                @Override
+                public void onTick(long l) {
 
-        }.start();
+                    int total = (int) Math.ceil((double) l / 1000);
+                    int minutes = total / 60;
+                    int seconds = total % 60;
+                    getViewState().drawTimerView(minutes, seconds, generalCycles - remainedCycles, generalCycleTime / 60000, (generalCycleTime % 60000) / 1000, generalCycles);
+                }
+
+                @Override
+                public void onFinish() {
+
+                }
+
+            }.start();
+        });
     }
 
     public void stopTimer() {
-        if (mainTimer != null) {
-            mainTimer.cancel();
-        }
-        getViewState().clearTimerView();
+        handler.post(() -> {
+            if (mainTimer != null) {
+                mainTimer.cancel();
+                mainTimer = null;
+            }
+            getViewState().clearTimerView();
+        });
     }
 
     private void pauseTimer(ReceivedLampState.Timer timerData) {
-        if (preheatTimer != null) {
-            preheatTimer.cancel();
-        }
+        handler.post(() -> {
+            if (preheatTimer != null) {
+                preheatTimer.cancel();
+                preheatTimer = null;
+            }
+            if (mainTimer != null) {
+                mainTimer.cancel();
+                mainTimer = null;
+            }
 
-        if (mainTimer != null) {
-            mainTimer.cancel();
-        }
+            int generalCycles = timerData.getGeneralCycles();
+            int generalCycleTime = timerData.getGeneralCycleTime();
+            int remainedTime = timerData.getTimeLeft();
+            int generalTime = generalCycles * generalCycleTime;
+            int remainedCycleTime = remainedTime % generalCycleTime;
+            int remainedCycles = remainedTime / generalCycleTime;
 
-        int generalCycles = timerData.getGeneralCycles();
-        int generalCycleTime = timerData.getGeneralCycleTime();
-        int remainedTime = timerData.getTimeLeft();
-        int generalTime = generalCycles * generalCycleTime;
-        int remainedCycleTime = remainedTime % generalCycleTime;
-        int remainedCycles = remainedTime / generalCycleTime;
+            int total = (int) Math.ceil((double) remainedCycleTime / 1000);
+            System.out.println(total);
+            int minutes = total / 60;
+            int seconds = total % 60;
 
-        int total = (int) Math.ceil((double) remainedCycleTime / 1000);
-        System.out.println(total);
-        int minutes = total / 60;
-        int seconds = total % 60;
-
-        getViewState().drawTimerView(minutes, seconds, generalCycles - remainedCycles, generalCycleTime / 60000, (generalCycleTime % 60000) / 1000, generalCycles);
-
+            getViewState().drawTimerView(minutes, seconds, generalCycles - remainedCycles, generalCycleTime / 60000, (generalCycleTime % 60000) / 1000, generalCycles);
+        });
     }
 
     public void handleButtonClick(ReceivedLampState.RelayState relayState) {

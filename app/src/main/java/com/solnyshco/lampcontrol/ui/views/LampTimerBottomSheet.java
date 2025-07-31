@@ -42,18 +42,20 @@ public class LampTimerBottomSheet extends BottomSheetDialog {
         iterationPicker = this.findViewById(R.id.preheat_picker);
         Objects.requireNonNull(iterationPicker).setMinValue(1);
         iterationPicker.setMaxValue(10);
+        iterationPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         minutesPicker = this.findViewById(R.id.minutes_picker);
         Objects.requireNonNull(minutesPicker).setMinValue(0);
         minutesPicker.setMaxValue(30);
+        minutesPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         secondsPicker = this.findViewById(R.id.seconds_picker);
         Objects.requireNonNull(secondsPicker).setMinValue(0);
         secondsPicker.setMaxValue(59);
+        secondsPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         startTimerButton = this.findViewById(R.id.start_timer);
         infoButton = this.findViewById(R.id.info_button);
-
     }
 
     public void setOnStartClickListener(View.OnClickListener onClickListener) {
